@@ -10,6 +10,7 @@ abstract class ClientEntity with _$ClientEntity {
     required String clientName,
     required String contactNumber,
     required String clientAddress,
+    required String department,
     required DateTime createdAt,
     // ignore: invalid_annotation_target
     @JsonKey(name: 'is_active', defaultValue: true) required bool isActive,

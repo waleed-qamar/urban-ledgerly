@@ -19,6 +19,7 @@ class _AddClientDialogState extends ConsumerState<AddClientDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _contactController;
   late final TextEditingController _addressController;
+  late final TextEditingController _departmentController;
   late bool _isActive;
 
   bool _isLoading = false;
@@ -35,6 +36,9 @@ class _AddClientDialogState extends ConsumerState<AddClientDialog> {
     _addressController = TextEditingController(
       text: widget.clientToEdit?.clientAddress ?? '',
     );
+    _departmentController = TextEditingController(
+      text: widget.clientToEdit?.department ?? '',
+    );
     _isActive = widget.clientToEdit?.isActive ?? true;
   }
 
@@ -43,6 +47,7 @@ class _AddClientDialogState extends ConsumerState<AddClientDialog> {
     _nameController.dispose();
     _contactController.dispose();
     _addressController.dispose();
+    _departmentController.dispose();
     super.dispose();
   }
 
@@ -56,6 +61,9 @@ class _AddClientDialogState extends ConsumerState<AddClientDialog> {
       clientName: _nameController.text.trim(),
       contactNumber: _contactController.text.trim(),
       clientAddress: _addressController.text.trim(),
+      department: _departmentController.text.isNotEmpty
+          ? _departmentController.text.trim()
+          : '',
       createdAt: widget.clientToEdit?.createdAt ?? DateTime.now(),
       isActive: _isActive,
     );
@@ -123,6 +131,14 @@ class _AddClientDialogState extends ConsumerState<AddClientDialog> {
                 maxLines: 3,
                 validator: (val) =>
                     val == null || val.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _departmentController,
+                decoration: const InputDecoration(
+                  labelText: 'Department (Optional)',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 16),
               SwitchListTile(

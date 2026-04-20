@@ -295,6 +295,23 @@ class ClientDashboardView extends ConsumerWidget {
                               ),
                             ),
 
+                            // Department
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                client.department.isNotEmpty
+                                    ? client.department
+                                    : '',
+                                style: const TextStyle(
+                                  color: AppColors.textGrey,
+                                  fontSize: 13,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+
                             // Status Pill
                             Expanded(
                               flex: 2,
