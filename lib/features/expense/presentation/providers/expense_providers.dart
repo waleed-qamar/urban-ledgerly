@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../../core/providers/app_providers.dart';
 
 import '../../data/datasources/expense_remote_datasource.dart';
 import '../../data/repositories/expense_repository_impl.dart';
@@ -40,11 +41,6 @@ class ExpenseHeads extends _$ExpenseHeads {
       return ref.watch(expenseRepositoryProvider).getExpenseHeads();
     });
   }
-}
-
-@riverpod
-SupabaseClient supabaseClient(Ref ref) {
-  return Supabase.instance.client;
 }
 
 @riverpod

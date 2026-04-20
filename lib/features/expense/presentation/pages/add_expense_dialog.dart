@@ -1,5 +1,7 @@
 // features/expense/presentation/views/add_expense_dialog.dart
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/expense.dart';
@@ -165,7 +167,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF006D5B),
+            backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
           ),
           onPressed: _isLoading || _selectedHeadId == null ? null : _submit,

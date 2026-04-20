@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 
 Widget buildLedgerItem(
   IconData icon,
@@ -43,7 +44,7 @@ Widget buildLedgerItem(
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
+                    color: AppColors.badgeBackground,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -51,7 +52,7 @@ Widget buildLedgerItem(
                     style: const TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey,
+                      color: AppColors.textGrey,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -62,7 +63,7 @@ Widget buildLedgerItem(
             // Subtitle: Remarks
             Text(
               subtitle,
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
+              style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -77,7 +78,7 @@ Widget buildLedgerItem(
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 4),
-          Text(date, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          Text(date, style: const TextStyle(color: AppColors.textGrey, fontSize: 12)),
         ],
       ),
     ],

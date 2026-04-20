@@ -1,5 +1,7 @@
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:excel/excel.dart' hide Border;
@@ -178,7 +180,7 @@ class FullLedgerView extends ConsumerWidget {
         //   ),
         //   if (dateRange != null || selectedHeadId != null)
         //     IconButton(
-        //       icon: const Icon(Icons.clear_all, color: Colors.redAccent),
+        //       icon: const Icon(Icons.clear_all, color: AppColors.negativeAccent),
         //       tooltip: 'Clear Filters',
         //       onPressed: () {
         //         ref.read(ledgerDateRangeProvider.notifier).setRange(null);
@@ -192,11 +194,11 @@ class FullLedgerView extends ConsumerWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-            color: Colors.cyan.shade50,
+            color: AppColors.indicatorBackground,
             child: Text(
               indicatorText,
               style: TextStyle(
-                color: Colors.teal.shade800,
+                color: AppColors.indicatorText,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -261,7 +263,7 @@ class FullLedgerView extends ConsumerWidget {
                                 exp.date,
                               ), // Added time here for extra detail in full ledger!
                               headType,
-                              Colors.cyan.shade100,
+                              AppColors.iconBackground,
                               Colors.teal,
                             ),
                           );
@@ -272,9 +274,9 @@ class FullLedgerView extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 202, 241, 225),
+                        color: AppColors.totalSummaryBackground,
                         border: Border(
-                          top: BorderSide(color: Colors.grey.shade300),
+                          top: BorderSide(color: AppColors.dividerColor),
                         ),
                       ),
                       child: Row(
@@ -297,14 +299,14 @@ class FullLedgerView extends ConsumerWidget {
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF006D5B),
+                                  color: AppColors.primary,
                                 ),
                               ),
                             ],
                           ),
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0B192C),
+                              backgroundColor: AppColors.primaryDark,
                               foregroundColor: Colors.white,
                             ),
                             onPressed: () async {
@@ -350,7 +352,9 @@ class FullLedgerView extends ConsumerWidget {
                                     rootNavigator: true,
                                   ).pop();
                                 }
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                ScaffoldMessenger.of(
+                                  context.mounted ? context : context,
+                                ).showSnackBar(
                                   SnackBar(
                                     content: Text('Error exporting: $e'),
                                     duration: const Duration(seconds: 3),
@@ -462,7 +466,7 @@ class FullLedgerView extends ConsumerWidget {
   //             ),
   //             ElevatedButton(
   //               style: ElevatedButton.styleFrom(
-  //                 backgroundColor: const Color(0xFF006D5B),
+  //                 backgroundColor: AppColors.primary,
   //                 foregroundColor: Colors.white,
   //               ),
   //               onPressed: () {

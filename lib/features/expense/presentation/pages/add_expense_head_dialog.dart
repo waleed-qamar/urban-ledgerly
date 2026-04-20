@@ -1,5 +1,7 @@
 // features/expense/presentation/views/add_expense_head_dialog.dart
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/expense_head.dart';
 import '../providers/expense_providers.dart';
@@ -150,7 +152,7 @@ class _AddExpenseHeadDialogState extends ConsumerState<AddExpenseHeadDialog> {
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF006D5B),
+            backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
           ),
           onPressed: _isLoading ? null : _submit,

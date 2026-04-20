@@ -1,5 +1,7 @@
 // features/expense/presentation/views/expenses_by_head_view.dart
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/expense_head.dart';
@@ -18,7 +20,7 @@ class ExpensesByHeadView extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('${head.name} Expenses'),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.textWhite,
       ),
       body: expensesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -48,10 +50,10 @@ class ExpensesByHeadView extends ConsumerWidget {
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: CircleAvatar(
-                        backgroundColor: Colors.cyan.shade50,
+                        backgroundColor: AppColors.indicatorBackground,
                         child: const Icon(
                           Icons.receipt_long,
-                          color: Colors.teal,
+                          color: AppColors.iconColor,
                         ),
                       ),
                       title: Text(
@@ -77,8 +79,8 @@ class ExpensesByHeadView extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFAEDE3),
-                  border: Border(top: BorderSide(color: Colors.grey.shade300)),
+                  color: AppColors.totalSummaryBackground,
+                  border: Border(top: BorderSide(color: AppColors.dividerColor)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -86,7 +88,7 @@ class ExpensesByHeadView extends ConsumerWidget {
                     const Text(
                       'Total for Category:',
                       style: TextStyle(
-                        color: Colors.grey,
+                        color: AppColors.textGrey,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -96,7 +98,7 @@ class ExpensesByHeadView extends ConsumerWidget {
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF006D5B),
+                        color: AppColors.primary,
                       ),
                     ),
                   ],

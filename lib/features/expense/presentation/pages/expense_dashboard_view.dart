@@ -1,5 +1,7 @@
 // features/expense/presentation/views/expense_dashboard_view.dart
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -128,7 +130,7 @@ class ExpenseDashboardView extends ConsumerWidget {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF006D5B),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                 ),
                 onPressed: () {
@@ -302,7 +304,7 @@ class ExpenseDashboardView extends ConsumerWidget {
                               Text(
                                 'RECENT',
                                 style: TextStyle(
-                                  color: Color(0xFF006D5B),
+                                  color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12,
                                 ),
@@ -355,7 +357,7 @@ class ExpenseDashboardView extends ConsumerWidget {
                                       ).format(exp.amount),
                                       DateFormat.yMMMd().format(exp.date),
                                       headType, // Showing Head Type in badge
-                                      Colors.cyan.shade100,
+                                      AppColors.iconBackground,
                                       Colors.teal,
                                     );
                                   },
@@ -368,7 +370,7 @@ class ExpenseDashboardView extends ConsumerWidget {
                             alignment: Alignment.centerRight,
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF006D5B),
+                                backgroundColor: AppColors.primary,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20,
@@ -407,7 +409,7 @@ class ExpenseDashboardView extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0B1221),
+                          color: AppColors.darkCardBackground,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         // Replace the static Column with the Riverpod .when() mapping
@@ -416,14 +418,14 @@ class ExpenseDashboardView extends ConsumerWidget {
                             child: Padding(
                               padding: EdgeInsets.all(32.0),
                               child: CircularProgressIndicator(
-                                color: Colors.tealAccent,
+                                color: AppColors.positiveAccent,
                               ),
                             ),
                           ),
                           error: (error, stack) => const Center(
                             child: Text(
                               'Failed to load insights',
-                              style: TextStyle(color: Colors.redAccent),
+                              style: TextStyle(color: AppColors.negativeAccent),
                             ),
                           ),
                           data: (insights) {
@@ -459,8 +461,8 @@ class ExpenseDashboardView extends ConsumerWidget {
                                   '${isPositive ? '↑' : '↓'} ${change.abs().toStringAsFixed(1)}% vs last month',
                                   style: TextStyle(
                                     color: isPositive
-                                        ? Colors.redAccent
-                                        : Colors.tealAccent,
+                                        ? AppColors.negativeAccent
+                                        : AppColors.positiveAccent,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -471,11 +473,11 @@ class ExpenseDashboardView extends ConsumerWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    _buildBar(40, Colors.white24),
-                                    _buildBar(60, Colors.white24),
-                                    _buildBar(30, Colors.white24),
-                                    _buildBar(80, Colors.white24),
-                                    _buildBar(50, Colors.tealAccent),
+                                    _buildBar(40, AppColors.barPlaceholder),
+                                    _buildBar(60, AppColors.barPlaceholder),
+                                    _buildBar(30, AppColors.barPlaceholder),
+                                    _buildBar(80, AppColors.barPlaceholder),
+                                    _buildBar(50, AppColors.positiveAccent),
                                   ],
                                 ),
                               ],
@@ -539,7 +541,7 @@ class ExpenseDashboardView extends ConsumerWidget {
                                             head
                                                 .headType
                                                 .name, // Reusing percentage spot to show type for now
-                                            Colors.blue.shade300,
+                                            AppColors.dotActive,
                                           );
                                         },
                                       );
@@ -592,7 +594,7 @@ class ExpenseDashboardView extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: AppColors.lightBackground,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

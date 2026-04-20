@@ -1,7 +1,9 @@
 // features/expense/presentation/views/sidebar.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'features/client/presentation/pages/client_dashboard_view.dart';
 import 'features/expense/presentation/pages/expense_dashboard_view.dart';
+import 'features/vender/presentation/pages/vendor_dashboard_view.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -15,8 +17,8 @@ class _MainLayoutState extends State<MainLayout> {
 
   // Placeholder for future modules
   final List<Widget> _pages = [
-    const Center(child: Text('Clients Module')),
-    const Center(child: Text('Venders Module')),
+    const ClientDashboardView(),
+    const VenderDashboardView(),
     const ExpenseDashboardView(),
     // const Center(child: Text('Settings Module')),
   ];
