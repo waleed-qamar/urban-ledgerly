@@ -433,7 +433,7 @@ final class GetEntriesByPartyProvider
   }
 }
 
-String _$getEntriesByPartyHash() => r'95815eea4348f1e5034eca97e36d87a35208525f';
+String _$getEntriesByPartyHash() => r'c280a0869fe78b98b8a02eec963387729bc776ad';
 
 final class GetEntriesByPartyFamily extends $Family
     with
@@ -515,7 +515,7 @@ final class GetBalanceProvider
   }
 }
 
-String _$getBalanceHash() => r'79da68c32ea4a6207168c43f389b16326e248039';
+String _$getBalanceHash() => r'25a5889bfc98690aef583db1ee08547f63807a64';
 
 final class GetBalanceFamily extends $Family
     with

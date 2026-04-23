@@ -1,8 +1,10 @@
 // features/expense/presentation/views/sidebar.dart
 import 'package:flutter/material.dart';
+import 'package:ledgerly/features/products/presentation/pages/product_dashboard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'features/client/presentation/pages/client_dashboard_view.dart';
 import 'features/expense/presentation/pages/expense_dashboard_view.dart';
+import 'features/ledger/presentation/pages/ledger_page.dart';
 import 'features/vender/presentation/pages/vendor_dashboard_view.dart';
 
 class MainLayout extends StatefulWidget {
@@ -17,8 +19,10 @@ class _MainLayoutState extends State<MainLayout> {
 
   // Placeholder for future modules
   final List<Widget> _pages = [
+    const LedgerPage(),
     const ClientDashboardView(),
     const VenderDashboardView(),
+    const ProductDashboard(),
     const ExpenseDashboardView(),
     // const Center(child: Text('Settings Module')),
   ];
@@ -67,6 +71,11 @@ class _MainLayoutState extends State<MainLayout> {
             ),
             destinations: const [
               NavigationRailDestination(
+                icon: Icon(Icons.book_outlined),
+                selectedIcon: Icon(Icons.book),
+                label: Text('Ledger'),
+              ),
+              NavigationRailDestination(
                 icon: Icon(Icons.dashboard_outlined),
                 selectedIcon: Icon(Icons.dashboard),
                 label: Text('Clients'),
@@ -75,6 +84,11 @@ class _MainLayoutState extends State<MainLayout> {
                 icon: Icon(Icons.bar_chart_outlined),
                 selectedIcon: Icon(Icons.bar_chart),
                 label: Text('Venders'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.inventory_2_outlined),
+                selectedIcon: Icon(Icons.inventory_2),
+                label: Text('Products'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.account_balance_wallet_outlined),
@@ -88,7 +102,7 @@ class _MainLayoutState extends State<MainLayout> {
               //   label: Text('Settings'),
               // ),
             ],
-            // "Add Expense" button at the bottom of the rail
+            // Signout button at the bottom of the rail
             trailing: Expanded(
               child: Align(
                 alignment: Alignment.bottomCenter,

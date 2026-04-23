@@ -47,10 +47,9 @@ Future<List<LedgerEntity>> getEntriesByParty(
   Ref ref, {
   required PartyType partyType,
   required int partyId,
-}) {
-  return ref
-      .watch(ledgerRepositoryProvider)
-      .getEntriesByParty(partyType: partyType, partyId: partyId);
+}) async {
+  final repository = ref.read(ledgerRepositoryProvider);
+  return repository.getEntriesByParty(partyType: partyType, partyId: partyId);
 }
 
 @riverpod
@@ -58,8 +57,7 @@ Future<double> getBalance(
   Ref ref, {
   required PartyType partyType,
   required int partyId,
-}) {
-  return ref
-      .watch(ledgerRepositoryProvider)
-      .getBalance(partyType: partyType, partyId: partyId);
+}) async {
+  final repository = ref.read(ledgerRepositoryProvider);
+  return repository.getBalance(partyType: partyType, partyId: partyId);
 }
