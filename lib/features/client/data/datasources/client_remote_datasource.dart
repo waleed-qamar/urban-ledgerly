@@ -13,7 +13,8 @@ class ClientRemoteDatasource {
   }
 
   Future<void> addClient(ClientEntity client) async {
-    await _client.from('clients').insert(client.toJson());
+    final payload = client.toJson()..remove('id');
+    await _client.from('clients').insert(payload);
   }
 
   Future<void> updateClient(ClientEntity client) async {

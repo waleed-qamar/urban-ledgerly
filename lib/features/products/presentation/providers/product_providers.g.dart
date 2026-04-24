@@ -104,6 +104,103 @@ final class ProductRepositoryProvider
 
 String _$productRepositoryHash() => r'3f5ae24697b7fc114b01d7b89a42094813b98548';
 
+@ProviderFor(inventoryRemoteDatasource)
+const inventoryRemoteDatasourceProvider = InventoryRemoteDatasourceProvider._();
+
+final class InventoryRemoteDatasourceProvider
+    extends
+        $FunctionalProvider<
+          InventoryRemoteDatasource,
+          InventoryRemoteDatasource,
+          InventoryRemoteDatasource
+        >
+    with $Provider<InventoryRemoteDatasource> {
+  const InventoryRemoteDatasourceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'inventoryRemoteDatasourceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$inventoryRemoteDatasourceHash();
+
+  @$internal
+  @override
+  $ProviderElement<InventoryRemoteDatasource> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  InventoryRemoteDatasource create(Ref ref) {
+    return inventoryRemoteDatasource(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(InventoryRemoteDatasource value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<InventoryRemoteDatasource>(value),
+    );
+  }
+}
+
+String _$inventoryRemoteDatasourceHash() =>
+    r'ac4496a3d46b466a1b7e9ea0618ca1bf5bb56406';
+
+@ProviderFor(productInventoryRepository)
+const productInventoryRepositoryProvider =
+    ProductInventoryRepositoryProvider._();
+
+final class ProductInventoryRepositoryProvider
+    extends
+        $FunctionalProvider<
+          ProductInventoryRepository,
+          ProductInventoryRepository,
+          ProductInventoryRepository
+        >
+    with $Provider<ProductInventoryRepository> {
+  const ProductInventoryRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'productInventoryRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$productInventoryRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<ProductInventoryRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ProductInventoryRepository create(Ref ref) {
+    return productInventoryRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ProductInventoryRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ProductInventoryRepository>(value),
+    );
+  }
+}
+
+String _$productInventoryRepositoryHash() =>
+    r'f0756548eac4fb49ebad0112398197001d958c15';
+
 @ProviderFor(getAllProducts)
 const getAllProductsProvider = GetAllProductsProvider._();
 
@@ -350,4 +447,88 @@ final class UpdateProductFamily extends $Family
 
   @override
   String toString() => r'updateProductProvider';
+}
+
+@ProviderFor(inventoryTransactionsByProduct)
+const inventoryTransactionsByProductProvider =
+    InventoryTransactionsByProductFamily._();
+
+final class InventoryTransactionsByProductProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<InventoryTransactionEntity>>,
+          List<InventoryTransactionEntity>,
+          FutureOr<List<InventoryTransactionEntity>>
+        >
+    with
+        $FutureModifier<List<InventoryTransactionEntity>>,
+        $FutureProvider<List<InventoryTransactionEntity>> {
+  const InventoryTransactionsByProductProvider._({
+    required InventoryTransactionsByProductFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'inventoryTransactionsByProductProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$inventoryTransactionsByProductHash();
+
+  @override
+  String toString() {
+    return r'inventoryTransactionsByProductProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<InventoryTransactionEntity>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<InventoryTransactionEntity>> create(Ref ref) {
+    final argument = this.argument as int;
+    return inventoryTransactionsByProduct(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is InventoryTransactionsByProductProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$inventoryTransactionsByProductHash() =>
+    r'a3fb23fa44399d67d8d9581ffa69f610e0e1784f';
+
+final class InventoryTransactionsByProductFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<List<InventoryTransactionEntity>>,
+          int
+        > {
+  const InventoryTransactionsByProductFamily._()
+    : super(
+        retry: null,
+        name: r'inventoryTransactionsByProductProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  InventoryTransactionsByProductProvider call(int productId) =>
+      InventoryTransactionsByProductProvider._(argument: productId, from: this);
+
+  @override
+  String toString() => r'inventoryTransactionsByProductProvider';
 }

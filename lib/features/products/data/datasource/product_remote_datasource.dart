@@ -13,7 +13,8 @@ class ProductRemoteDatasource {
   }
 
   Future<void> addProduct(ProductEntity product) async {
-    await _client.from('products').insert(product.toJson());
+    final payload = product.toJson()..remove('id');
+    await _client.from('products').insert(payload);
   }
 
   Future<void> updateProduct(ProductEntity product) async {

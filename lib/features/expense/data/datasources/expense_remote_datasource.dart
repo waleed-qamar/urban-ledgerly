@@ -84,7 +84,8 @@ class ExpenseRemoteDatasource {
   }
 
   Future<void> addExpenseHead(ExpenseHead expenseHead) async {
-    await _client.from('expense_heads').insert(expenseHead.toJson());
+    final payload = expenseHead.toJson()..remove('id');
+    await _client.from('expense_heads').insert(payload);
   }
 
   Future<void> updateExpenseHead(ExpenseHead expenseHead) async {
@@ -99,6 +100,7 @@ class ExpenseRemoteDatasource {
   }
 
   Future<void> addExpense(Expense expense) async {
-    await _client.from('expenses').insert(expense.toJson());
+    final payload = expense.toJson()..remove('id');
+    await _client.from('expenses').insert(payload);
   }
 }

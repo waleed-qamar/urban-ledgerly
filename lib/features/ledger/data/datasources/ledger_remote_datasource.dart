@@ -6,7 +6,8 @@ class LedgerRemoteDatasource {
 
   LedgerRemoteDatasource(this._client);
   Future<void> addEntry(LedgerEntity entry) async {
-    await _client.from('ledger').insert(entry.toJson());
+    final payload = entry.toJson()..remove('id');
+    await _client.from('ledger').insert(payload);
   }
 
   Future<List<LedgerEntity>> getAllEntries() async {

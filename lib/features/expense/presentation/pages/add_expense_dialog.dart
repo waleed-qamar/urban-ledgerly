@@ -50,7 +50,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
     setState(() => _isLoading = true);
 
     final newExpense = Expense(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: 0,
       expenseHeadId: _selectedHeadId!,
       amount: double.parse(_amountController.text.trim()),
       remarks: _remarksController.text.trim(),

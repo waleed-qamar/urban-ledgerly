@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
+import 'package:ledgerly/features/products/presentation/pages/product_detail_page.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
 
 import 'add_product_dialog.dart';
@@ -147,134 +148,185 @@ class ProductDashboard extends ConsumerWidget {
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final prod = products[index];
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 20,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.textWhite,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.dividerColor.withValues(
-                              alpha: 0.5,
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ProductDetailPage(product: prod),
                             ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 20,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.textGrey.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            // Avatar
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: AppColors.lightBackground,
-                                borderRadius: BorderRadius.circular(25),
+                          decoration: BoxDecoration(
+                            color: AppColors.textWhite,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.dividerColor.withValues(
+                                alpha: 0.5,
                               ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.shopping_bag,
-                                  color: AppColors.textGrey,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.textGrey.withValues(
+                                  alpha: 0.05,
+                                ),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              // Avatar
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: AppColors.lightBackground,
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.shopping_bag,
+                                    color: AppColors.textGrey,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 20),
+                              const SizedBox(width: 20),
 
-                            // Name & Description
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    prod.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      color: AppColors.textBlack,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  if (prod.description != null &&
-                                      prod.description!.isNotEmpty)
+                              // Name & Description
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                                     Text(
-                                      prod.description ?? '',
+                                      prod.name,
                                       style: const TextStyle(
-                                        color: AppColors.textGrey,
-                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: AppColors.textBlack,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                ],
+                                    const SizedBox(height: 4),
+                                    if (prod.description != null &&
+                                        prod.description!.isNotEmpty)
+                                      Text(
+                                        prod.description ?? '',
+                                        style: const TextStyle(
+                                          color: AppColors.textGrey,
+                                          fontSize: 12,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                  ],
+                                ),
                               ),
-                            ),
 
-                            // Weight
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'Weight',
-                                    style: TextStyle(
-                                      color: AppColors.textGrey,
-                                      fontSize: 12,
+                              // Weight
+                              Expanded(
+                                flex: 2,
+                                child: Row(
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {
+                                        _recordTransaction(
+                                          context,
+                                          ref,
+                                          prod.id,
+                                          transactionType: 'IN',
+                                        );
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.add),
+                                          Text('Add'),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${prod.weight.toStringAsFixed(2)} kg',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      color: AppColors.textBlack,
+                                    TextButton(
+                                      onPressed: () {
+                                        _recordTransaction(
+                                          context,
+                                          ref,
+                                          prod.id,
+                                          transactionType: 'OUT',
+                                        );
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.delete),
+                                          Text('Remove'),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    Spacer(),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        const Text(
+                                          'Weight',
+                                          style: TextStyle(
+                                            color: AppColors.textGrey,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${prod.weight.toStringAsFixed(2)} kg',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                            color: AppColors.textBlack,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
 
-                            const SizedBox(width: 16),
-                            PopupMenuButton<String>(
-                              color: AppColors.textWhite,
-                              onSelected: (val) async {
-                                if (val == 'edit') {
-                                  if (context.mounted) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) =>
-                                          AddProductDialog(productToEdit: prod),
-                                    );
+                              const SizedBox(width: 16),
+                              PopupMenuButton<String>(
+                                color: AppColors.textWhite,
+                                onSelected: (val) async {
+                                  if (val == 'edit') {
+                                    if (context.mounted) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AddProductDialog(
+                                          productToEdit: prod,
+                                        ),
+                                      );
+                                    }
+                                  } else if (val == 'delete') {
+                                    _showDeleteConfirmation(context, ref, prod);
                                   }
-                                } else if (val == 'delete') {
-                                  _showDeleteConfirmation(context, ref, prod);
-                                }
-                              },
-                              itemBuilder: (_) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Text('Edit'),
+                                },
+                                itemBuilder: (_) => [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Text('Edit'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text('Delete'),
+                                  ),
+                                ],
+                                icon: const Icon(
+                                  Icons.more_vert,
+                                  color: AppColors.textGrey,
                                 ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text('Delete'),
-                                ),
-                              ],
-                              icon: const Icon(
-                                Icons.more_vert,
-                                color: AppColors.textGrey,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -345,6 +397,79 @@ class ProductDashboard extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _recordTransaction(
+    BuildContext context,
+    WidgetRef ref,
+    int productId, {
+    required String transactionType,
+  }) async {
+    var quantityText = '';
+
+    final quantity = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) {
+        final formKey = GlobalKey<FormState>();
+
+        return AlertDialog(
+          title: Text(transactionType == 'IN' ? 'Add Stock' : 'Remove Stock'),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Quantity'),
+              onChanged: (value) => quantityText = value,
+              validator: (value) {
+                final parsed = int.tryParse(value ?? '');
+                if (parsed == null || parsed <= 0) {
+                  return 'Enter a valid positive quantity';
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState?.validate() ?? false) {
+                  Navigator.of(dialogContext).pop(int.parse(quantityText));
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (quantity == null) return;
+
+    final repository = ref.read(productInventoryRepositoryProvider);
+    try {
+      if (transactionType == 'IN') {
+        await repository.addTransaction(productId, quantity);
+      } else {
+        await repository.removeTransaction(productId, quantity);
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Inventory updated successfully')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update inventory: $e')),
+        );
+      }
+    }
   }
 }
 

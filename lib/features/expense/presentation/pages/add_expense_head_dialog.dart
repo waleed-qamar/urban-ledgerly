@@ -50,7 +50,7 @@ class _AddExpenseHeadDialogState extends ConsumerState<AddExpenseHeadDialog> {
 
     // Keep the old ID if editing, otherwise generate a new one
     final head = ExpenseHead(
-      id: widget.headToEdit?.id ?? DateTime.now().millisecondsSinceEpoch,
+      id: widget.headToEdit?.id ?? 0,
       name: _nameController.text.trim(),
       description: _descController.text.trim(),
       headType: HeadType.values.firstWhere((e) => e.value == _selectedType),

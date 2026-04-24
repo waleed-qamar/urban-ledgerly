@@ -220,8 +220,7 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
               final entry = LedgerEntity(
-                id: DateTime.now()
-                    .microsecondsSinceEpoch, // Supabase will assign
+                id: 0,
                 partyType: _selectedPartyType!,
                 partyId: _selectedPartyId!,
                 invoiceNumber: _invoiceNumberController.text,

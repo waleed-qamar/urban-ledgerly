@@ -62,7 +62,7 @@ class _AddVenderDialogState extends ConsumerState<AddVenderDialog> {
     setState(() => _isLoading = true);
 
     final vender = VendorEntity(
-      id: widget.venderToEdit?.id ?? DateTime.now().millisecondsSinceEpoch,
+      id: widget.venderToEdit?.id ?? 0,
       vendorName: _nameController.text.trim(),
       companyName: _companyController.text.trim(),
       contactNumber: _contactController.text.trim(),

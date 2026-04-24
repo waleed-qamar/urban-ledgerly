@@ -13,7 +13,8 @@ class VendorRemoteDatasource {
   }
 
   Future<void> addVender(VendorEntity vendor) async {
-    await _client.from('vendors').insert(vendor.toJson());
+    final payload = vendor.toJson()..remove('id');
+    await _client.from('vendors').insert(payload);
   }
 
   Future<void> updateVender(VendorEntity vendor) async {

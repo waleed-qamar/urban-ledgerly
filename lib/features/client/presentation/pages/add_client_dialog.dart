@@ -57,7 +57,7 @@ class _AddClientDialogState extends ConsumerState<AddClientDialog> {
     setState(() => _isLoading = true);
 
     final client = ClientEntity(
-      id: widget.clientToEdit?.id ?? DateTime.now().millisecondsSinceEpoch,
+      id: widget.clientToEdit?.id ?? 0,
       clientName: _nameController.text.trim(),
       contactNumber: _contactController.text.trim(),
       clientAddress: _addressController.text.trim(),

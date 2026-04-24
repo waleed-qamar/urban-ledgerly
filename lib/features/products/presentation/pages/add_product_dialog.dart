@@ -48,7 +48,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     setState(() => _isLoading = true);
 
     final product = ProductEntity(
-      id: widget.productToEdit?.id ?? DateTime.now().millisecondsSinceEpoch,
+      id: widget.productToEdit?.id ?? 0,
       name: _nameController.text.trim(),
       weight: double.parse(_weightController.text.trim()),
       description: _descriptionController.text.trim().isEmpty
