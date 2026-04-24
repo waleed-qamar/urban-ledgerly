@@ -1,0 +1,558 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ledgerly/core/theme/app_colors.dart';
+import 'package:ledgerly/features/client/domain/entities/client_entity.dart';
+import 'package:ledgerly/features/client/presentation/providers/client_providers.dart';
+import 'package:ledgerly/features/orders/domain/entities/order_entity.dart';
+import 'package:ledgerly/features/orders/domain/entities/order_item_entity.dart';
+import 'package:ledgerly/features/orders/presentation/providers/order_providers.dart';
+import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
+import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
+
+class AddOrderDialog extends ConsumerStatefulWidget {
+  const AddOrderDialog({super.key});
+
+  @override
+  ConsumerState<AddOrderDialog> createState() => _AddOrderDialogState();
+}
+
+class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _discountController = TextEditingController(
+    text: '0',
+  );
+  int? _selectedClientId;
+  String _status = 'pending';
+  bool _isSubmitting = false;
+  final List<_DraftOrderLine> _lines = [
+    _DraftOrderLine(quantity: 1, unitPrice: 0),
+  ];
+
+  @override
+  void dispose() {
+    _discountController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final clientsAsync = ref.watch(getAllClientsProvider);
+    final productsAsync = ref.watch(getAllProductsProvider);
+
+    return Dialog(
+      backgroundColor: AppColors.textWhite,
+      insetPadding: const EdgeInsets.all(24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: SizedBox(
+        width: 740,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: clientsAsync.when(
+            loading: () => const SizedBox(
+              height: 240,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (error, _) => SizedBox(
+              height: 240,
+              child: Center(
+                child: Text(
+                  'Unable to load clients: $error',
+                  style: const TextStyle(color: AppColors.errorText),
+                ),
+              ),
+            ),
+            data: (clients) {
+              return productsAsync.when(
+                loading: () => const SizedBox(
+                  height: 240,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (error, _) => SizedBox(
+                  height: 240,
+                  child: Center(
+                    child: Text(
+                      'Unable to load products: $error',
+                      style: const TextStyle(color: AppColors.errorText),
+                    ),
+                  ),
+                ),
+                data: (products) {
+                  return _buildContent(context, clients, products);
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    List<ClientEntity> clients,
+    List<ProductEntity> products,
+  ) {
+    final subtotal = _calculateSubtotal();
+    final discountPercent = _discountPercent;
+    final total = subtotal * (1 - discountPercent / 100);
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'New Order',
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+                ),
+              ),
+              IconButton(
+                onPressed: _isSubmitting
+                    ? null
+                    : () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<int>(
+                  initialValue: _selectedClientId,
+                  decoration: const InputDecoration(
+                    labelText: 'Customer',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: clients
+                      .map(
+                        (c) => DropdownMenuItem<int>(
+                          value: c.id,
+                          child: Text(c.clientName),
+                        ),
+                      )
+                      .toList(),
+                  validator: (value) =>
+                      value == null ? 'Select a customer' : null,
+                  onChanged: _isSubmitting
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _selectedClientId = value;
+                          });
+                        },
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  initialValue: _status,
+                  decoration: const InputDecoration(
+                    labelText: 'Status',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                    DropdownMenuItem(
+                      value: 'confirmed',
+                      child: Text('Confirmed'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'delivered',
+                      child: Text('Delivered'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'cancelled',
+                      child: Text('Cancelled'),
+                    ),
+                  ],
+                  onChanged: _isSubmitting
+                      ? null
+                      : (value) {
+                          if (value != null) {
+                            setState(() {
+                              _status = value;
+                            });
+                          }
+                        },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Product Details',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+              ),
+              TextButton.icon(
+                onPressed: _isSubmitting
+                    ? null
+                    : () {
+                        setState(() {
+                          _lines.add(
+                            _DraftOrderLine(quantity: 1, unitPrice: 0),
+                          );
+                        });
+                      },
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('Add Row'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Flexible(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 280),
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: _lines.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  return _OrderLineEditor(
+                    line: _lines[index],
+                    products: products,
+                    enabled: !_isSubmitting,
+                    onChanged: () => setState(() {}),
+                    onDelete: _lines.length == 1
+                        ? null
+                        : () {
+                            setState(() {
+                              _lines.removeAt(index);
+                            });
+                          },
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: 190,
+            child: TextFormField(
+              controller: _discountController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              enabled: !_isSubmitting,
+              decoration: const InputDecoration(
+                labelText: 'Discount %',
+                border: OutlineInputBorder(),
+                suffixText: '%',
+              ),
+              validator: (value) {
+                final parsed = double.tryParse((value ?? '').trim());
+                if (parsed == null || parsed < 0 || parsed > 100) {
+                  return '0 - 100';
+                }
+                return null;
+              },
+              onChanged: (_) => setState(() {}),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Estimated Total (after discount)',
+                      style: TextStyle(
+                        color: AppColors.textGrey,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'PKR ${total.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: _isSubmitting
+                    ? null
+                    : () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryDark,
+                  foregroundColor: AppColors.textWhite,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _isSubmitting
+                    ? null
+                    : () => _submit(context, products),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Create Order'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  double _calculateSubtotal() {
+    return _lines.fold<double>(0, (sum, line) {
+      return sum + (line.quantity * line.unitPrice);
+    });
+  }
+
+  double get _discountPercent {
+    final parsed = double.tryParse(_discountController.text.trim());
+    if (parsed == null) {
+      return 0;
+    }
+    if (parsed < 0) {
+      return 0;
+    }
+    if (parsed > 100) {
+      return 100;
+    }
+    return parsed;
+  }
+
+  Future<void> _submit(
+    BuildContext context,
+    List<ProductEntity> products,
+  ) async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final productById = {for (final p in products) p.id: p};
+    final items = <OrderItemEntity>[];
+
+    for (final line in _lines) {
+      final productId = line.productId;
+      if (productId == null) {
+        _showError('Each row must have a selected product.');
+        return;
+      }
+
+      final product = productById[productId];
+      if (product == null) {
+        _showError('One selected product no longer exists. Refresh and retry.');
+        return;
+      }
+
+      if (line.quantity <= 0) {
+        _showError('Quantity should be at least 1 in every row.');
+        return;
+      }
+
+      if (line.unitPrice <= 0) {
+        _showError('Price should be greater than 0 in every row.');
+        return;
+      }
+
+      final discountedUnitPrice = line.unitPrice * (1 - _discountPercent / 100);
+
+      items.add(
+        OrderItemEntity(
+          productId: productId,
+          quantity: line.quantity,
+          price: discountedUnitPrice,
+        ),
+      );
+    }
+
+    if (_selectedClientId == null) {
+      _showError('Please select a customer.');
+      return;
+    }
+
+    final order = OrderEntity(
+      customerId: _selectedClientId!,
+      items: items,
+      status: _status,
+    );
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await ref.read(addOrderProvider(order).future);
+      ref.invalidate(getAllOrdersProvider);
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pop();
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showError('Failed to create order: $error');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) {
+      return;
+    }
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) {
+      return;
+    }
+    messenger.showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: AppColors.errorText),
+    );
+  }
+}
+
+class _OrderLineEditor extends StatelessWidget {
+  const _OrderLineEditor({
+    required this.line,
+    required this.products,
+    required this.enabled,
+    required this.onChanged,
+    required this.onDelete,
+  });
+
+  final _DraftOrderLine line;
+  final List<ProductEntity> products;
+  final bool enabled;
+  final VoidCallback onChanged;
+  final VoidCallback? onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.lightBackground,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 4,
+            child: DropdownButtonFormField<int>(
+              initialValue: line.productId,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Product',
+              ),
+              items: products
+                  .map(
+                    (p) => DropdownMenuItem<int>(
+                      value: p.id,
+                      child: Text(p.name, overflow: TextOverflow.ellipsis),
+                    ),
+                  )
+                  .toList(),
+              validator: (value) => value == null ? 'Select product' : null,
+              onChanged: enabled
+                  ? (value) {
+                      line.productId = value;
+                      onChanged();
+                    }
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 110,
+            child: TextFormField(
+              initialValue: line.quantity.toString(),
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Qty',
+              ),
+              enabled: enabled,
+              validator: (value) {
+                final parsed = int.tryParse(value ?? '');
+                if (parsed == null || parsed <= 0) {
+                  return 'Invalid';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                line.quantity = int.tryParse(value) ?? 0;
+                onChanged();
+              },
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 118,
+            child: TextFormField(
+              // initialValue: line.unitPrice.toStringAsFixed(2),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Price',
+                prefixText: 'PKR ',
+              ),
+              enabled: enabled,
+              validator: (value) {
+                final parsed = double.tryParse((value ?? '').trim());
+                if (parsed == null || parsed <= 0) {
+                  return 'Invalid';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                line.unitPrice = double.tryParse(value) ?? 0;
+                onChanged();
+              },
+            ),
+          ),
+          const SizedBox(width: 6),
+          IconButton(
+            onPressed: enabled ? onDelete : null,
+            icon: const Icon(Icons.delete_outline),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DraftOrderLine {
+  _DraftOrderLine({required this.quantity, required this.unitPrice});
+
+  int? productId;
+  int quantity;
+  double unitPrice;
+}

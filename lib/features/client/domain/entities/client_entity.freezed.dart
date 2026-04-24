@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ClientEntity {
 
- int get id; String get clientName; String get contactNumber; String get clientAddress; String get department; DateTime get createdAt;// ignore: invalid_annotation_target
+ int get id; String get clientName; String get contactNumber; String get clientAddress; String get department; DateTime get createdAt;
 @JsonKey(name: 'is_active', defaultValue: true) bool get isActive;
 /// Create a copy of ClientEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -225,7 +225,6 @@ class _ClientEntity implements ClientEntity {
 @override final  String clientAddress;
 @override final  String department;
 @override final  DateTime createdAt;
-// ignore: invalid_annotation_target
 @override@JsonKey(name: 'is_active', defaultValue: true) final  bool isActive;
 
 /// Create a copy of ClientEntity

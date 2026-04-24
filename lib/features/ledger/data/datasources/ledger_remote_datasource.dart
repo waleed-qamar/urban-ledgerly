@@ -71,10 +71,24 @@ class LedgerRemoteDatasource {
 
       for (final row in response) {
         final amount = (row['amount'] as num?)?.toDouble() ?? 0.0;
-        if (row['entry_type'] == 'credit') {
-          balance += amount;
+        final entryType = row['entry_type'] as String?;
+
+        if (partyType == PartyType.client) {
+          // Client balance = how much client owes us.
+          // Debit increases receivable, credit decreases receivable.
+          if (entryType == 'debit') {
+            balance += amount;
+          } else {
+            balance -= amount;
+          }
         } else {
-          balance -= amount;
+          // Vendor balance = how much we owe vendor.
+          // Credit increases payable, debit decreases payable.
+          if (entryType == 'credit') {
+            balance += amount;
+          } else {
+            balance -= amount;
+          }
         }
       }
 

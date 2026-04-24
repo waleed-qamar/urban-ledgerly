@@ -40,6 +40,7 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
     super.initState();
     _selectedPartyType = widget.initialPartyType;
     _selectedPartyId = widget.initialPartyId;
+    _selectedEntryType = _defaultEntryTypeForParty(_selectedPartyType);
   }
 
   @override
@@ -98,6 +99,7 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                     setState(() {
                       _selectedPartyType = val;
                       _selectedPartyId = null;
+                      _selectedEntryType = _defaultEntryTypeForParty(val);
                     });
                   },
                   validator: (val) => val == null ? 'Required' : null,
@@ -108,7 +110,7 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                 if (_selectedPartyType == PartyType.client)
                   clientsAsync.when(
                     data: (clients) => DropdownButtonFormField<int>(
-                      value: _selectedPartyId,
+                      initialValue: _selectedPartyId,
                       decoration: const InputDecoration(labelText: 'Client'),
                       items: clients.map((c) {
                         return DropdownMenuItem(
@@ -121,12 +123,12 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                       validator: (val) => val == null ? 'Required' : null,
                     ),
                     loading: () => const CircularProgressIndicator(),
-                    error: (_, __) => const Text('Error loading clients'),
+                    error: (_, _) => const Text('Error loading clients'),
                   )
                 else if (_selectedPartyType == PartyType.vendor)
                   vendorsAsync.when(
                     data: (vendors) => DropdownButtonFormField<int>(
-                      value: _selectedPartyId,
+                      initialValue: _selectedPartyId,
                       decoration: const InputDecoration(labelText: 'Vendor'),
                       items: vendors.map((v) {
                         return DropdownMenuItem(
@@ -139,14 +141,14 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                       validator: (val) => val == null ? 'Required' : null,
                     ),
                     loading: () => const CircularProgressIndicator(),
-                    error: (_, __) => const Text('Error loading vendors'),
+                    error: (_, _) => const Text('Error loading vendors'),
                   ),
 
                 const SizedBox(height: 16),
 
                 // Entry Type
                 DropdownButtonFormField<EntryType>(
-                  value: _selectedEntryType,
+                  initialValue: _selectedEntryType,
                   decoration: const InputDecoration(labelText: 'Entry Type'),
                   items: EntryType.values.map((type) {
                     return DropdownMenuItem(
@@ -155,6 +157,17 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                     );
                   }).toList(),
                   onChanged: (val) => setState(() => _selectedEntryType = val!),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _entryTypeHint(),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textGrey,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -252,5 +265,25 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
         ),
       ],
     );
+  }
+
+  String _entryTypeHint() {
+    if (_selectedPartyType == PartyType.client) {
+      return 'Client Credit = money received, Client Debit = order/charge added.';
+    }
+
+    if (_selectedPartyType == PartyType.vendor) {
+      return 'Vendor Credit = amount we owe vendor, Vendor Debit = payment made.';
+    }
+
+    return 'Select a party type to see how Credit/Debit affects the balance.';
+  }
+
+  EntryType _defaultEntryTypeForParty(PartyType? partyType) {
+    if (partyType == PartyType.vendor) {
+      return EntryType.debit;
+    }
+
+    return EntryType.credit;
   }
 }

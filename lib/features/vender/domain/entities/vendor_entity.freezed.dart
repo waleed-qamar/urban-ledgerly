@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$VendorEntity {
 
- int get id; String get vendorName; String get vendorAddress; String get vendorNotes; String get companyName; String get contactNumber; DateTime get createdAt;// ignore: invalid_annotation_target
+ int get id; String get vendorName; String get vendorAddress; String get vendorNotes; String get companyName; String get contactNumber; DateTime get createdAt;
 @JsonKey(name: 'is_active', defaultValue: true) bool get isActive;
 /// Create a copy of VendorEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -227,7 +227,6 @@ class _VendorEntity implements VendorEntity {
 @override final  String companyName;
 @override final  String contactNumber;
 @override final  DateTime createdAt;
-// ignore: invalid_annotation_target
 @override@JsonKey(name: 'is_active', defaultValue: true) final  bool isActive;
 
 /// Create a copy of VendorEntity

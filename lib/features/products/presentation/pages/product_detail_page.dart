@@ -111,7 +111,7 @@ class ProductDetailPage extends ConsumerWidget {
                               )
                             : ListView.separated(
                                 itemCount: transactions.length,
-                                separatorBuilder: (_, __) =>
+                                separatorBuilder: (_, _) =>
                                     const SizedBox(height: 12),
                                 itemBuilder: (context, index) {
                                   final transaction = transactions[index];

@@ -71,13 +71,11 @@ class LedgerDetailsPage extends ConsumerWidget {
                       const SizedBox(height: 8),
                       balanceAsync.when(
                         data: (balance) => Text(
-                          balance.toStringAsFixed(2),
+                          balance.abs().toStringAsFixed(2),
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: partyType == PartyType.client
-                                ? AppColors.successText
-                                : AppColors.errorText,
+                            color: _balanceColorForParty(partyType: partyType),
                           ),
                         ),
                         loading: () => const CircularProgressIndicator(),
@@ -114,6 +112,13 @@ class LedgerDetailsPage extends ConsumerWidget {
             ),
 
             const SizedBox(height: 32),
+            Text(
+              partyType == PartyType.client
+                  ? 'This is how much the client owes you.'
+                  : 'This is how much you owe this vendor.',
+              style: const TextStyle(color: AppColors.textGrey, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
             const Text(
               'Transactions',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -133,7 +138,11 @@ class LedgerDetailsPage extends ConsumerWidget {
                         const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final entry = entries[index];
-                      final isDebit = entry.entryType == EntryType.debit;
+                      final signedAmount = _signedEffect(
+                        partyType: partyType,
+                        entryType: entry.entryType,
+                        amount: entry.amount,
+                      );
 
                       return ListTile(
                         contentPadding: const EdgeInsets.symmetric(vertical: 8),
@@ -147,12 +156,12 @@ class LedgerDetailsPage extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              '${isDebit ? "-" : "+"}${entry.amount.toStringAsFixed(2)}',
+                              '${signedAmount >= 0 ? "+" : "-"}${signedAmount.abs().toStringAsFixed(2)}',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: isDebit
-                                    ? AppColors.errorText
-                                    : AppColors.successText,
+                                color: _balanceColorForParty(
+                                  partyType: partyType,
+                                ),
                               ),
                             ),
                           ],
@@ -188,5 +197,25 @@ class LedgerDetailsPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  static double _signedEffect({
+    required PartyType partyType,
+    required EntryType entryType,
+    required double amount,
+  }) {
+    if (partyType == PartyType.client) {
+      // Client owes us more on debit, less on credit.
+      return entryType == EntryType.debit ? amount : -amount;
+    }
+
+    // We owe vendor more on credit, less on debit.
+    return entryType == EntryType.credit ? amount : -amount;
+  }
+
+  static Color _balanceColorForParty({required PartyType partyType}) {
+    return partyType == PartyType.client
+        ? AppColors.successText
+        : AppColors.errorText;
   }
 }

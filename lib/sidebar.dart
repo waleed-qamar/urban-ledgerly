@@ -1,5 +1,6 @@
 // features/expense/presentation/views/sidebar.dart
 import 'package:flutter/material.dart';
+import 'package:ledgerly/features/orders/presentation/pages/order_dashboard.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_dashboard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'features/client/presentation/pages/client_dashboard_view.dart';
@@ -20,6 +21,7 @@ class _MainLayoutState extends State<MainLayout> {
   // Placeholder for future modules
   final List<Widget> _pages = [
     const LedgerPage(),
+    const OrderDashboard(),
     const ClientDashboardView(),
     const VenderDashboardView(),
     const ProductDashboard(),
@@ -74,6 +76,11 @@ class _MainLayoutState extends State<MainLayout> {
                 icon: Icon(Icons.book_outlined),
                 selectedIcon: Icon(Icons.book),
                 label: Text('Ledger'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.receipt_long_outlined),
+                selectedIcon: Icon(Icons.receipt_long),
+                label: Text('Orders'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.dashboard_outlined),

@@ -324,15 +324,22 @@ class _PartyTile extends ConsumerWidget {
                           fontSize: 12,
                         ),
                       ),
+                      Text(
+                        item.type == PartyType.client
+                            ? 'Client owes you'
+                            : 'You owe vendor',
+                        style: const TextStyle(
+                          color: AppColors.textGrey,
+                          fontSize: 11,
+                        ),
+                      ),
                       balanceAsync.when(
                         data: (balance) => Text(
-                          balance.toStringAsFixed(2),
+                          balance.abs().toStringAsFixed(2),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: item.type == PartyType.client
-                                ? AppColors.successText
-                                : AppColors.errorText,
+                            color: _balanceColorForParty(partyType: item.type),
                           ),
                         ),
                         loading: () => const SizedBox(
@@ -356,5 +363,11 @@ class _PartyTile extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  static Color _balanceColorForParty({required PartyType partyType}) {
+    return partyType == PartyType.client
+        ? AppColors.successText
+        : AppColors.errorText;
   }
 }
