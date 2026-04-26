@@ -43,3 +43,4 @@ Future<void> updateOrder(Ref ref, OrderEntity order) {
 Future<OrderEntity> getOrderById(Ref ref, int id) {
   return ref.watch(orderRepositoryProvider).getOrderById(id);
 }
+

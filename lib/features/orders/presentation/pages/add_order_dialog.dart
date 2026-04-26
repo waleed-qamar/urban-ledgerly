@@ -5,7 +5,9 @@ import 'package:ledgerly/features/client/domain/entities/client_entity.dart';
 import 'package:ledgerly/features/client/presentation/providers/client_providers.dart';
 import 'package:ledgerly/features/orders/domain/entities/order_entity.dart';
 import 'package:ledgerly/features/orders/domain/entities/order_item_entity.dart';
+import 'package:ledgerly/features/orders/domain/entities/supplier_entity.dart';
 import 'package:ledgerly/features/orders/presentation/providers/order_providers.dart';
+import 'package:ledgerly/features/orders/presentation/providers/supplier_providers.dart';
 import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
 
@@ -21,7 +23,12 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
   final TextEditingController _discountController = TextEditingController(
     text: '0',
   );
+  final TextEditingController _orderDateController = TextEditingController();
+  final TextEditingController _departmentController = TextEditingController();
+  final TextEditingController _poController = TextEditingController();
+  int? _selectedSupplierId;
   int? _selectedClientId;
+  DateTime _orderDate = DateUtils.dateOnly(DateTime.now());
   String _status = 'pending';
   bool _isSubmitting = false;
   final List<_DraftOrderLine> _lines = [
@@ -29,14 +36,24 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _orderDateController.text = _formatDate(_orderDate);
+  }
+
+  @override
   void dispose() {
     _discountController.dispose();
+    _orderDateController.dispose();
+    _departmentController.dispose();
+    _poController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final clientsAsync = ref.watch(getAllClientsProvider);
+    final suppliersAsync = ref.watch(getAllSuppliersProvider);
     final productsAsync = ref.watch(getAllProductsProvider);
 
     return Dialog(
@@ -62,7 +79,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
               ),
             ),
             data: (clients) {
-              return productsAsync.when(
+              return suppliersAsync.when(
                 loading: () => const SizedBox(
                   height: 240,
                   child: Center(child: CircularProgressIndicator()),
@@ -71,13 +88,35 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                   height: 240,
                   child: Center(
                     child: Text(
-                      'Unable to load products: $error',
+                      'Unable to load suppliers: $error',
                       style: const TextStyle(color: AppColors.errorText),
                     ),
                   ),
                 ),
-                data: (products) {
-                  return _buildContent(context, clients, products);
+                data: (suppliers) {
+                  return productsAsync.when(
+                    loading: () => const SizedBox(
+                      height: 240,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (error, _) => SizedBox(
+                      height: 240,
+                      child: Center(
+                        child: Text(
+                          'Unable to load products: $error',
+                          style: const TextStyle(color: AppColors.errorText),
+                        ),
+                      ),
+                    ),
+                    data: (products) {
+                      return _buildContent(
+                        context,
+                        clients,
+                        suppliers,
+                        products,
+                      );
+                    },
+                  );
                 },
               );
             },
@@ -90,11 +129,13 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
   Widget _buildContent(
     BuildContext context,
     List<ClientEntity> clients,
+    List<SupplierEntity> suppliers,
     List<ProductEntity> products,
   ) {
     final subtotal = _calculateSubtotal();
     final discountPercent = _discountPercent;
     final total = subtotal * (1 - discountPercent / 100);
+    final selectedSupplier = _supplierForId(suppliers, _selectedSupplierId);
 
     return Form(
       key: _formKey,
@@ -123,9 +164,39 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<int>(
+                  initialValue: _selectedSupplierId,
+                  decoration: const InputDecoration(
+                    labelText: 'Supplier',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: suppliers
+                      .map(
+                        (supplier) => DropdownMenuItem<int>(
+                          value: supplier.id,
+                          child: Text(
+                            supplier.name,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  validator: (value) =>
+                      value == null ? 'Select a Supplier' : null,
+                  onChanged: _isSubmitting
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _selectedSupplierId = value;
+                          });
+                        },
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: DropdownButtonFormField<int>(
                   initialValue: _selectedClientId,
                   decoration: const InputDecoration(
-                    labelText: 'Customer',
+                    labelText: 'Client',
                     border: OutlineInputBorder(),
                   ),
                   items: clients
@@ -137,7 +208,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                       )
                       .toList(),
                   validator: (value) =>
-                      value == null ? 'Select a customer' : null,
+                      value == null ? 'Select a Client' : null,
                   onChanged: _isSubmitting
                       ? null
                       : (value) {
@@ -147,40 +218,100 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                         },
                 ),
               ),
-              const SizedBox(width: 14),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (selectedSupplier != null)
+            _SupplierDetailsCard(supplier: selectedSupplier),
+          if (selectedSupplier != null) const SizedBox(height: 16),
+          Row(
+            children: [
               Expanded(
-                child: DropdownButtonFormField<String>(
-                  initialValue: _status,
+                child: TextFormField(
+                  controller: _poController,
+                  enabled: !_isSubmitting,
                   decoration: const InputDecoration(
-                    labelText: 'Status',
+                    labelText: 'PO',
                     border: OutlineInputBorder(),
                   ),
-                  items: const [
-                    DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                    DropdownMenuItem(
-                      value: 'confirmed',
-                      child: Text('Confirmed'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'delivered',
-                      child: Text('Delivered'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'cancelled',
-                      child: Text('Cancelled'),
-                    ),
-                  ],
-                  onChanged: _isSubmitting
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                // width: 240,
+                child: TextFormField(
+                  controller: _orderDateController,
+                  readOnly: true,
+                  enabled: !_isSubmitting,
+                  decoration: const InputDecoration(
+                    labelText: 'Order Date',
+                    border: OutlineInputBorder(),
+                    suffixIcon: Icon(Icons.calendar_today_outlined),
+                  ),
+                  onTap: _isSubmitting
                       ? null
-                      : (value) {
-                          if (value != null) {
-                            setState(() {
-                              _status = value;
-                            });
+                      : () async {
+                          final selectedDate = await showDatePicker(
+                            context: context,
+                            initialDate: _orderDate,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+
+                          if (selectedDate == null) {
+                            return;
                           }
+
+                          setState(() {
+                            _orderDate = DateUtils.dateOnly(selectedDate);
+                            _orderDateController.text = _formatDate(_orderDate);
+                          });
                         },
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _departmentController,
+                  enabled: !_isSubmitting,
+                  decoration: const InputDecoration(
+                    labelText: 'Department',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Enter a Department'
+                      : null,
+                ),
+              ),
+              // Expanded(
+              //   child: DropdownButtonFormField<String>(
+              //     initialValue: _status,
+              //     decoration: const InputDecoration(
+              //       labelText: 'Status',
+              //       border: OutlineInputBorder(),
+              //     ),
+              //     items: const [
+              //       DropdownMenuItem(value: 'pending', child: Text('Pending')),
+              //       DropdownMenuItem(
+              //         value: 'completed',
+              //         child: Text('Completed'),
+              //       ),
+              //     ],
+              //     onChanged: _isSubmitting
+              //         ? null
+              //         : (value) {
+              //             if (value != null) {
+              //               setState(() {
+              //                 _status = value;
+              //               });
+              //             }
+              //           },
+              //   ),
+              // ),
             ],
           ),
           const SizedBox(height: 20),
@@ -351,6 +482,8 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
 
     final productById = {for (final p in products) p.id: p};
     final items = <OrderItemEntity>[];
+    final _department = _departmentController.text.trim();
+    final _po = _poController.text.trim();
 
     for (final line in _lines) {
       final productId = line.productId;
@@ -387,14 +520,28 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
     }
 
     if (_selectedClientId == null) {
-      _showError('Please select a customer.');
+      _showError('Please select a Client.');
+      return;
+    }
+
+    if (_selectedSupplierId == null) {
+      _showError('Please select a Supplier.');
+      return;
+    }
+
+    if (_department.isEmpty) {
+      _showError('Please enter a Department.');
       return;
     }
 
     final order = OrderEntity(
-      customerId: _selectedClientId!,
+      supplierId: _selectedSupplierId!,
+      clientId: _selectedClientId!,
       items: items,
       status: _status,
+      department: _department,
+      po: _po.isEmpty ? null : _po,
+      createdAt: _orderDate,
     );
 
     setState(() {
@@ -432,6 +579,93 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
     }
     messenger.showSnackBar(
       SnackBar(content: Text(message), backgroundColor: AppColors.errorText),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  SupplierEntity? _supplierForId(List<SupplierEntity> suppliers, int? id) {
+    if (id == null) {
+      return null;
+    }
+    for (final supplier in suppliers) {
+      if (supplier.id == id) {
+        return supplier;
+      }
+    }
+    return null;
+  }
+}
+
+class _SupplierDetailsCard extends StatelessWidget {
+  const _SupplierDetailsCard({required this.supplier});
+
+  final SupplierEntity supplier;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.lightBackground,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColors.dividerColor.withValues(alpha: 0.45),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            supplier.name,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 10),
+          _DetailRow(label: 'Address', value: supplier.address),
+          _DetailRow(label: 'Contact', value: supplier.contactInfo ?? '-'),
+          _DetailRow(label: 'STRN', value: supplier.strnNo ?? '-'),
+          _DetailRow(label: 'NTN', value: supplier.ntn ?? '-'),
+          _DetailRow(label: 'Delivery Terms', value: supplier.deliveryTerms),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColors.textGrey,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

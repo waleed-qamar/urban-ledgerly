@@ -8,6 +8,11 @@ import 'package:ledgerly/features/orders/presentation/pages/add_order_dialog.dar
 import 'package:ledgerly/features/orders/presentation/pages/order_details_page.dart';
 import 'package:ledgerly/features/orders/presentation/providers/order_providers.dart';
 
+// ---------------------------------------------------------------------------
+// Shared order statuses used across dashboard & details page
+// ---------------------------------------------------------------------------
+const _kOrderStatuses = [('pending', 'Pending'), ('completed', 'Completed')];
+
 class OrderDashboard extends ConsumerStatefulWidget {
   const OrderDashboard({super.key});
 
@@ -84,7 +89,7 @@ class _OrderDashboardState extends ConsumerState<OrderDashboard> {
                     orders: filtered,
                     clientsById: clientsById,
                     onTap: (order) {
-                      final selectedClient = clientsById[order.customerId];
+                      final selectedClient = clientsById[order.clientId];
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => OrderDetailsPage(
@@ -120,11 +125,11 @@ class _OrderDashboardState extends ConsumerState<OrderDashboard> {
         return true;
       }
 
-      final client = clientsById[order.customerId];
-      final customerLabel = client?.clientName.toLowerCase() ?? '';
+      final client = clientsById[order.clientId];
+      final clientLabel = client?.clientName.toLowerCase() ?? '';
       final orderLabel = order.id?.toString() ?? '';
 
-      return customerLabel.contains(query) || orderLabel.contains(query);
+      return clientLabel.contains(query) || orderLabel.contains(query);
     }).toList();
   }
 
@@ -271,9 +276,7 @@ class _FilterBar extends StatelessWidget {
               items: const [
                 DropdownMenuItem(value: 'all', child: Text('All Statuses')),
                 DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                DropdownMenuItem(value: 'confirmed', child: Text('Confirmed')),
-                DropdownMenuItem(value: 'cancelled', child: Text('Cancelled')),
-                DropdownMenuItem(value: 'delivered', child: Text('Delivered')),
+                DropdownMenuItem(value: 'confirmed', child: Text('Completed')),
               ],
               onChanged: (value) {
                 if (value != null) {
@@ -288,7 +291,7 @@ class _FilterBar extends StatelessWidget {
   }
 }
 
-class _OrdersList extends StatelessWidget {
+class _OrdersList extends ConsumerWidget {
   const _OrdersList({
     required this.orders,
     required this.clientsById,
@@ -300,13 +303,13 @@ class _OrdersList extends StatelessWidget {
   final ValueChanged<OrderEntity> onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListView.separated(
       itemCount: orders.length,
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final order = orders[index];
-        final client = clientsById[order.customerId];
+        final client = clientsById[order.clientId];
         final total = order.items.fold<double>(
           0,
           (sum, item) => sum + item.price * item.quantity,
@@ -329,13 +332,13 @@ class _OrdersList extends StatelessWidget {
                 SizedBox(
                   width: 140,
                   child: Text(
-                    '#AL-${order.id ?? '---'}',
+                    '#ORD-${order.id ?? '---'}',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
                 Expanded(
                   child: Text(
-                    client?.clientName ?? 'Client #${order.customerId}',
+                    client?.clientName ?? 'Client #${order.clientId}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -359,7 +362,12 @@ class _OrdersList extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                _StatusPill(status: order.status ?? 'pending'),
+                // Tapping the pill shows the status change menu; stops
+                // the InkWell from also navigating to details.
+                GestureDetector(
+                  onTap: () {}, // absorb tap so InkWell doesn't fire
+                  child: _StatusPill(order: order, ref: ref),
+                ),
               ],
             ),
           ),
@@ -369,40 +377,114 @@ class _OrdersList extends StatelessWidget {
   }
 }
 
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.status});
+/// Resolves status → colors for shared use across this file.
+(Color bg, Color fg) _statusColors(String status) {
+  final normalized = status.toLowerCase();
+  if (normalized == 'completed') {
+    return (Colors.green.shade50, Colors.green.shade700);
+  } else if (normalized == 'pending') {
+    return (Colors.orange.shade50, Colors.orange.shade800);
+  }
+  // pending (default)
+  return (Colors.orange.shade50, Colors.orange.shade800);
+}
 
-  final String status;
+/// An interactive status pill shown in the orders list.
+/// Tapping it presents a popup menu to change the order's status.
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.order, required this.ref});
+
+  final OrderEntity order;
+  final WidgetRef ref;
+
+  Future<void> _changeStatus(BuildContext context, String newStatus) async {
+    if (newStatus == (order.status ?? 'pending')) return;
+    // Read the repo BEFORE any await so we hold a stable reference
+    // that won't be disposed mid-flight.
+    final repo = ref.read(orderRepositoryProvider);
+    try {
+      final existing = await repo.getOrderById(order.id!);
+      await repo.updateOrder(existing.copyWith(status: newStatus));
+      // Invalidate the list so it reloads with the new status.
+      ref.invalidate(getAllOrdersProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update status: $e'),
+            backgroundColor: AppColors.errorText,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final normalized = status.toLowerCase();
-    Color bg = AppColors.lightBackground;
-    Color fg = AppColors.textGrey;
+    final status = order.status ?? 'pending';
+    final (bg, fg) = _statusColors(status);
 
-    if (normalized == 'delivered') {
-      bg = Colors.green.shade50;
-      fg = Colors.green.shade700;
-    } else if (normalized == 'pending') {
-      bg = Colors.orange.shade50;
-      fg = Colors.orange.shade800;
-    } else if (normalized == 'confirmed') {
-      bg = Colors.blue.shade50;
-      fg = Colors.blue.shade700;
-    } else if (normalized == 'cancelled') {
-      bg = Colors.red.shade50;
-      fg = Colors.red.shade700;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        status.toUpperCase(),
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: fg),
+    return PopupMenuButton<String>(
+      tooltip: 'Change status',
+      onSelected: (value) => _changeStatus(context, value),
+      offset: const Offset(0, 36),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      itemBuilder: (_) => _kOrderStatuses
+          .map(
+            (s) => PopupMenuItem<String>(
+              value: s.$1,
+              child: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _statusColors(s.$1).$2,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    s.$2,
+                    style: TextStyle(
+                      fontWeight: s.$1 == status
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: s.$1 == status
+                          ? _statusColors(s.$1).$2
+                          : AppColors.textBlack87,
+                    ),
+                  ),
+                  if (s.$1 == status) ...[
+                    const Spacer(),
+                    Icon(Icons.check, size: 14, color: _statusColors(s.$1).$2),
+                  ],
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              status.toUpperCase(),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: fg,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.arrow_drop_down, size: 14, color: fg),
+          ],
+        ),
       ),
     );
   }

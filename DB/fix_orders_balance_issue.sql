@@ -53,7 +53,7 @@ $$;
 -- 4) Keep a strict, current schema for orders and order_items
 create table if not exists public.orders (
   id bigint generated always as identity primary key,
-  customer_id bigint not null,
+  client_id bigint not null,
   status text default 'pending',
   created_at timestamp with time zone default now()
 );

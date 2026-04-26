@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class OrderRemoteDatasource {
   final SupabaseClient _client;
   static const String _orderSelect =
-      'id, customerId:customer_id, status, createdAt:created_at, '
+      'id, supplierId:supplier_id, clientId:client_id, status, department, po, createdAt:created_at, '
       'items:order_items(id, productId:product_id, quantity, price)';
 
   OrderRemoteDatasource(this._client);
@@ -14,8 +14,12 @@ class OrderRemoteDatasource {
     final orderRes = await _client
         .from('orders')
         .insert({
-          'customer_id': order.customerId,
+          'supplier_id': order.supplierId,
+          'client_id': order.clientId,
           'status': order.status ?? 'pending',
+          'department': order.department,
+          'po': order.po,
+          'created_at': order.createdAt?.toIso8601String(),
         })
         .select('id')
         .single();
@@ -43,7 +47,12 @@ class OrderRemoteDatasource {
   }
 
   Future<void> updateOrder(OrderEntity orderData) async {
-    final payload = <String, dynamic>{'customer_id': orderData.customerId};
+    final payload = <String, dynamic>{
+      'supplier_id': orderData.supplierId,
+      'client_id': orderData.clientId,
+      'department': orderData.department,
+      'po': orderData.po,
+    };
     if (orderData.status != null) {
       payload['status'] = orderData.status;
     }

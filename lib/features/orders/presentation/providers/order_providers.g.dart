@@ -189,7 +189,7 @@ final class AddOrderProvider
   }
 }
 
-String _$addOrderHash() => r'0dd417328bacbca1416be0616f1da61a0d82426c';
+String _$addOrderHash() => r'f1927e04364c071c6619eed5e46cf3da3c30753c';
 
 final class AddOrderFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<void>, OrderEntity> {

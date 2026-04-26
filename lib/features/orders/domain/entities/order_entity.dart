@@ -9,9 +9,12 @@ part 'order_entity.g.dart';
 abstract class OrderEntity with _$OrderEntity {
   const factory OrderEntity({
     int? id,
-    required int customerId,
+    required int supplierId,
+    required int clientId,
     required List<OrderItemEntity> items,
     String? status,
+    String? department,
+    String? po,
     DateTime? createdAt,
   }) = _OrderEntity;
 
