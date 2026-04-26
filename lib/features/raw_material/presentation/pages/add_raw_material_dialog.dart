@@ -1,43 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
-import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
+import 'package:ledgerly/features/raw_material/domain/entities/raw_material_entity.dart';
 
-import '../providers/product_providers.dart';
+import '../providers/raw_material_providers.dart';
 
-class AddProductDialog extends ConsumerStatefulWidget {
-  final ProductEntity? productToEdit;
-  const AddProductDialog({super.key, this.productToEdit});
+class AddRawMaterialDialog extends ConsumerStatefulWidget {
+  final RawMaterialEntity? materialToEdit;
+  const AddRawMaterialDialog({super.key, this.materialToEdit});
 
   @override
-  ConsumerState<AddProductDialog> createState() => _AddProductDialogState();
+  ConsumerState<AddRawMaterialDialog> createState() => _AddRawMaterialDialogState();
 }
 
-class _AddProductDialogState extends ConsumerState<AddProductDialog> {
+class _AddRawMaterialDialogState extends ConsumerState<AddRawMaterialDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
-  late final TextEditingController _weightController;
+  late final TextEditingController _priceController;
   late final TextEditingController _descriptionController;
 
   bool _isLoading = false;
+  
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(
-      text: widget.productToEdit?.name ?? '',
+      text: widget.materialToEdit?.name ?? '',
     );
-    _weightController = TextEditingController(
-      text: widget.productToEdit?.weight.toString() ?? '',
+    _priceController = TextEditingController(
+      text: widget.materialToEdit?.price.toString() ?? '',
     );
     _descriptionController = TextEditingController(
-      text: widget.productToEdit?.description ?? '',
+      text: widget.materialToEdit?.description ?? '',
     );
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _weightController.dispose();
+    _priceController.dispose();
     _descriptionController.dispose();
 
     super.dispose();
@@ -47,23 +48,23 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    final product = ProductEntity(
-      id: widget.productToEdit?.id ?? 0,
+    final material = RawMaterialEntity(
+      id: widget.materialToEdit?.id ?? 0,
       name: _nameController.text.trim(),
-      weight: double.parse(_weightController.text.trim()),
+      price: double.parse(_priceController.text.trim()),
       description: _descriptionController.text.trim().isEmpty
           ? null
           : _descriptionController.text.trim(),
-      createdAt: widget.productToEdit?.createdAt ?? DateTime.now(),
+      createdAt: widget.materialToEdit?.createdAt ?? DateTime.now(),
     );
     try {
-      if (widget.productToEdit != null) {
-        await ref.read(productRepositoryProvider).updateProduct(product);
+      if (widget.materialToEdit != null) {
+        await ref.read(rawMaterialRepositoryProvider).updateRawMaterial(material);
       } else {
-        await ref.read(productRepositoryProvider).addProduct(product);
+        await ref.read(rawMaterialRepositoryProvider).addRawMaterial(material);
       }
 
-      ref.invalidate(getAllProductsProvider);
+      ref.invalidate(getAllRawMaterialsProvider);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -81,7 +82,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     return AlertDialog(
       backgroundColor: AppColors.textWhite,
       title: Text(
-        widget.productToEdit != null ? 'Edit Product' : 'Add Product',
+        widget.materialToEdit != null ? 'Edit Raw Material' : 'Add Raw Material',
       ),
       content: SizedBox(
         width: 400,
@@ -92,21 +93,21 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Product Name'),
+                decoration: const InputDecoration(labelText: 'Material Name'),
                 validator: (value) =>
                     value == null || value.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _weightController,
-                decoration: const InputDecoration(labelText: 'Weight'),
+                controller: _priceController,
+                decoration: const InputDecoration(labelText: 'Estimated Average Price'),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return 'Required';
-                  final weight = double.tryParse(value.trim());
-                  if (weight == null || weight <= 0) {
+                  final price = double.tryParse(value.trim());
+                  if (price == null || price <= 0) {
                     return 'Enter a valid positive number';
                   }
                   return null;
@@ -129,7 +130,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         ),
         ElevatedButton(
           onPressed: _isLoading ? null : _submit,
-          child: Text(widget.productToEdit != null ? 'Update' : 'Add'),
+          child: Text(widget.materialToEdit != null ? 'Update' : 'Add'),
         ),
       ],
     );

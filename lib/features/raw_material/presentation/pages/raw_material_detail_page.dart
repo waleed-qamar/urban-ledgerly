@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
-import 'package:ledgerly/features/products/domain/entities/inventory_transaction_entity.dart';
-import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
-import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
+import 'package:ledgerly/core/inventory/domain/entities/inventory_transaction_entity.dart';
+import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
+import 'package:ledgerly/features/raw_material/domain/entities/raw_material_entity.dart';
 
-class ProductDetailPage extends ConsumerWidget {
-  final ProductEntity product;
+class RawMaterialDetailPage extends ConsumerWidget {
+  final RawMaterialEntity material;
 
-  const ProductDetailPage({super.key, required this.product});
+  const RawMaterialDetailPage({super.key, required this.material});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transactionsAsync = ref.watch(
-      inventoryTransactionsByProductProvider(product.id),
+      inventoryTransactionsForItemProvider(material.id, 'RAW_MATERIAL'),
     );
 
     return Scaffold(
@@ -22,14 +22,14 @@ class ProductDetailPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.textWhite,
         foregroundColor: AppColors.textBlack,
-        title: const Text('Product Details'),
+        title: const Text('Material Details'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _ProductHeaderCard(product: product),
+            _MaterialHeaderCard(material: material),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -160,8 +160,8 @@ class ProductDetailPage extends ConsumerWidget {
     final quantityController = TextEditingController(
       text: transaction.quantity.toString(),
     );
-    final remarksController = TextEditingController(
-      text: transaction.remarks ?? '',
+    final notesController = TextEditingController(
+      text: transaction.notes ?? '',
     );
     var transactionType = transaction.transactionType.toUpperCase();
 
@@ -181,7 +181,7 @@ class ProductDetailPage extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       DropdownButtonFormField<String>(
-                        value: transactionType,
+                        initialValue: transactionType,
                         decoration: const InputDecoration(
                           labelText: 'Transaction Type',
                         ),
@@ -225,9 +225,9 @@ class ProductDetailPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        controller: remarksController,
+                        controller: notesController,
                         decoration: const InputDecoration(
-                          labelText: 'Remarks (optional)',
+                          labelText: 'Notes (optional)',
                         ),
                         maxLines: 2,
                       ),
@@ -257,21 +257,22 @@ class ProductDetailPage extends ConsumerWidget {
       if (shouldSave != true) return;
 
       final quantity = int.parse(quantityController.text.trim());
-      final remarks = remarksController.text.trim().isEmpty
+      final notes = notesController.text.trim().isEmpty
           ? null
-          : remarksController.text.trim();
+          : notesController.text.trim();
 
       await ref.read(
         updateInventoryTransactionProvider(
           transaction.id,
-          transaction.productId,
           quantity,
           transactionType,
-          remarks,
+          notes: notes,
         ).future,
       );
 
-      ref.invalidate(inventoryTransactionsByProductProvider(product.id));
+      ref.invalidate(
+        inventoryTransactionsForItemProvider(material.id, 'RAW_MATERIAL'),
+      );
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -286,7 +287,7 @@ class ProductDetailPage extends ConsumerWidget {
       }
     } finally {
       quantityController.dispose();
-      remarksController.dispose();
+      notesController.dispose();
     }
   }
 
@@ -324,7 +325,9 @@ class ProductDetailPage extends ConsumerWidget {
     try {
       await ref.read(deleteInventoryTransactionProvider(transaction.id).future);
 
-      ref.invalidate(inventoryTransactionsByProductProvider(product.id));
+      ref.invalidate(
+        inventoryTransactionsForItemProvider(material.id, 'RAW_MATERIAL'),
+      );
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -346,7 +349,7 @@ class ProductDetailPage extends ConsumerWidget {
     required String transactionType,
   }) async {
     var quantityText = '';
-    var remarksText = '';
+    var notesText = '';
 
     final quantity = await showDialog<int>(
       context: context,
@@ -376,10 +379,10 @@ class ProductDetailPage extends ConsumerWidget {
                 const SizedBox(height: 12),
                 TextFormField(
                   decoration: const InputDecoration(
-                    labelText: 'Remarks (optional)',
+                    labelText: 'Notes (optional)',
                   ),
                   maxLines: 2,
-                  onChanged: (value) => remarksText = value,
+                  onChanged: (value) => notesText = value,
                 ),
               ],
             ),
@@ -403,17 +406,29 @@ class ProductDetailPage extends ConsumerWidget {
     );
 
     if (quantity == null) return;
-    final remarks = remarksText.trim().isEmpty ? null : remarksText.trim();
+    final notes = notesText.trim().isEmpty ? null : notesText.trim();
 
-    final repository = ref.read(productInventoryRepositoryProvider);
+    final repository = ref.read(inventoryRepositoryProvider);
     try {
       if (transactionType == 'IN') {
-        await repository.addTransaction(product.id, quantity, remarks);
+        await repository.recordIn(
+          material.id,
+          'RAW_MATERIAL',
+          quantity,
+          notes: notes,
+        );
       } else {
-        await repository.removeTransaction(product.id, quantity, remarks);
+        await repository.recordOut(
+          material.id,
+          'RAW_MATERIAL',
+          quantity,
+          notes: notes,
+        );
       }
 
-      ref.invalidate(inventoryTransactionsByProductProvider(product.id));
+      ref.invalidate(
+        inventoryTransactionsForItemProvider(material.id, 'RAW_MATERIAL'),
+      );
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -430,10 +445,10 @@ class ProductDetailPage extends ConsumerWidget {
   }
 }
 
-class _ProductHeaderCard extends StatelessWidget {
-  final ProductEntity product;
+class _MaterialHeaderCard extends StatelessWidget {
+  final RawMaterialEntity material;
 
-  const _ProductHeaderCard({required this.product});
+  const _MaterialHeaderCard({required this.material});
 
   @override
   Widget build(BuildContext context) {
@@ -460,7 +475,7 @@ class _ProductHeaderCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            product.name,
+            material.name,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -468,19 +483,19 @@ class _ProductHeaderCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          if (product.description != null && product.description!.isNotEmpty)
+          if (material.description != null && material.description!.isNotEmpty)
             Text(
-              product.description!,
+              material.description!,
               style: const TextStyle(color: AppColors.textGrey),
             ),
           const SizedBox(height: 12),
           Text(
-            'Weight: ${product.weight.toStringAsFixed(2)} kg',
+            'Avg Price: ${material.price.toStringAsFixed(2)}',
             style: const TextStyle(color: AppColors.textBlack),
           ),
           const SizedBox(height: 4),
           Text(
-            'Created: ${formatter.format(product.createdAt)}',
+            'Created: ${formatter.format(material.createdAt)}',
             style: const TextStyle(color: AppColors.textGrey),
           ),
         ],
@@ -638,7 +653,7 @@ class _TransactionTile extends StatelessWidget {
               ],
             ),
           ),
-          if (transaction.remarks?.isNotEmpty ?? false)
+          if (transaction.notes?.isNotEmpty ?? false)
             Expanded(
               child: Row(
                 children: [
@@ -646,7 +661,7 @@ class _TransactionTile extends StatelessWidget {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      transaction.remarks!,
+                      transaction.notes!,
                       style: const TextStyle(
                         color: AppColors.textGrey,
                         fontSize: 12,

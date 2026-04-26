@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
-import 'package:ledgerly/features/products/presentation/pages/product_detail_page.dart';
-import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
+import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
 
-import 'add_product_dialog.dart';
+import '../providers/raw_material_providers.dart';
+import 'add_raw_material_dialog.dart';
+import 'raw_material_detail_page.dart';
 
-class ProductDashboard extends ConsumerWidget {
-  const ProductDashboard({super.key});
+class RawMaterialDashboard extends ConsumerWidget {
+  const RawMaterialDashboard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productsAsyncValue = ref.watch(getAllProductsProvider);
+    final materialsAsyncValue = ref.watch(getAllRawMaterialsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -26,7 +27,7 @@ class ProductDashboard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Products',
+                  'Raw Materials',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.textBlack,
@@ -49,11 +50,11 @@ class ProductDashboard extends ConsumerWidget {
                       onPressed: () {
                         showDialog(
                           context: context,
-                          builder: (context) => const AddProductDialog(),
+                          builder: (context) => const AddRawMaterialDialog(),
                         );
                       },
                       icon: const Icon(Icons.add),
-                      label: const Text('Add Product'),
+                      label: const Text('Add Raw Material'),
                     ),
                   ],
                 ),
@@ -61,14 +62,14 @@ class ProductDashboard extends ConsumerWidget {
             ),
             const SizedBox(height: 48),
             // Summary Cards
-            productsAsyncValue.when(
-              data: (products) {
-                if (products.isEmpty) {
+            materialsAsyncValue.when(
+              data: (materials) {
+                if (materials.isEmpty) {
                   return SizedBox(
                     height: 120,
                     child: Center(
                       child: Text(
-                        'No products yet. Click "Add Product" to get started.',
+                        'No materials yet. Click "Add Raw Material" to get started.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppColors.textGrey,
                         ),
@@ -80,21 +81,21 @@ class ProductDashboard extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: _buildSummaryCard(
-                        title: 'Total Products',
-                        value: products.length.toString(),
-                        subtitleLabel: 'PRODUCTS',
-                        icon: Icons.shopping_cart,
+                        title: 'Total Materials',
+                        value: materials.length.toString(),
+                        subtitleLabel: 'ITEMS',
+                        icon: Icons.category,
                       ),
                     ),
                     const SizedBox(width: 24),
                     Expanded(
                       child: _buildSummaryCard(
-                        title: 'Total Weight',
-                        value: products
-                            .fold<double>(0, (sum, prod) => sum + (prod.weight))
+                        title: 'Total Value (Avg)',
+                        value: materials
+                            .fold<double>(0, (sum, mat) => sum + (mat.price))
                             .toStringAsFixed(2),
-                        subtitleLabel: 'KG',
-                        icon: Icons.scale,
+                        subtitleLabel: 'USD', // Or relevant currency
+                        icon: Icons.attach_money,
                       ),
                     ),
                   ],
@@ -111,7 +112,7 @@ class ProductDashboard extends ConsumerWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'Error loading products: $err',
+                    'Error loading materials: $err',
                     style: TextStyle(color: AppColors.errorText),
                   ),
                 ),
@@ -130,30 +131,30 @@ class ProductDashboard extends ConsumerWidget {
             ),
             const SizedBox(height: 48),
 
-            // Products List
+            // Materials List
             Expanded(
-              child: productsAsyncValue.when(
-                data: (products) {
-                  if (products.isEmpty) {
+              child: materialsAsyncValue.when(
+                data: (materials) {
+                  if (materials.isEmpty) {
                     return const Center(
                       child: Text(
-                        'No products found.',
+                        'No raw materials found.',
                         style: TextStyle(color: AppColors.textGrey),
                       ),
                     );
                   }
                   return ListView.separated(
-                    itemCount: products.length,
+                    itemCount: materials.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
-                      final prod = products[index];
+                      final mat = materials[index];
                       return InkWell(
                         borderRadius: BorderRadius.circular(12),
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => ProductDetailPage(product: prod),
+                              builder: (_) => RawMaterialDetailPage(material: mat),
                             ),
                           );
                         },
@@ -192,7 +193,7 @@ class ProductDashboard extends ConsumerWidget {
                                 ),
                                 child: const Center(
                                   child: Icon(
-                                    Icons.shopping_bag,
+                                    Icons.inventory_2,
                                     color: AppColors.textGrey,
                                   ),
                                 ),
@@ -206,7 +207,7 @@ class ProductDashboard extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      prod.name,
+                                      mat.name,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14,
@@ -215,10 +216,10 @@ class ProductDashboard extends ConsumerWidget {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 4),
-                                    if (prod.description != null &&
-                                        prod.description!.isNotEmpty)
+                                    if (mat.description != null &&
+                                        mat.description!.isNotEmpty)
                                       Text(
-                                        prod.description ?? '',
+                                        mat.description ?? '',
                                         style: const TextStyle(
                                           color: AppColors.textGrey,
                                           fontSize: 12,
@@ -229,7 +230,7 @@ class ProductDashboard extends ConsumerWidget {
                                 ),
                               ),
 
-                              // Weight
+                              // Price / Controls
                               Expanded(
                                 flex: 2,
                                 child: Row(
@@ -239,7 +240,7 @@ class ProductDashboard extends ConsumerWidget {
                                         _recordTransaction(
                                           context,
                                           ref,
-                                          prod.id,
+                                          mat.id,
                                           transactionType: 'IN',
                                         );
                                       },
@@ -255,13 +256,13 @@ class ProductDashboard extends ConsumerWidget {
                                         _recordTransaction(
                                           context,
                                           ref,
-                                          prod.id,
+                                          mat.id,
                                           transactionType: 'OUT',
                                         );
                                       },
                                       child: Row(
                                         children: [
-                                          Icon(Icons.delete),
+                                          Icon(Icons.remove),
                                           Text('Remove'),
                                         ],
                                       ),
@@ -272,7 +273,7 @@ class ProductDashboard extends ConsumerWidget {
                                           CrossAxisAlignment.end,
                                       children: [
                                         const Text(
-                                          'Weight',
+                                          'Avg Price',
                                           style: TextStyle(
                                             color: AppColors.textGrey,
                                             fontSize: 12,
@@ -280,7 +281,7 @@ class ProductDashboard extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          '${prod.weight.toStringAsFixed(2)} kg',
+                                          mat.price.toStringAsFixed(2),
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 14,
@@ -301,13 +302,13 @@ class ProductDashboard extends ConsumerWidget {
                                     if (context.mounted) {
                                       showDialog(
                                         context: context,
-                                        builder: (context) => AddProductDialog(
-                                          productToEdit: prod,
+                                        builder: (context) => AddRawMaterialDialog(
+                                          materialToEdit: mat,
                                         ),
                                       );
                                     }
                                   } else if (val == 'delete') {
-                                    _showDeleteConfirmation(context, ref, prod);
+                                    _showDeleteConfirmation(context, ref, mat);
                                   }
                                 },
                                 itemBuilder: (_) => [
@@ -335,7 +336,7 @@ class ProductDashboard extends ConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, _) => Center(
                   child: Text(
-                    'Error loading products: $err',
+                    'Error loading materials: $err',
                     style: TextStyle(color: AppColors.errorText),
                   ),
                 ),
@@ -350,14 +351,14 @@ class ProductDashboard extends ConsumerWidget {
   void _showDeleteConfirmation(
     BuildContext context,
     WidgetRef ref,
-    dynamic product,
+    dynamic material,
   ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Product'),
+        title: const Text('Delete Raw Material'),
         content: const Text(
-          'Are you sure you want to delete this product? This action cannot be undone.',
+          'Are you sure you want to delete this material? This action cannot be undone.',
         ),
         actions: [
           TextButton(
@@ -371,23 +372,22 @@ class ProductDashboard extends ConsumerWidget {
             ),
             onPressed: () async {
               try {
-                // Delete product
                 await ref
-                    .read(productRepositoryProvider)
-                    .deleteProduct(product.id);
-                ref.invalidate(getAllProductsProvider);
+                    .read(rawMaterialRepositoryProvider)
+                    .deleteRawMaterial(material.id);
+                ref.invalidate(getAllRawMaterialsProvider);
                 if (context.mounted) {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Product deleted successfully'),
+                      content: Text('Material deleted successfully'),
                     ),
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error deleting product: $e')),
+                    SnackBar(content: Text('Error deleting material: $e')),
                   );
                 }
               }
@@ -402,11 +402,11 @@ class ProductDashboard extends ConsumerWidget {
   Future<void> _recordTransaction(
     BuildContext context,
     WidgetRef ref,
-    int productId, {
+    int materialId, {
     required String transactionType,
   }) async {
     var quantityText = '';
-    var remarksText = '';
+    var notesText = '';
 
     final quantity = await showDialog<int>(
       context: context,
@@ -437,10 +437,10 @@ class ProductDashboard extends ConsumerWidget {
                 const SizedBox(height: 12),
                 TextFormField(
                   decoration: const InputDecoration(
-                    labelText: 'Remarks (optional)',
+                    labelText: 'Notes (optional)',
                   ),
                   maxLines: 2,
-                  onChanged: (value) => remarksText = value,
+                  onChanged: (value) => notesText = value,
                 ),
               ],
             ),
@@ -464,14 +464,14 @@ class ProductDashboard extends ConsumerWidget {
     );
 
     if (quantity == null) return;
-    final remarks = remarksText.trim().isEmpty ? null : remarksText.trim();
+    final notes = notesText.trim().isEmpty ? null : notesText.trim();
 
-    final repository = ref.read(productInventoryRepositoryProvider);
+    final repository = ref.read(inventoryRepositoryProvider);
     try {
       if (transactionType == 'IN') {
-        await repository.addTransaction(productId, quantity, remarks);
+        await repository.recordIn(materialId, 'RAW_MATERIAL', quantity, notes: notes);
       } else {
-        await repository.removeTransaction(productId, quantity, remarks);
+        await repository.recordOut(materialId, 'RAW_MATERIAL', quantity, notes: notes);
       }
 
       if (context.mounted) {

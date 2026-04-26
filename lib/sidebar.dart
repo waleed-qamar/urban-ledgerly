@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:ledgerly/features/orders/presentation/pages/order_dashboard.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_dashboard.dart';
+import 'package:ledgerly/features/raw_material/presentation/pages/raw_material_dashboard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'features/client/presentation/pages/client_dashboard_view.dart';
 import 'features/expense/presentation/pages/expense_dashboard_view.dart';
@@ -25,6 +26,7 @@ class _MainLayoutState extends State<MainLayout> {
     const ClientDashboardView(),
     const VenderDashboardView(),
     const ProductDashboard(),
+    const RawMaterialDashboard(),
     const ExpenseDashboardView(),
     // const Center(child: Text('Settings Module')),
   ];
@@ -96,6 +98,11 @@ class _MainLayoutState extends State<MainLayout> {
                 icon: Icon(Icons.inventory_2_outlined),
                 selectedIcon: Icon(Icons.inventory_2),
                 label: Text('Products'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.category_outlined),
+                selectedIcon: Icon(Icons.category),
+                label: Text('Raw Materials'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.account_balance_wallet_outlined),

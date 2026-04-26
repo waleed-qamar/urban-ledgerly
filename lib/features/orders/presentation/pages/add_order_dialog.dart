@@ -29,7 +29,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
   int? _selectedSupplierId;
   int? _selectedClientId;
   DateTime _orderDate = DateUtils.dateOnly(DateTime.now());
-  String _status = 'pending';
+  final String _status = 'pending';
   bool _isSubmitting = false;
   final List<_DraftOrderLine> _lines = [
     _DraftOrderLine(quantity: 1, unitPrice: 0),
@@ -482,7 +482,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
 
     final productById = {for (final p in products) p.id: p};
     final items = <OrderItemEntity>[];
-    final _department = _departmentController.text.trim();
+    final department = _departmentController.text.trim();
     final _po = _poController.text.trim();
 
     for (final line in _lines) {
@@ -529,7 +529,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
       return;
     }
 
-    if (_department.isEmpty) {
+    if (department.isEmpty) {
       _showError('Please enter a Department.');
       return;
     }
@@ -539,7 +539,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
       clientId: _selectedClientId!,
       items: items,
       status: _status,
-      department: _department,
+      department: department,
       po: _po.isEmpty ? null : _po,
       createdAt: _orderDate,
     );

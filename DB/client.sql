@@ -16,16 +16,32 @@ CREATE TABLE vendors (
     createdAt TIMESTAMP
 );
 
+-- Unified inventory transactions for both products and raw materials.
+-- item_type discriminates between 'PRODUCT' and 'RAW_MATERIAL'.
+-- reference_type / reference_id allow future modules (Invoice, Procurement, BOM, Production)
+-- to link transactions without schema changes.
 CREATE TABLE inventory_transactions (
-    id SERIAL PRIMARY KEY,
-    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    item_id   BIGINT NOT NULL,
+    item_type VARCHAR(20) NOT NULL CHECK (item_type IN ('PRODUCT', 'RAW_MATERIAL')),
+
     transaction_type VARCHAR(3) NOT NULL CHECK (transaction_type IN ('IN', 'OUT')),
     quantity INT NOT NULL CHECK (quantity > 0),
+
+    -- Optional link to source document (future: invoices, procurement, BOM, production)
+    reference_type VARCHAR(20),  -- 'SALE', 'PROCUREMENT', 'PRODUCTION', 'INVOICE', 'BOM'
+    reference_id   BIGINT,
+
+    notes TEXT,
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_inventory_transactions_product_id
-    ON inventory_transactions(product_id);
+-- Composite index for fetching all transactions for a specific item
+CREATE INDEX idx_inv_tx_item ON inventory_transactions(item_id, item_type);
+-- Index for reverse lookups from reference documents
+CREATE INDEX idx_inv_tx_ref  ON inventory_transactions(reference_type, reference_id);
 
 
 CREATE TABLE ledger (
@@ -65,4 +81,15 @@ create table order_items (
   product_id bigint references products(id),
   quantity double precision not null,
   price double precision not null
+);
+
+-- Raw materials are distinct from finished products.
+-- price here is the estimated/average cost per unit.
+-- Actual purchase prices will be tracked in the future Procurement module.
+create table raw_material (
+  id bigint generated always as identity primary key,
+  name text not null,
+  price double precision not null,
+  description text,
+  created_at timestamp with time zone default now()
 );

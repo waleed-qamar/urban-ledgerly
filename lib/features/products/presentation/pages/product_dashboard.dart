@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_detail_page.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
+import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
 
 import 'add_product_dialog.dart';
 
@@ -406,7 +407,7 @@ class ProductDashboard extends ConsumerWidget {
     required String transactionType,
   }) async {
     var quantityText = '';
-    var remarksText = '';
+    var notesText = '';
 
     final quantity = await showDialog<int>(
       context: context,
@@ -437,10 +438,10 @@ class ProductDashboard extends ConsumerWidget {
                 const SizedBox(height: 12),
                 TextFormField(
                   decoration: const InputDecoration(
-                    labelText: 'Remarks (optional)',
+                    labelText: 'Notes (optional)',
                   ),
                   maxLines: 2,
-                  onChanged: (value) => remarksText = value,
+                  onChanged: (value) => notesText = value,
                 ),
               ],
             ),
@@ -464,14 +465,14 @@ class ProductDashboard extends ConsumerWidget {
     );
 
     if (quantity == null) return;
-    final remarks = remarksText.trim().isEmpty ? null : remarksText.trim();
+    final notes = notesText.trim().isEmpty ? null : notesText.trim();
 
-    final repository = ref.read(productInventoryRepositoryProvider);
+    final repository = ref.read(inventoryRepositoryProvider);
     try {
       if (transactionType == 'IN') {
-        await repository.addTransaction(productId, quantity, remarks);
+        await repository.recordIn(productId, 'PRODUCT', quantity, notes: notes);
       } else {
-        await repository.removeTransaction(productId, quantity, remarks);
+        await repository.recordOut(productId, 'PRODUCT', quantity, notes: notes);
       }
 
       if (context.mounted) {
