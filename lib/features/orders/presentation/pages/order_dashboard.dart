@@ -8,6 +8,9 @@ import 'package:ledgerly/features/orders/presentation/pages/add_order_dialog.dar
 import 'package:ledgerly/features/orders/presentation/pages/order_details_page.dart';
 import 'package:ledgerly/features/orders/presentation/providers/order_providers.dart';
 
+import '../../domain/entities/supplier_entity.dart';
+import '../providers/supplier_providers.dart';
+
 // ---------------------------------------------------------------------------
 // Shared order statuses used across dashboard & details page
 // ---------------------------------------------------------------------------
@@ -34,6 +37,7 @@ class _OrderDashboardState extends ConsumerState<OrderDashboard> {
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(getAllOrdersProvider);
     final clientsAsync = ref.watch(getAllClientsProvider);
+    final supplierAsync = ref.watch(getAllSuppliersProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -78,7 +82,10 @@ class _OrderDashboardState extends ConsumerState<OrderDashboard> {
                 data: (orders) {
                   final clients =
                       clientsAsync.asData?.value ?? const <ClientEntity>[];
+                  final supplier =
+                      supplierAsync.asData?.value ?? const <SupplierEntity>[];
                   final clientsById = {for (final c in clients) c.id: c};
+                  final supplierById = {for (final s in supplier) s.id: s};
                   final filtered = _applyFilters(orders, clientsById);
 
                   if (filtered.isEmpty) {
@@ -90,11 +97,14 @@ class _OrderDashboardState extends ConsumerState<OrderDashboard> {
                     clientsById: clientsById,
                     onTap: (order) {
                       final selectedClient = clientsById[order.clientId];
+                      final supplier = supplierById[order.supplierId];
+
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => OrderDetailsPage(
                             order: order,
                             client: selectedClient,
+                            supplier: supplier!,
                           ),
                         ),
                       );
@@ -426,6 +436,7 @@ class _StatusPill extends StatelessWidget {
 
     return PopupMenuButton<String>(
       tooltip: 'Change status',
+      color: AppColors.textWhite,
       onSelected: (value) => _changeStatus(context, value),
       offset: const Offset(0, 36),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

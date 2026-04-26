@@ -3,6 +3,7 @@ class InventoryTransactionEntity {
   final int productId;
   final String transactionType;
   final int quantity;
+  final String? remarks;
   final DateTime createdAt;
 
   const InventoryTransactionEntity({
@@ -10,6 +11,7 @@ class InventoryTransactionEntity {
     required this.productId,
     required this.transactionType,
     required this.quantity,
+    this.remarks,
     required this.createdAt,
   });
 
@@ -19,6 +21,7 @@ class InventoryTransactionEntity {
       productId: json['product_id'] as int,
       transactionType: json['transaction_type'] as String,
       quantity: json['quantity'] as int,
+      remarks: json['remarks'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -29,6 +32,7 @@ class InventoryTransactionEntity {
       'product_id': productId,
       'transaction_type': transactionType,
       'quantity': quantity,
+      'remarks': remarks ?? '',
       'created_at': createdAt.toIso8601String(),
     };
   }

@@ -532,3 +532,164 @@ final class InventoryTransactionsByProductFamily extends $Family
   @override
   String toString() => r'inventoryTransactionsByProductProvider';
 }
+
+@ProviderFor(deleteInventoryTransaction)
+const deleteInventoryTransactionProvider = DeleteInventoryTransactionFamily._();
+
+final class DeleteInventoryTransactionProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const DeleteInventoryTransactionProvider._({
+    required DeleteInventoryTransactionFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'deleteInventoryTransactionProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$deleteInventoryTransactionHash();
+
+  @override
+  String toString() {
+    return r'deleteInventoryTransactionProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as int;
+    return deleteInventoryTransaction(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DeleteInventoryTransactionProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$deleteInventoryTransactionHash() =>
+    r'3183a561a72edd7de4f00935851b23af05990082';
+
+final class DeleteInventoryTransactionFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, int> {
+  const DeleteInventoryTransactionFamily._()
+    : super(
+        retry: null,
+        name: r'deleteInventoryTransactionProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  DeleteInventoryTransactionProvider call(int transactionId) =>
+      DeleteInventoryTransactionProvider._(argument: transactionId, from: this);
+
+  @override
+  String toString() => r'deleteInventoryTransactionProvider';
+}
+
+@ProviderFor(updateInventoryTransaction)
+const updateInventoryTransactionProvider = UpdateInventoryTransactionFamily._();
+
+final class UpdateInventoryTransactionProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const UpdateInventoryTransactionProvider._({
+    required UpdateInventoryTransactionFamily super.from,
+    required (int, int, int, String, String?) super.argument,
+  }) : super(
+         retry: null,
+         name: r'updateInventoryTransactionProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateInventoryTransactionHash();
+
+  @override
+  String toString() {
+    return r'updateInventoryTransactionProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as (int, int, int, String, String?);
+    return updateInventoryTransaction(
+      ref,
+      argument.$1,
+      argument.$2,
+      argument.$3,
+      argument.$4,
+      argument.$5,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UpdateInventoryTransactionProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$updateInventoryTransactionHash() =>
+    r'77d3fde5fb99f6cf649d8b9222dbdc946f60ba7e';
+
+final class UpdateInventoryTransactionFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<void>,
+          (int, int, int, String, String?)
+        > {
+  const UpdateInventoryTransactionFamily._()
+    : super(
+        retry: null,
+        name: r'updateInventoryTransactionProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  UpdateInventoryTransactionProvider call(
+    int transactionId,
+    int productId,
+    int quantity,
+    String transactionType,
+    String? remarks,
+  ) => UpdateInventoryTransactionProvider._(
+    argument: (transactionId, productId, quantity, transactionType, remarks),
+    from: this,
+  );
+
+  @override
+  String toString() => r'updateInventoryTransactionProvider';
+}

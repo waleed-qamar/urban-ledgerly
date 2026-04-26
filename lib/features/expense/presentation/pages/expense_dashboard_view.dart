@@ -164,428 +164,441 @@ class ExpenseDashboardView extends ConsumerWidget {
     final expenseHeadsAsync = ref.watch(expenseHeadsProvider);
     final insightsAsync = ref.watch(monthlyInsightsProvider);
     final headsList = expenseHeadsAsync.value ?? [];
-    return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Section
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Expense Management',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+    return Scaffold(
+      backgroundColor: AppColors.textWhite,
+      body: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Expense Management',
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
                     ),
-                  ),
-                  // const SizedBox(height: 8),
-                  // const Text(
-                  //   'Curate and oversee your organizational outlays with precision.',
-                  //   style: TextStyle(color: Colors.grey, fontSize: 16),
-                  // ),
-                ],
-              ),
-              Row(
-                children: [
-                  TextButton.icon(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => const AddExpenseHeadDialog(),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.account_tree_outlined,
-                      color: Colors.grey,
-                    ),
-                    label: const Text(
-                      'New Expense Head',
-                      style: TextStyle(color: Colors.black87),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  PopupMenuButton<String>(
-                    tooltip: 'View Full Daybook',
-                    onSelected: (value) async {
-                      if (value == 'all') {
-                        ref
-                            .read(selectedLedgerHeadProvider.notifier)
-                            .setHead(null);
-                        ref
-                            .read(ledgerDateRangeProvider.notifier)
-                            .setRange(null);
-                        if (!context.mounted) return;
-                        _openFullLedgerView(context);
-                      } else if (value == 'range') {
-                        final picked = await _showDialogDatePicker(
-                          context,
-                          ref.read(ledgerDateRangeProvider),
+                    // const SizedBox(height: 8),
+                    // const Text(
+                    //   'Curate and oversee your organizational outlays with precision.',
+                    //   style: TextStyle(color: Colors.grey, fontSize: 16),
+                    // ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    TextButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const AddExpenseHeadDialog(),
                         );
-                        if (picked != null) {
+                      },
+                      icon: const Icon(
+                        Icons.account_tree_outlined,
+                        color: Colors.grey,
+                      ),
+                      label: const Text(
+                        'New Expense Head',
+                        style: TextStyle(color: Colors.black87),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    PopupMenuButton<String>(
+                      tooltip: 'View Full Daybook',
+                      onSelected: (value) async {
+                        if (value == 'all') {
                           ref
                               .read(selectedLedgerHeadProvider.notifier)
                               .setHead(null);
                           ref
                               .read(ledgerDateRangeProvider.notifier)
-                              .setRange(picked);
+                              .setRange(null);
                           if (!context.mounted) return;
                           _openFullLedgerView(context);
+                        } else if (value == 'range') {
+                          final picked = await _showDialogDatePicker(
+                            context,
+                            ref.read(ledgerDateRangeProvider),
+                          );
+                          if (picked != null) {
+                            ref
+                                .read(selectedLedgerHeadProvider.notifier)
+                                .setHead(null);
+                            ref
+                                .read(ledgerDateRangeProvider.notifier)
+                                .setRange(picked);
+                            if (!context.mounted) return;
+                            _openFullLedgerView(context);
+                          }
+                        } else if (value == 'head') {
+                          final applied = await _showHeadFilterDialog(
+                            context,
+                            ref,
+                            headsList,
+                            ref.read(selectedLedgerHeadProvider),
+                            ref.read(ledgerDateRangeProvider),
+                          );
+                          if (applied && context.mounted) {
+                            _openFullLedgerView(context);
+                          }
                         }
-                      } else if (value == 'head') {
-                        final applied = await _showHeadFilterDialog(
-                          context,
-                          ref,
-                          headsList,
-                          ref.read(selectedLedgerHeadProvider),
-                          ref.read(ledgerDateRangeProvider),
-                        );
-                        if (applied && context.mounted) {
-                          _openFullLedgerView(context);
-                        }
-                      }
-                    },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(
-                        value: 'all',
-                        child: Text('Fetch All (Clear Filters)'),
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: 'all',
+                          child: Text('Fetch All (Clear Filters)'),
+                        ),
+                        PopupMenuItem(
+                          value: 'range',
+                          child: Text('Filter by Date Range'),
+                        ),
+                        PopupMenuItem(
+                          value: 'head',
+                          child: Text('Filter by Category Head'),
+                        ),
+                      ],
+                      child: const Text(
+                        'View Full Daybook →',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      PopupMenuItem(
-                        value: 'range',
-                        child: Text('Filter by Date Range'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            // Content Grid
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left Column: Expense Ledger
+                  Expanded(
+                    flex: 5,
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Expense Daybook',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  'RECENT',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Inject Riverpod State Here
+                            Expanded(
+                              child: recentExpensesAsync.when(
+                                loading: () => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                                error: (err, stack) =>
+                                    Center(child: Text('Error: $err')),
+                                data: (expenses) {
+                                  if (expenses.isEmpty) {
+                                    return const Center(
+                                      child: Text(
+                                        'No recent expenses found.',
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                    );
+                                  }
+                                  return ListView.separated(
+                                    itemCount: expenses.length,
+                                    separatorBuilder: (context, index) =>
+                                        const Divider(height: 32),
+                                    itemBuilder: (context, index) {
+                                      final exp = expenses[index];
+
+                                      // Find the matching Expense Head
+                                      // Using an iterable approach safely handles nulls if a head was somehow deleted
+                                      final head = headsList
+                                          .where(
+                                            (h) => h.id == exp.expenseHeadId,
+                                          )
+                                          .firstOrNull;
+
+                                      final title =
+                                          head?.name ?? 'Unknown Category';
+                                      final headType =
+                                          head?.headType.value ?? 'Unknown';
+
+                                      return buildLedgerItem(
+                                        Icons.receipt_long,
+                                        title, // Showing Head Name as title
+                                        exp.remarks, // Showing Remark as subtitle
+                                        NumberFormat.currency(
+                                          symbol: 'PKR ',
+                                        ).format(exp.amount),
+                                        DateFormat.yMMMd().format(exp.date),
+                                        headType, // Showing Head Type in badge
+                                        AppColors.iconBackground,
+                                        Colors.teal,
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) =>
+                                        const AddExpenseDialog(),
+                                  );
+                                },
+                                icon: const Icon(Icons.add, size: 18),
+                                label: const Text('New Expense'),
+                              ),
+
+                              //
+                            ),
+                          ],
+                        ),
                       ),
-                      PopupMenuItem(
-                        value: 'head',
-                        child: Text('Filter by Category Head'),
-                      ),
-                    ],
-                    child: const Text(
-                      'View Full Daybook →',
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+
+                  // Right Column: Insights & Categories
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        // Monthly Insights Card
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: AppColors.darkCardBackground,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          // Replace the static Column with the Riverpod .when() mapping
+                          child: insightsAsync.when(
+                            loading: () => const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(32.0),
+                                child: CircularProgressIndicator(
+                                  color: AppColors.positiveAccent,
+                                ),
+                              ),
+                            ),
+                            error: (error, stack) => const Center(
+                              child: Text(
+                                'Failed to load insights',
+                                style: TextStyle(
+                                  color: AppColors.negativeAccent,
+                                ),
+                              ),
+                            ),
+                            data: (insights) {
+                              final change = insights['change'] as double;
+                              final isPositive = change >= 0;
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'MONTHLY INSIGHTS',
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    // Make sure to import 'package:intl/intl.dart'; at the top of the file
+                                    NumberFormat.currency(
+                                      symbol: 'PKR ',
+                                    ).format(insights['total']),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${isPositive ? '↑' : '↓'} ${change.abs().toStringAsFixed(1)}% vs last month',
+                                    style: TextStyle(
+                                      color: isPositive
+                                          ? AppColors.negativeAccent
+                                          : AppColors.positiveAccent,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  // Keeping your static placeholder bars for now
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _buildBar(40, AppColors.barPlaceholder),
+                                      _buildBar(60, AppColors.barPlaceholder),
+                                      _buildBar(30, AppColors.barPlaceholder),
+                                      _buildBar(80, AppColors.barPlaceholder),
+                                      _buildBar(50, AppColors.positiveAccent),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Expense Heads Card
+                        Expanded(
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Expense Heads',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.more_horiz,
+                                        color: Colors.grey,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 24),
+
+                                  // Inject Riverpod State Here
+                                  Expanded(
+                                    child: expenseHeadsAsync.when(
+                                      loading: () => const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                      error: (err, stack) =>
+                                          Center(child: Text('Error: $err')),
+                                      data: (heads) {
+                                        if (heads.isEmpty) {
+                                          return const Center(
+                                            child: Text(
+                                              'No heads added yet.',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        return ListView.separated(
+                                          itemCount: heads.length,
+                                          separatorBuilder: (context, index) =>
+                                              const SizedBox(height: 16),
+                                          itemBuilder: (context, index) {
+                                            final head = heads[index];
+                                            return _buildHeadItem(
+                                              head.name,
+                                              head
+                                                  .headType
+                                                  .name, // Reusing percentage spot to show type for now
+                                              AppColors.dotActive,
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ),
+
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton(
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const ManageHeadsView(),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text(
+                                        'Manage Heads',
+                                        style: TextStyle(color: Colors.black87),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-          const SizedBox(height: 32),
-
-          // Content Grid
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left Column: Expense Ledger
-                Expanded(
-                  flex: 5,
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Expense Daybook',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                'RECENT',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Inject Riverpod State Here
-                          Expanded(
-                            child: recentExpensesAsync.when(
-                              loading: () => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                              error: (err, stack) =>
-                                  Center(child: Text('Error: $err')),
-                              data: (expenses) {
-                                if (expenses.isEmpty) {
-                                  return const Center(
-                                    child: Text(
-                                      'No recent expenses found.',
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                  );
-                                }
-                                return ListView.separated(
-                                  itemCount: expenses.length,
-                                  separatorBuilder: (context, index) =>
-                                      const Divider(height: 32),
-                                  itemBuilder: (context, index) {
-                                    final exp = expenses[index];
-
-                                    // Find the matching Expense Head
-                                    // Using an iterable approach safely handles nulls if a head was somehow deleted
-                                    final head = headsList
-                                        .where((h) => h.id == exp.expenseHeadId)
-                                        .firstOrNull;
-
-                                    final title =
-                                        head?.name ?? 'Unknown Category';
-                                    final headType =
-                                        head?.headType.value ?? 'Unknown';
-
-                                    return buildLedgerItem(
-                                      Icons.receipt_long,
-                                      title, // Showing Head Name as title
-                                      exp.remarks, // Showing Remark as subtitle
-                                      NumberFormat.currency(
-                                        symbol: 'PKR ',
-                                      ).format(exp.amount),
-                                      DateFormat.yMMMd().format(exp.date),
-                                      headType, // Showing Head Type in badge
-                                      AppColors.iconBackground,
-                                      Colors.teal,
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) =>
-                                      const AddExpenseDialog(),
-                                );
-                              },
-                              icon: const Icon(Icons.add, size: 18),
-                              label: const Text('New Expense'),
-                            ),
-
-                            //
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 24),
-
-                // Right Column: Insights & Categories
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    children: [
-                      // Monthly Insights Card
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: AppColors.darkCardBackground,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        // Replace the static Column with the Riverpod .when() mapping
-                        child: insightsAsync.when(
-                          loading: () => const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(32.0),
-                              child: CircularProgressIndicator(
-                                color: AppColors.positiveAccent,
-                              ),
-                            ),
-                          ),
-                          error: (error, stack) => const Center(
-                            child: Text(
-                              'Failed to load insights',
-                              style: TextStyle(color: AppColors.negativeAccent),
-                            ),
-                          ),
-                          data: (insights) {
-                            final change = insights['change'] as double;
-                            final isPositive = change >= 0;
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'MONTHLY INSIGHTS',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  // Make sure to import 'package:intl/intl.dart'; at the top of the file
-                                  NumberFormat.currency(
-                                    symbol: 'PKR ',
-                                  ).format(insights['total']),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${isPositive ? '↑' : '↓'} ${change.abs().toStringAsFixed(1)}% vs last month',
-                                  style: TextStyle(
-                                    color: isPositive
-                                        ? AppColors.negativeAccent
-                                        : AppColors.positiveAccent,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                // Keeping your static placeholder bars for now
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    _buildBar(40, AppColors.barPlaceholder),
-                                    _buildBar(60, AppColors.barPlaceholder),
-                                    _buildBar(30, AppColors.barPlaceholder),
-                                    _buildBar(80, AppColors.barPlaceholder),
-                                    _buildBar(50, AppColors.positiveAccent),
-                                  ],
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Expense Heads Card
-                      Expanded(
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Expense Heads',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Icon(Icons.more_horiz, color: Colors.grey),
-                                  ],
-                                ),
-                                const SizedBox(height: 24),
-
-                                // Inject Riverpod State Here
-                                Expanded(
-                                  child: expenseHeadsAsync.when(
-                                    loading: () => const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                    error: (err, stack) =>
-                                        Center(child: Text('Error: $err')),
-                                    data: (heads) {
-                                      if (heads.isEmpty) {
-                                        return const Center(
-                                          child: Text(
-                                            'No heads added yet.',
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                      return ListView.separated(
-                                        itemCount: heads.length,
-                                        separatorBuilder: (context, index) =>
-                                            const SizedBox(height: 16),
-                                        itemBuilder: (context, index) {
-                                          final head = heads[index];
-                                          return _buildHeadItem(
-                                            head.name,
-                                            head
-                                                .headType
-                                                .name, // Reusing percentage spot to show type for now
-                                            AppColors.dotActive,
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: OutlinedButton(
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const ManageHeadsView(),
-                                        ),
-                                      );
-                                    },
-                                    child: const Text(
-                                      'Manage Heads',
-                                      style: TextStyle(color: Colors.black87),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

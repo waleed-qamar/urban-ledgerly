@@ -7,20 +7,55 @@ class InventoryRemoteDatasource {
 
   InventoryRemoteDatasource(this._client);
 
-  Future<void> addTransaction(int productId, int quantity) async {
+  Future<void> addTransaction(
+    int productId,
+    int quantity,
+    String? remarks,
+  ) async {
     await _client.from('inventory_transactions').insert({
       'product_id': productId,
       'transaction_type': 'IN',
       'quantity': quantity,
+      'remarks': remarks ?? '',
     });
   }
 
-  Future<void> removeTransaction(int productId, int quantity) async {
+  Future<void> removeTransaction(
+    int productId,
+    int quantity,
+    String? remarks,
+  ) async {
     await _client.from('inventory_transactions').insert({
       'product_id': productId,
       'transaction_type': 'OUT',
       'quantity': quantity,
+      'remarks': remarks ?? '',
     });
+  }
+
+  Future<void> deleteTransaction(int transactionId) async {
+    await _client
+        .from('inventory_transactions')
+        .delete()
+        .eq('id', transactionId);
+  }
+
+  Future<void> updateTransaction(
+    int transactionId,
+    int productId,
+    int quantity,
+    String transactionType,
+    String? remarks,
+  ) async {
+    await _client
+        .from('inventory_transactions')
+        .update({
+          'product_id': productId,
+          'transaction_type': transactionType,
+          'quantity': quantity,
+          'remarks': remarks ?? '',
+        })
+        .eq('id', transactionId);
   }
 
   Future<List<InventoryTransactionEntity>> getTransactionsByProduct(

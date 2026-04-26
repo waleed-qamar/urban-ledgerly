@@ -37,6 +37,7 @@ class ProductDetailPage extends ConsumerWidget {
                   child: _ActionCard(
                     label: 'Add Stock',
                     icon: Icons.add_circle_outline,
+                    color: AppColors.primary,
                     onPressed: () =>
                         _recordTransaction(context, ref, transactionType: 'IN'),
                   ),
@@ -46,6 +47,7 @@ class ProductDetailPage extends ConsumerWidget {
                   child: _ActionCard(
                     label: 'Remove Stock',
                     icon: Icons.remove_circle_outline,
+                    color: AppColors.negativeAccent,
                     onPressed: () => _recordTransaction(
                       context,
                       ref,
@@ -117,6 +119,17 @@ class ProductDetailPage extends ConsumerWidget {
                                   final transaction = transactions[index];
                                   return _TransactionTile(
                                     transaction: transaction,
+                                    onEdit: () => _showEditTransactionDialog(
+                                      context,
+                                      ref,
+                                      transaction,
+                                    ),
+                                    onDelete: () =>
+                                        _showDeleteTransactionConfirmation(
+                                          context,
+                                          ref,
+                                          transaction,
+                                        ),
                                   );
                                 },
                               ),
@@ -139,12 +152,201 @@ class ProductDetailPage extends ConsumerWidget {
     );
   }
 
+  Future<void> _showEditTransactionDialog(
+    BuildContext context,
+    WidgetRef ref,
+    InventoryTransactionEntity transaction,
+  ) async {
+    final quantityController = TextEditingController(
+      text: transaction.quantity.toString(),
+    );
+    final remarksController = TextEditingController(
+      text: transaction.remarks ?? '',
+    );
+    var transactionType = transaction.transactionType.toUpperCase();
+
+    try {
+      final shouldSave = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          final formKey = GlobalKey<FormState>();
+
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: const Text('Edit Transaction'),
+                content: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        value: transactionType,
+                        decoration: const InputDecoration(
+                          labelText: 'Transaction Type',
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'IN',
+                            child: Text('Stock In'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'OUT',
+                            child: Text('Stock Out'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => transactionType = value);
+                          }
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Select a transaction type';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: quantityController,
+                        autofocus: true,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Quantity',
+                        ),
+                        validator: (value) {
+                          final parsed = int.tryParse(value ?? '');
+                          if (parsed == null || parsed <= 0) {
+                            return 'Enter a valid positive quantity';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: remarksController,
+                        decoration: const InputDecoration(
+                          labelText: 'Remarks (optional)',
+                        ),
+                        maxLines: 2,
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (formKey.currentState?.validate() ?? false) {
+                        Navigator.of(dialogContext).pop(true);
+                      }
+                    },
+                    child: const Text('Save'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+
+      if (shouldSave != true) return;
+
+      final quantity = int.parse(quantityController.text.trim());
+      final remarks = remarksController.text.trim().isEmpty
+          ? null
+          : remarksController.text.trim();
+
+      await ref.read(
+        updateInventoryTransactionProvider(
+          transaction.id,
+          transaction.productId,
+          quantity,
+          transactionType,
+          remarks,
+        ).future,
+      );
+
+      ref.invalidate(inventoryTransactionsByProductProvider(product.id));
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Transaction updated successfully')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update transaction: $e')),
+        );
+      }
+    } finally {
+      quantityController.dispose();
+      remarksController.dispose();
+    }
+  }
+
+  Future<void> _showDeleteTransactionConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    InventoryTransactionEntity transaction,
+  ) async {
+    final confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete Transaction'),
+        content: const Text(
+          'Are you sure you want to delete this transaction? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.errorText,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmDelete != true) return;
+
+    try {
+      await ref.read(deleteInventoryTransactionProvider(transaction.id).future);
+
+      ref.invalidate(inventoryTransactionsByProductProvider(product.id));
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Transaction deleted successfully')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete transaction: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _recordTransaction(
     BuildContext context,
     WidgetRef ref, {
     required String transactionType,
   }) async {
     var quantityText = '';
+    var remarksText = '';
 
     final quantity = await showDialog<int>(
       context: context,
@@ -155,18 +357,31 @@ class ProductDetailPage extends ConsumerWidget {
           title: Text(transactionType == 'IN' ? 'Add Stock' : 'Remove Stock'),
           content: Form(
             key: formKey,
-            child: TextFormField(
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Quantity'),
-              onChanged: (value) => quantityText = value,
-              validator: (value) {
-                final parsed = int.tryParse(value ?? '');
-                if (parsed == null || parsed <= 0) {
-                  return 'Enter a valid positive quantity';
-                }
-                return null;
-              },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Quantity'),
+                  onChanged: (value) => quantityText = value,
+                  validator: (value) {
+                    final parsed = int.tryParse(value ?? '');
+                    if (parsed == null || parsed <= 0) {
+                      return 'Enter a valid positive quantity';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Remarks (optional)',
+                  ),
+                  maxLines: 2,
+                  onChanged: (value) => remarksText = value,
+                ),
+              ],
             ),
           ),
           actions: [
@@ -188,13 +403,14 @@ class ProductDetailPage extends ConsumerWidget {
     );
 
     if (quantity == null) return;
+    final remarks = remarksText.trim().isEmpty ? null : remarksText.trim();
 
     final repository = ref.read(productInventoryRepositoryProvider);
     try {
       if (transactionType == 'IN') {
-        await repository.addTransaction(product.id, quantity);
+        await repository.addTransaction(product.id, quantity, remarks);
       } else {
-        await repository.removeTransaction(product.id, quantity);
+        await repository.removeTransaction(product.id, quantity, remarks);
       }
 
       ref.invalidate(inventoryTransactionsByProductProvider(product.id));
@@ -276,26 +492,33 @@ class _ProductHeaderCard extends StatelessWidget {
 class _ActionCard extends StatelessWidget {
   final String label;
   final IconData icon;
+  final Color color;
   final VoidCallback onPressed;
 
   const _ActionCard({
     required this.label,
     required this.icon,
     required this.onPressed,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return SizedBox(
+      height: 60,
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: onPressed,
+        icon: Icon(icon),
+        label: Text(label),
       ),
-      onPressed: onPressed,
-      icon: Icon(icon),
-      label: Text(label),
     );
   }
 }
@@ -358,8 +581,14 @@ class _SummaryTile extends StatelessWidget {
 
 class _TransactionTile extends StatelessWidget {
   final InventoryTransactionEntity transaction;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
-  const _TransactionTile({required this.transaction});
+  const _TransactionTile({
+    required this.transaction,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -409,6 +638,26 @@ class _TransactionTile extends StatelessWidget {
               ],
             ),
           ),
+          if (transaction.remarks?.isNotEmpty ?? false)
+            Expanded(
+              child: Row(
+                children: [
+                  Icon(Icons.comment, size: 14, color: AppColors.textGrey),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      transaction.remarks!,
+                      style: const TextStyle(
+                        color: AppColors.textGrey,
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Text(
             '${isIn ? '+' : '-'}${transaction.quantity}',
             style: TextStyle(
@@ -416,6 +665,15 @@ class _TransactionTile extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: isIn ? Colors.green : Colors.red,
             ),
+          ),
+          SizedBox(width: 20),
+          IconButton(
+            onPressed: onEdit,
+            icon: Icon(Icons.edit, color: AppColors.iconColor),
+          ),
+          IconButton(
+            onPressed: onDelete,
+            icon: Icon(Icons.delete, color: AppColors.errorText),
           ),
         ],
       ),

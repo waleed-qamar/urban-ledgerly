@@ -4,6 +4,7 @@ import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/features/client/domain/entities/client_entity.dart';
 import 'package:ledgerly/features/client/presentation/providers/client_providers.dart';
 import 'package:ledgerly/features/orders/domain/entities/order_entity.dart';
+import 'package:ledgerly/features/orders/domain/entities/supplier_entity.dart';
 import 'package:ledgerly/features/orders/presentation/providers/order_providers.dart';
 import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
@@ -23,10 +24,16 @@ const _kOrderStatuses = [('pending', 'Pending'), ('completed', 'Completed')];
 }
 
 class OrderDetailsPage extends ConsumerStatefulWidget {
-  const OrderDetailsPage({required this.order, this.client, super.key});
+  const OrderDetailsPage({
+    required this.order,
+    this.client,
+    super.key,
+    required this.supplier,
+  });
 
   final OrderEntity order;
   final ClientEntity? client;
+  final SupplierEntity supplier;
 
   @override
   ConsumerState<OrderDetailsPage> createState() => _OrderDetailsPageState();
@@ -34,11 +41,13 @@ class OrderDetailsPage extends ConsumerStatefulWidget {
 
 class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
   late OrderEntity _order;
+  late SupplierEntity _supplier;
 
   @override
   void initState() {
     super.initState();
     _order = widget.order;
+    _supplier = widget.supplier;
   }
 
   void _onStatusChanged(String newStatus) {
@@ -93,7 +102,7 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
                   const SizedBox(height: 14),
                   _OrderItemsCard(order: _order, productsAsync: productsAsync),
                   const SizedBox(height: 14),
-                  _clientCard(client: resolvedClient),
+                  _ClientCard(client: resolvedClient),
                   const SizedBox(height: 14),
                   _TotalsCard(totals: details),
                 ],
@@ -130,7 +139,9 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
                   flex: 2,
                   child: Column(
                     children: [
-                      _clientCard(client: resolvedClient),
+                      _ClientCard(client: resolvedClient),
+                      const SizedBox(height: 14),
+                      _SupplierCard(supplier: _supplier),
                       const SizedBox(height: 14),
                       _TotalsCard(totals: details),
                     ],
@@ -192,101 +203,109 @@ class _OrderItemsCard extends StatelessWidget {
       productNameById[p.id] = p.name;
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.textWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.6),
+    return Card(
+      elevation: 5,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: AppColors.textWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.dividerColor.withValues(alpha: 0.6),
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Order Items',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-              Text(
-                '${order.items.length} items total',
-                style: const TextStyle(color: AppColors.textGrey),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: ListView.separated(
-              itemCount: order.items.length,
-              separatorBuilder: (_, _) => Divider(
-                height: 1,
-                color: AppColors.dividerColor.withValues(alpha: 0.6),
-              ),
-              itemBuilder: (context, index) {
-                final item = order.items[index];
-                final productLabel =
-                    productNameById[item.productId] ??
-                    'Product #${item.productId}';
-                final lineTotal = item.price * item.quantity;
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: AppColors.lightBackground,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.inventory_2_outlined, size: 18),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              productLabel,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Qty: ${item.quantity} · Unit: PKR ${item.price.toStringAsFixed(2)}',
-                              style: const TextStyle(color: AppColors.textGrey),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        'PKR ${lineTotal.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Order Items',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  '${order.items.length} items total',
+                  style: const TextStyle(color: AppColors.textGrey),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Expanded(
+              child: ListView.separated(
+                itemCount: order.items.length,
+                separatorBuilder: (_, _) => Divider(
+                  height: 1,
+                  color: AppColors.dividerColor.withValues(alpha: 0.6),
+                ),
+                itemBuilder: (context, index) {
+                  final item = order.items[index];
+                  final productLabel =
+                      productNameById[item.productId] ??
+                      'Product #${item.productId}';
+                  final lineTotal = item.price * item.quantity;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: AppColors.lightBackground,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.inventory_2_outlined,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                productLabel,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Qty: ${item.quantity} · Unit: PKR ${item.price.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          'PKR ${lineTotal.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _clientCard extends StatelessWidget {
-  const _clientCard({required this.client});
+class _ClientCard extends StatelessWidget {
+  const _ClientCard({required this.client});
 
   final ClientEntity? client;
 
@@ -295,66 +314,146 @@ class _clientCard extends StatelessWidget {
     final label = client?.clientName ?? 'Unknown client';
     final initials = label.isNotEmpty ? label[0].toUpperCase() : '?';
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.textWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.6),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'client Details',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+    return Card(
+      elevation: 5,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.textWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.dividerColor.withValues(alpha: 0.6),
           ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 21,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                child: Text(
-                  initials,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Client Details',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 21,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    Text(
-                      client?.department ?? '-',
-                      style: const TextStyle(color: AppColors.textGrey),
-                    ),
-                  ],
+                      Text(
+                        client?.department ?? '-',
+                        style: const TextStyle(color: AppColors.textGrey),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
+            const SizedBox(height: 14),
+            _InfoRow(label: 'Phone', value: client?.contactNumber ?? '-'),
+            _InfoRow(label: 'Address', value: client?.clientAddress ?? '-'),
+            _InfoRow(
+              label: 'Status',
+              value: (client?.isActive ?? false) ? 'Active' : 'Inactive',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SupplierCard extends StatelessWidget {
+  final SupplierEntity supplier;
+  const _SupplierCard({required this.supplier});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 5,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.textWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.dividerColor.withValues(alpha: 0.6),
           ),
-          const SizedBox(height: 14),
-          _InfoRow(label: 'Phone', value: client?.contactNumber ?? '-'),
-          _InfoRow(label: 'Address', value: client?.clientAddress ?? '-'),
-          _InfoRow(
-            label: 'Status',
-            value: (client?.isActive ?? false) ? 'Active' : 'Inactive',
-          ),
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Supplier Details',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 21,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  child: Text(
+                    supplier.name.isNotEmpty
+                        ? supplier.name[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        supplier.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      // Text(
+                      //   client?.department ?? '-',
+                      //   style: const TextStyle(color: AppColors.textGrey),
+                      // ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            _InfoRow(label: 'Phone', value: supplier.contactInfo ?? '-'),
+            _InfoRow(
+              label: 'Address',
+              value: supplier.address.isNotEmpty ? supplier.address : '-',
+            ),
+            _InfoRow(label: 'STRN Number', value: supplier.strnNo ?? '-'),
+            _InfoRow(label: 'NTN Number', value: supplier.ntn ?? '-'),
+          ],
+        ),
       ),
     );
   }
@@ -367,36 +466,39 @@ class _TotalsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.lightBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.3),
+    return Card(
+      elevation: 5,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.lightBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.dividerColor.withValues(alpha: 0.3),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          _InfoRow(
-            label: 'Subtotal',
-            value: 'PKR ${totals.subtotal.toStringAsFixed(2)}',
-          ),
-          _InfoRow(
-            label: 'Tax (5%)',
-            value: 'PKR ${totals.tax.toStringAsFixed(2)}',
-          ),
-          Divider(
-            color: AppColors.dividerColor.withValues(alpha: 0.6),
-            height: 18,
-          ),
-          _InfoRow(
-            label: 'Total Amount',
-            value: 'PKR ${totals.total.toStringAsFixed(2)}',
-            emphasized: true,
-          ),
-        ],
+        child: Column(
+          children: [
+            _InfoRow(
+              label: 'Subtotal',
+              value: 'PKR ${totals.subtotal.toStringAsFixed(2)}',
+            ),
+            _InfoRow(
+              label: 'Tax (5%)',
+              value: 'PKR ${totals.tax.toStringAsFixed(2)}',
+            ),
+            Divider(
+              color: AppColors.dividerColor.withValues(alpha: 0.6),
+              height: 18,
+            ),
+            _InfoRow(
+              label: 'Total Amount',
+              value: 'PKR ${totals.total.toStringAsFixed(2)}',
+              emphasized: true,
+            ),
+          ],
+        ),
       ),
     );
   }

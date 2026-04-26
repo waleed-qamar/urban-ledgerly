@@ -406,6 +406,7 @@ class ProductDashboard extends ConsumerWidget {
     required String transactionType,
   }) async {
     var quantityText = '';
+    var remarksText = '';
 
     final quantity = await showDialog<int>(
       context: context,
@@ -413,21 +414,35 @@ class ProductDashboard extends ConsumerWidget {
         final formKey = GlobalKey<FormState>();
 
         return AlertDialog(
+          backgroundColor: AppColors.textWhite,
           title: Text(transactionType == 'IN' ? 'Add Stock' : 'Remove Stock'),
           content: Form(
             key: formKey,
-            child: TextFormField(
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Quantity'),
-              onChanged: (value) => quantityText = value,
-              validator: (value) {
-                final parsed = int.tryParse(value ?? '');
-                if (parsed == null || parsed <= 0) {
-                  return 'Enter a valid positive quantity';
-                }
-                return null;
-              },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Quantity'),
+                  onChanged: (value) => quantityText = value,
+                  validator: (value) {
+                    final parsed = int.tryParse(value ?? '');
+                    if (parsed == null || parsed <= 0) {
+                      return 'Enter a valid positive quantity';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Remarks (optional)',
+                  ),
+                  maxLines: 2,
+                  onChanged: (value) => remarksText = value,
+                ),
+              ],
             ),
           ),
           actions: [
@@ -449,13 +464,14 @@ class ProductDashboard extends ConsumerWidget {
     );
 
     if (quantity == null) return;
+    final remarks = remarksText.trim().isEmpty ? null : remarksText.trim();
 
     final repository = ref.read(productInventoryRepositoryProvider);
     try {
       if (transactionType == 'IN') {
-        await repository.addTransaction(productId, quantity);
+        await repository.addTransaction(productId, quantity, remarks);
       } else {
-        await repository.removeTransaction(productId, quantity);
+        await repository.removeTransaction(productId, quantity, remarks);
       }
 
       if (context.mounted) {

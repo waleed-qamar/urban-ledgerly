@@ -62,3 +62,30 @@ Future<List<InventoryTransactionEntity>> inventoryTransactionsByProduct(
       .watch(productInventoryRepositoryProvider)
       .getTransactionsByProduct(productId);
 }
+
+@riverpod
+Future<void> deleteInventoryTransaction(Ref ref, int transactionId) {
+  return ref
+      .watch(productInventoryRepositoryProvider)
+      .deleteTransaction(transactionId);
+}
+
+@riverpod
+Future<void> updateInventoryTransaction(
+  Ref ref,
+  int transactionId,
+  int productId,
+  int quantity,
+  String transactionType,
+  String? remarks,
+) {
+  return ref
+      .watch(productInventoryRepositoryProvider)
+      .updateTransaction(
+        transactionId,
+        productId,
+        quantity,
+        transactionType,
+        remarks,
+      );
+}
