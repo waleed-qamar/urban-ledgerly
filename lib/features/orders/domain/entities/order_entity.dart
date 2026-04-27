@@ -15,6 +15,7 @@ abstract class OrderEntity with _$OrderEntity {
     String? status,
     String? department,
     String? po,
+    required String deliveryTerm,
     DateTime? createdAt,
   }) = _OrderEntity;
 

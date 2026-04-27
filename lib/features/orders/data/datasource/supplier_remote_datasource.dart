@@ -8,7 +8,9 @@ class SupplierRemoteDatasource {
   Future<List<SupplierEntity>> getSuppliers() async {
     final response = await _client.from('suppliers').select();
 
-    return (response as List).map((e) => SupplierEntity.fromJson(e)).toList();
+    return (response as List)
+        .map((e) => SupplierEntity.fromJson(_normalizeSupplierRow(e)))
+        .toList();
   }
 
   Future<SupplierEntity> getSupplierById(int id) async {
@@ -18,7 +20,7 @@ class SupplierRemoteDatasource {
         .eq('id', id)
         .single();
 
-    return SupplierEntity.fromJson(response);
+    return SupplierEntity.fromJson(_normalizeSupplierRow(response));
   }
 
   Future<void> addSupplier(SupplierEntity supplier) async {
@@ -34,5 +36,15 @@ class SupplierRemoteDatasource {
 
   Future<void> deleteSupplier(int id) async {
     await _client.from('suppliers').delete().eq('id', id);
+  }
+
+  Map<String, dynamic> _normalizeSupplierRow(Map<String, dynamic> row) {
+    final normalized = Map<String, dynamic>.from(row);
+
+    // `delivery_terms` is currently transitional and may be null in old rows.
+    normalized['delivery_terms'] = (normalized['delivery_terms'] ?? '')
+        .toString();
+
+    return normalized;
   }
 }

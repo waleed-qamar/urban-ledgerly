@@ -26,6 +26,9 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
   final TextEditingController _orderDateController = TextEditingController();
   final TextEditingController _departmentController = TextEditingController();
   final TextEditingController _poController = TextEditingController();
+  final TextEditingController _deliveryTermsController =
+      TextEditingController();
+
   int? _selectedSupplierId;
   int? _selectedClientId;
   DateTime _orderDate = DateUtils.dateOnly(DateTime.now());
@@ -47,6 +50,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
     _orderDateController.dispose();
     _departmentController.dispose();
     _poController.dispose();
+    _deliveryTermsController.dispose();
     super.dispose();
   }
 
@@ -55,6 +59,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
     final clientsAsync = ref.watch(getAllClientsProvider);
     final suppliersAsync = ref.watch(getAllSuppliersProvider);
     final productsAsync = ref.watch(getAllProductsProvider);
+    final ordersAsync = ref.watch(getAllOrdersProvider);
 
     return Dialog(
       backgroundColor: AppColors.textWhite,
@@ -114,6 +119,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                         clients,
                         suppliers,
                         products,
+                        ordersAsync,
                       );
                     },
                   );
@@ -131,6 +137,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
     List<ClientEntity> clients,
     List<SupplierEntity> suppliers,
     List<ProductEntity> products,
+    AsyncValue<List<OrderEntity>> ordersAsync,
   ) {
     final subtotal = _calculateSubtotal();
     final discountPercent = _discountPercent;
@@ -145,10 +152,58 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
         children: [
           Row(
             children: [
-              const Expanded(
-                child: Text(
-                  'New Order',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+              Expanded(
+                child: Row(
+                  children: [
+                    const Text(
+                      'New Order',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: ordersAsync.when(
+                        loading: () => const Text(
+                          'Order# ...',
+                          style: TextStyle(
+                            color: AppColors.textWhite,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        error: (_, _) => const Text(
+                          'Order# N/A',
+                          style: TextStyle(
+                            color: AppColors.textWhite,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        data: (orders) {
+                          final maxId = orders
+                              .map((order) => order.id ?? 0)
+                              .fold<int>(0, (max, id) => id > max ? id : max);
+                          final nextId = maxId + 1;
+
+                          return Text(
+                            'Order# $nextId',
+                            style: const TextStyle(
+                              color: AppColors.textWhite,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
               IconButton(
@@ -284,6 +339,20 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                   ),
                   validator: (value) => value == null || value.trim().isEmpty
                       ? 'Enter a Department'
+                      : null,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: _deliveryTermsController,
+                  enabled: !_isSubmitting,
+                  decoration: const InputDecoration(
+                    labelText: 'Delivery Terms',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Enter a Delivery Term'
                       : null,
                 ),
               ),
@@ -484,6 +553,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
     final items = <OrderItemEntity>[];
     final department = _departmentController.text.trim();
     final _po = _poController.text.trim();
+    final deliveryTerms = _deliveryTermsController.text.trim();
 
     for (final line in _lines) {
       final productId = line.productId;
@@ -534,12 +604,18 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
       return;
     }
 
+    if (deliveryTerms.isEmpty) {
+      _showError('Please enter Delivery Terms.');
+      return;
+    }
+
     final order = OrderEntity(
       supplierId: _selectedSupplierId!,
       clientId: _selectedClientId!,
       items: items,
       status: _status,
       department: department,
+      deliveryTerm: deliveryTerms,
       po: _po.isEmpty ? null : _po,
       createdAt: _orderDate,
     );
@@ -628,7 +704,7 @@ class _SupplierDetailsCard extends StatelessWidget {
           _DetailRow(label: 'Contact', value: supplier.contactInfo ?? '-'),
           _DetailRow(label: 'STRN', value: supplier.strnNo ?? '-'),
           _DetailRow(label: 'NTN', value: supplier.ntn ?? '-'),
-          _DetailRow(label: 'Delivery Terms', value: supplier.deliveryTerms),
+          // _DetailRow(label: 'Delivery Terms', value: supplier.deliveryTerms),
         ],
       ),
     );

@@ -4,6 +4,7 @@ import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/features/client/domain/entities/client_entity.dart';
 import 'package:ledgerly/features/client/presentation/providers/client_providers.dart';
 import 'package:ledgerly/features/orders/domain/entities/order_entity.dart';
+import 'package:ledgerly/features/orders/domain/entities/order_item_entity.dart';
 import 'package:ledgerly/features/orders/domain/entities/supplier_entity.dart';
 import 'package:ledgerly/features/orders/presentation/providers/order_providers.dart';
 import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
@@ -56,6 +57,23 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
     });
   }
 
+  Future<void> _openEditOrderDialog() async {
+    final updated = await showDialog<OrderEntity>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _EditOrderDialog(order: _order),
+    );
+
+    if (updated != null && mounted) {
+      setState(() {
+        _order = updated;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Order updated successfully.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final fallbackClientAsync = ref.watch(getAllClientsProvider);
@@ -83,6 +101,20 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
         backgroundColor: AppColors.textWhite,
         foregroundColor: AppColors.textBlack,
         title: Text('Order #ORD-${_order.id ?? '---'}'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textWhite,
+              ),
+              onPressed: _openEditOrderDialog,
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              label: const Text('Edit Order'),
+            ),
+          ),
+        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -151,6 +183,466 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _EditOrderDialog extends ConsumerStatefulWidget {
+  const _EditOrderDialog({required this.order});
+
+  final OrderEntity order;
+
+  @override
+  ConsumerState<_EditOrderDialog> createState() => _EditOrderDialogState();
+}
+
+class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _departmentController;
+  late final TextEditingController _poController;
+  late String _status;
+  bool _isSaving = false;
+
+  late final List<_EditableOrderLine> _lines;
+
+  @override
+  void initState() {
+    super.initState();
+    _departmentController = TextEditingController(
+      text: widget.order.department ?? '',
+    );
+    _poController = TextEditingController(text: widget.order.po ?? '');
+    _status = widget.order.status ?? 'pending';
+    _lines = widget.order.items
+        .map(
+          (item) => _EditableOrderLine(
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.price,
+          ),
+        )
+        .toList();
+
+    if (_lines.isEmpty) {
+      _lines.add(_EditableOrderLine(quantity: 1, unitPrice: 0));
+    }
+  }
+
+  @override
+  void dispose() {
+    _departmentController.dispose();
+    _poController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final items = <OrderItemEntity>[];
+    for (final line in _lines) {
+      if (line.productId == null) {
+        _showError('Each row must have a selected product.');
+        return;
+      }
+      if (line.quantity <= 0) {
+        _showError('Quantity should be at least 1 in every row.');
+        return;
+      }
+      if (line.unitPrice <= 0) {
+        _showError('Price should be greater than 0 in every row.');
+        return;
+      }
+
+      items.add(
+        OrderItemEntity(
+          productId: line.productId!,
+          quantity: line.quantity,
+          price: line.unitPrice,
+        ),
+      );
+    }
+
+    final updatedOrder = widget.order.copyWith(
+      items: items,
+      department: _departmentController.text.trim().isEmpty
+          ? null
+          : _departmentController.text.trim(),
+      po: _poController.text.trim().isEmpty ? null : _poController.text.trim(),
+      status: _status,
+    );
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await ref.read(orderRepositoryProvider).updateOrder(updatedOrder);
+      ref.invalidate(getAllOrdersProvider);
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pop(updatedOrder);
+    } catch (e) {
+      _showError('Failed to update order: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: AppColors.errorText),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final productsAsync = ref.watch(getAllProductsProvider);
+
+    return Dialog(
+      backgroundColor: AppColors.textWhite,
+      insetPadding: const EdgeInsets.all(24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: SizedBox(
+        width: 740,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: productsAsync.when(
+            loading: () => const SizedBox(
+              height: 220,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (error, _) => SizedBox(
+              height: 220,
+              child: Center(
+                child: Text(
+                  'Unable to load products: $error',
+                  style: const TextStyle(color: AppColors.errorText),
+                ),
+              ),
+            ),
+            data: (products) {
+              return Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Edit Order #ORD-${widget.order.id ?? '---'}',
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: _isSaving
+                              ? null
+                              : () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _departmentController,
+                            enabled: !_isSaving,
+                            decoration: const InputDecoration(
+                              labelText: 'Department',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) =>
+                                value == null || value.trim().isEmpty
+                                ? 'Enter a Department'
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _poController,
+                            enabled: !_isSaving,
+                            decoration: const InputDecoration(
+                              labelText: 'PO',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          width: 170,
+                          child: DropdownButtonFormField<String>(
+                            initialValue: _status,
+                            decoration: const InputDecoration(
+                              labelText: 'Status',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'pending',
+                                child: Text('Pending'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'completed',
+                                child: Text('Completed'),
+                              ),
+                            ],
+                            onChanged: _isSaving
+                                ? null
+                                : (value) {
+                                    if (value != null) {
+                                      setState(() {
+                                        _status = value;
+                                      });
+                                    }
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Order Items',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: _isSaving
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _lines.add(
+                                      _EditableOrderLine(
+                                        quantity: 1,
+                                        unitPrice: 0,
+                                      ),
+                                    );
+                                  });
+                                },
+                          icon: const Icon(Icons.add_circle_outline),
+                          label: const Text('Add Product'),
+                        ),
+                      ],
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 320),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: _lines.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final line = _lines[index];
+                          return _EditableOrderLineRow(
+                            line: line,
+                            products: products,
+                            enabled: !_isSaving,
+                            onChanged: () => setState(() {}),
+                            onDelete: _lines.length == 1
+                                ? null
+                                : () {
+                                    setState(() {
+                                      _lines.removeAt(index);
+                                    });
+                                  },
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Total: PKR ${_lines.fold<double>(0, (sum, line) => sum + (line.quantity * line.unitPrice)).toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _isSaving
+                              ? null
+                              : () => Navigator.of(context).pop(),
+                          child: const Text('Cancel'),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryDark,
+                            foregroundColor: AppColors.textWhite,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 14,
+                            ),
+                          ),
+                          onPressed: _isSaving ? null : _submit,
+                          child: _isSaving
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.textWhite,
+                                  ),
+                                )
+                              : const Text('Save Changes'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EditableOrderLine {
+  _EditableOrderLine({
+    this.productId,
+    required this.quantity,
+    required this.unitPrice,
+  });
+
+  int? productId;
+  int quantity;
+  double unitPrice;
+}
+
+class _EditableOrderLineRow extends StatelessWidget {
+  const _EditableOrderLineRow({
+    required this.line,
+    required this.products,
+    required this.enabled,
+    required this.onChanged,
+    required this.onDelete,
+  });
+
+  final _EditableOrderLine line;
+  final List<ProductEntity> products;
+  final bool enabled;
+  final VoidCallback onChanged;
+  final VoidCallback? onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.lightBackground,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 4,
+            child: DropdownButtonFormField<int>(
+              initialValue: line.productId,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Product',
+              ),
+              items: products
+                  .map(
+                    (p) => DropdownMenuItem<int>(
+                      value: p.id,
+                      child: Text(p.name, overflow: TextOverflow.ellipsis),
+                    ),
+                  )
+                  .toList(),
+              validator: (value) => value == null ? 'Select product' : null,
+              onChanged: enabled
+                  ? (value) {
+                      line.productId = value;
+                      onChanged();
+                    }
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 110,
+            child: TextFormField(
+              initialValue: line.quantity.toString(),
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Qty',
+              ),
+              enabled: enabled,
+              validator: (value) {
+                final parsed = int.tryParse(value ?? '');
+                if (parsed == null || parsed <= 0) {
+                  return 'Invalid';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                line.quantity = int.tryParse(value) ?? 0;
+                onChanged();
+              },
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 118,
+            child: TextFormField(
+              initialValue: line.unitPrice.toStringAsFixed(2),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Price',
+                prefixText: 'PKR ',
+              ),
+              enabled: enabled,
+              validator: (value) {
+                final parsed = double.tryParse((value ?? '').trim());
+                if (parsed == null || parsed <= 0) {
+                  return 'Invalid';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                line.unitPrice = double.tryParse(value) ?? 0;
+                onChanged();
+              },
+            ),
+          ),
+          const SizedBox(width: 6),
+          IconButton(
+            onPressed: enabled ? onDelete : null,
+            icon: const Icon(Icons.delete_outline),
+          ),
+        ],
       ),
     );
   }

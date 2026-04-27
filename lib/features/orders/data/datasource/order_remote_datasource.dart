@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class OrderRemoteDatasource {
   final SupabaseClient _client;
   static const String _orderSelect =
-      'id, supplierId:supplier_id, clientId:client_id, status, department, po, createdAt:created_at, '
+      'id, supplierId:supplier_id, clientId:client_id, status, department, po, createdAt:created_at, delivery_term, '
       'items:order_items(id, productId:product_id, quantity, price)';
 
   OrderRemoteDatasource(this._client);
@@ -19,6 +19,7 @@ class OrderRemoteDatasource {
           'status': order.status ?? 'pending',
           'department': order.department,
           'po': order.po,
+          'delivery_term': order.deliveryTerm,
           'created_at': order.createdAt?.toIso8601String(),
         })
         .select('id')
@@ -51,6 +52,7 @@ class OrderRemoteDatasource {
       'supplier_id': orderData.supplierId,
       'client_id': orderData.clientId,
       'department': orderData.department,
+      'delivery_term': orderData.deliveryTerm,
       'po': orderData.po,
     };
     if (orderData.status != null) {
@@ -58,6 +60,25 @@ class OrderRemoteDatasource {
     }
 
     await _client.from('orders').update(payload).eq('id', orderData.id!);
+
+    // Replace order items in one go so edits (add/remove/update lines)
+    // are reflected consistently for the same order number.
+    await _client.from('order_items').delete().eq('order_id', orderData.id!);
+
+    if (orderData.items.isNotEmpty) {
+      final itemsPayload = orderData.items
+          .map(
+            (item) => {
+              'order_id': orderData.id,
+              'product_id': item.productId,
+              'quantity': item.quantity,
+              'price': item.price,
+            },
+          )
+          .toList();
+
+      await _client.from('order_items').insert(itemsPayload);
+    }
   }
 
   Future<OrderEntity> getOrderById(int id) async {
@@ -66,7 +87,7 @@ class OrderRemoteDatasource {
         .select(_orderSelect)
         .eq('id', id)
         .single();
-    return OrderEntity.fromJson(response);
+    return OrderEntity.fromJson(_normalizeOrderRow(response));
   }
 
   Future<List<OrderEntity>> getOrders() async {
@@ -74,6 +95,19 @@ class OrderRemoteDatasource {
         .from('orders')
         .select(_orderSelect)
         .order('created_at', ascending: false);
-    return (response as List).map((e) => OrderEntity.fromJson(e)).toList();
+    return (response as List)
+        .map((e) => OrderEntity.fromJson(_normalizeOrderRow(e)))
+        .toList();
+  }
+
+  Map<String, dynamic> _normalizeOrderRow(Map<String, dynamic> row) {
+    final normalized = Map<String, dynamic>.from(row);
+
+    // Keep parsing resilient while existing rows are migrated.
+    normalized['delivery_term'] =
+        (normalized['delivery_term'] ?? normalized['deliveryTerm'] ?? '')
+            .toString();
+
+    return normalized;
   }
 }
