@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OrderItemEntity {
 
- int? get id; int get productId; int get quantity; double get price;
+ int? get id; int get productId; int get quantity; double get price; int? get invoicedQuantity;
 /// Create a copy of OrderItemEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $OrderItemEntityCopyWith<OrderItemEntity> get copyWith => _$OrderItemEntityCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItemEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.price, price) || other.price == price));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItemEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.price, price) || other.price == price)&&(identical(other.invoicedQuantity, invoicedQuantity) || other.invoicedQuantity == invoicedQuantity));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,productId,quantity,price);
+int get hashCode => Object.hash(runtimeType,id,productId,quantity,price,invoicedQuantity);
 
 @override
 String toString() {
-  return 'OrderItemEntity(id: $id, productId: $productId, quantity: $quantity, price: $price)';
+  return 'OrderItemEntity(id: $id, productId: $productId, quantity: $quantity, price: $price, invoicedQuantity: $invoicedQuantity)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $OrderItemEntityCopyWith<$Res>  {
   factory $OrderItemEntityCopyWith(OrderItemEntity value, $Res Function(OrderItemEntity) _then) = _$OrderItemEntityCopyWithImpl;
 @useResult
 $Res call({
- int? id, int productId, int quantity, double price
+ int? id, int productId, int quantity, double price, int? invoicedQuantity
 });
 
 
@@ -65,13 +65,14 @@ class _$OrderItemEntityCopyWithImpl<$Res>
 
 /// Create a copy of OrderItemEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? productId = null,Object? quantity = null,Object? price = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? productId = null,Object? quantity = null,Object? price = null,Object? invoicedQuantity = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
-as double,
+as double,invoicedQuantity: freezed == invoicedQuantity ? _self.invoicedQuantity : invoicedQuantity // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -156,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int productId,  int quantity,  double price)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int productId,  int quantity,  double price,  int? invoicedQuantity)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderItemEntity() when $default != null:
-return $default(_that.id,_that.productId,_that.quantity,_that.price);case _:
+return $default(_that.id,_that.productId,_that.quantity,_that.price,_that.invoicedQuantity);case _:
   return orElse();
 
 }
@@ -177,10 +178,10 @@ return $default(_that.id,_that.productId,_that.quantity,_that.price);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int productId,  int quantity,  double price)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int productId,  int quantity,  double price,  int? invoicedQuantity)  $default,) {final _that = this;
 switch (_that) {
 case _OrderItemEntity():
-return $default(_that.id,_that.productId,_that.quantity,_that.price);case _:
+return $default(_that.id,_that.productId,_that.quantity,_that.price,_that.invoicedQuantity);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +198,10 @@ return $default(_that.id,_that.productId,_that.quantity,_that.price);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int productId,  int quantity,  double price)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int productId,  int quantity,  double price,  int? invoicedQuantity)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderItemEntity() when $default != null:
-return $default(_that.id,_that.productId,_that.quantity,_that.price);case _:
+return $default(_that.id,_that.productId,_that.quantity,_that.price,_that.invoicedQuantity);case _:
   return null;
 
 }
@@ -212,13 +213,14 @@ return $default(_that.id,_that.productId,_that.quantity,_that.price);case _:
 @JsonSerializable()
 
 class _OrderItemEntity implements OrderItemEntity {
-  const _OrderItemEntity({this.id, required this.productId, required this.quantity, required this.price});
+  const _OrderItemEntity({this.id, required this.productId, required this.quantity, required this.price, this.invoicedQuantity});
   factory _OrderItemEntity.fromJson(Map<String, dynamic> json) => _$OrderItemEntityFromJson(json);
 
 @override final  int? id;
 @override final  int productId;
 @override final  int quantity;
 @override final  double price;
+@override final  int? invoicedQuantity;
 
 /// Create a copy of OrderItemEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +235,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItemEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.price, price) || other.price == price));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItemEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.price, price) || other.price == price)&&(identical(other.invoicedQuantity, invoicedQuantity) || other.invoicedQuantity == invoicedQuantity));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,productId,quantity,price);
+int get hashCode => Object.hash(runtimeType,id,productId,quantity,price,invoicedQuantity);
 
 @override
 String toString() {
-  return 'OrderItemEntity(id: $id, productId: $productId, quantity: $quantity, price: $price)';
+  return 'OrderItemEntity(id: $id, productId: $productId, quantity: $quantity, price: $price, invoicedQuantity: $invoicedQuantity)';
 }
 
 
@@ -253,7 +255,7 @@ abstract mixin class _$OrderItemEntityCopyWith<$Res> implements $OrderItemEntity
   factory _$OrderItemEntityCopyWith(_OrderItemEntity value, $Res Function(_OrderItemEntity) _then) = __$OrderItemEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, int productId, int quantity, double price
+ int? id, int productId, int quantity, double price, int? invoicedQuantity
 });
 
 
@@ -270,13 +272,14 @@ class __$OrderItemEntityCopyWithImpl<$Res>
 
 /// Create a copy of OrderItemEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? productId = null,Object? quantity = null,Object? price = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? productId = null,Object? quantity = null,Object? price = null,Object? invoicedQuantity = freezed,}) {
   return _then(_OrderItemEntity(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
-as double,
+as double,invoicedQuantity: freezed == invoicedQuantity ? _self.invoicedQuantity : invoicedQuantity // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

@@ -7,6 +7,8 @@ import 'package:ledgerly/features/orders/domain/entities/order_entity.dart';
 import 'package:ledgerly/features/orders/presentation/pages/add_order_dialog.dart';
 import 'package:ledgerly/features/orders/presentation/pages/order_details_page.dart';
 import 'package:ledgerly/features/orders/presentation/providers/order_providers.dart';
+import 'package:ledgerly/features/invoices/presentation/pages/add_invoice_dialog.dart';
+import 'package:ledgerly/features/invoices/presentation/pages/invoices_dashboard.dart';
 
 import '../../domain/entities/supplier_entity.dart';
 import '../providers/supplier_providers.dart';
@@ -210,6 +212,18 @@ class _DashboardHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const InvoicesDashboard(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.receipt_long),
+              label: const Text('Invoices'),
+            ),
+            const SizedBox(width: 14),
             ElevatedButton.icon(
               onPressed: onCreateOrder,
               icon: const Icon(Icons.add_circle_outline),
@@ -377,6 +391,18 @@ class _OrdersList extends ConsumerWidget {
                 GestureDetector(
                   onTap: () {}, // absorb tap so InkWell doesn't fire
                   child: _StatusPill(order: order, ref: ref),
+                ),
+                const SizedBox(width: 8),
+                // Invoice button
+                IconButton(
+                  tooltip: 'Generate Invoice',
+                  onPressed: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (_) => AddInvoiceDialog(order: order),
+                    );
+                  },
+                  icon: const Icon(Icons.receipt_long),
                 ),
               ],
             ),

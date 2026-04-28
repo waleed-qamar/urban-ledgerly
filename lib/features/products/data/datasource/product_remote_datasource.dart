@@ -9,7 +9,9 @@ class ProductRemoteDatasource {
   Future<List<ProductEntity>> getProducts() async {
     final response = await _client.from('products').select();
 
-    return response.map((json) => ProductEntity.fromJson(json)).toList();
+    return response
+        .map((json) => ProductEntity.fromJson(_normalizeProductRow(json)))
+        .toList();
   }
 
   Future<void> addProduct(ProductEntity product) async {
@@ -26,5 +28,19 @@ class ProductRemoteDatasource {
 
   Future<void> deleteProduct(int productId) async {
     await _client.from('products').delete().eq('id', productId);
+  }
+
+  Map<String, dynamic> _normalizeProductRow(Map<String, dynamic> row) {
+    final normalized = Map<String, dynamic>.from(row);
+
+    normalized['id'] = normalized['id'] ?? 0;
+    normalized['name'] = (normalized['name'] ?? '').toString();
+    normalized['weight'] = (normalized['weight'] ?? 0).toDouble();
+    normalized['description'] = normalized['description']?.toString();
+    normalized['created_at'] =
+        (normalized['created_at'] ?? DateTime.now().toIso8601String())
+            .toString();
+
+    return normalized;
   }
 }

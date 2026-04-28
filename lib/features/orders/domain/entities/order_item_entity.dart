@@ -10,6 +10,7 @@ abstract class OrderItemEntity with _$OrderItemEntity {
     required int productId,
     required int quantity,
     required double price,
+    int? invoicedQuantity,
   }) = _OrderItemEntity;
 
   factory OrderItemEntity.fromJson(Map<String, dynamic> json) =>

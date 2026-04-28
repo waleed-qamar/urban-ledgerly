@@ -41,9 +41,14 @@ class SupplierRemoteDatasource {
   Map<String, dynamic> _normalizeSupplierRow(Map<String, dynamic> row) {
     final normalized = Map<String, dynamic>.from(row);
 
+    normalized['name'] = (normalized['name'] ?? '').toString();
+    normalized['address'] = (normalized['address'] ?? '').toString();
+    normalized['strn_no'] = (normalized['strn_no'] ?? '').toString();
+    normalized['ntn'] = (normalized['ntn'] ?? '').toString();
     // `delivery_terms` is currently transitional and may be null in old rows.
     normalized['delivery_terms'] = (normalized['delivery_terms'] ?? '')
         .toString();
+    normalized['contact_info'] = (normalized['contact_info'] ?? '').toString();
 
     return normalized;
   }

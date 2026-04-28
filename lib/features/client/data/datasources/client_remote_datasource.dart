@@ -9,7 +9,9 @@ class ClientRemoteDatasource {
   Future<List<ClientEntity>> fetchAllClients() async {
     final response = await _client.from('clients').select();
 
-    return response.map((json) => ClientEntity.fromJson(json)).toList();
+    return response
+        .map((json) => ClientEntity.fromJson(_normalizeClientRow(json)))
+        .toList();
   }
 
   Future<void> addClient(ClientEntity client) async {
@@ -23,5 +25,22 @@ class ClientRemoteDatasource {
 
   Future<void> deleteClient(int clientId) async {
     await _client.from('clients').delete().eq('id', clientId);
+  }
+
+  Map<String, dynamic> _normalizeClientRow(Map<String, dynamic> row) {
+    final normalized = Map<String, dynamic>.from(row);
+
+    normalized['clientName'] = (normalized['clientName'] ?? '').toString();
+    normalized['contactNumber'] = (normalized['contactNumber'] ?? '')
+        .toString();
+    normalized['clientAddress'] = (normalized['clientAddress'] ?? '')
+        .toString();
+    normalized['department'] = (normalized['department'] ?? '').toString();
+    normalized['createdAt'] =
+        (normalized['createdAt'] ?? DateTime.now().toIso8601String())
+            .toString();
+    normalized['is_active'] = normalized['is_active'] ?? true;
+
+    return normalized;
   }
 }

@@ -12,6 +12,7 @@ _OrderItemEntity _$OrderItemEntityFromJson(Map<String, dynamic> json) =>
       productId: (json['productId'] as num).toInt(),
       quantity: (json['quantity'] as num).toInt(),
       price: (json['price'] as num).toDouble(),
+      invoicedQuantity: (json['invoicedQuantity'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$OrderItemEntityToJson(_OrderItemEntity instance) =>
@@ -20,4 +21,5 @@ Map<String, dynamic> _$OrderItemEntityToJson(_OrderItemEntity instance) =>
       'productId': instance.productId,
       'quantity': instance.quantity,
       'price': instance.price,
+      'invoicedQuantity': instance.invoicedQuantity,
     };

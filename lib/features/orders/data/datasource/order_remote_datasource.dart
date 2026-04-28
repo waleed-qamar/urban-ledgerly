@@ -5,7 +5,7 @@ class OrderRemoteDatasource {
   final SupabaseClient _client;
   static const String _orderSelect =
       'id, supplierId:supplier_id, clientId:client_id, status, department, po, createdAt:created_at, delivery_term, '
-      'items:order_items(id, productId:product_id, quantity, price)';
+      'items:order_items(id, productId:product_id, quantity, price, invoicedQuantity:invoiced_quantity)';
 
   OrderRemoteDatasource(this._client);
 
@@ -34,13 +34,32 @@ class OrderRemoteDatasource {
         'product_id': e.productId,
         'quantity': e.quantity,
         'price': e.price,
+        'invoiced_quantity': 0,
       };
     }).toList();
 
     await _client.from('order_items').insert(items);
 
+    // 3. Insert Credit ledger entry for the vendor (procurement amount)
+    final totalAmount = order.items.fold<double>(
+      0,
+      (sum, item) => sum + (item.quantity * item.price),
+    );
+
+    await _client.from('ledger').insert({
+      'party_type': 'vendor',
+      'party_id': order.supplierId,
+      'entry_type': 'credit',
+      'amount': totalAmount,
+      'entry_date': order.createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'transaction_source': 'order',
+      'reference_id': orderId.toString(),
+      'remarks': 'Auto recorded credit on procurement generation',
+      'created_at': DateTime.now().toIso8601String(),
+    });
+
     // (Phase 2)
-    // 3. Insert inventory RESERVE transactions
+    // 4. Insert inventory RESERVE transactions
   }
 
   Future<void> deleteOrder(int id) async {
@@ -73,6 +92,7 @@ class OrderRemoteDatasource {
               'product_id': item.productId,
               'quantity': item.quantity,
               'price': item.price,
+              'invoiced_quantity': item.invoicedQuantity ?? 0,
             },
           )
           .toList();
