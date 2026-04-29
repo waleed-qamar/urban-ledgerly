@@ -1,4 +1,5 @@
 import 'package:ledgerly/features/orders/domain/entities/order_entity.dart';
+import 'package:ledgerly/features/orders/domain/entities/order_item_entity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class OrderRemoteDatasource {
@@ -51,7 +52,9 @@ class OrderRemoteDatasource {
       'party_id': order.supplierId,
       'entry_type': 'credit',
       'amount': totalAmount,
-      'entry_date': order.createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'entry_date':
+          order.createdAt?.toIso8601String() ??
+          DateTime.now().toIso8601String(),
       'transaction_source': 'order',
       'reference_id': orderId.toString(),
       'remarks': 'Auto recorded credit on procurement generation',
@@ -78,10 +81,15 @@ class OrderRemoteDatasource {
       payload['status'] = orderData.status;
     }
 
+    final existingOrder = await getOrderById(orderData.id!);
+
     await _client.from('orders').update(payload).eq('id', orderData.id!);
 
-    // Replace order items in one go so edits (add/remove/update lines)
-    // are reflected consistently for the same order number.
+    if (_hasSameItems(existingOrder.items, orderData.items)) {
+      return;
+    }
+
+    // Replace order items only when the line-item payload has changed.
     await _client.from('order_items').delete().eq('order_id', orderData.id!);
 
     if (orderData.items.isNotEmpty) {
@@ -99,6 +107,29 @@ class OrderRemoteDatasource {
 
       await _client.from('order_items').insert(itemsPayload);
     }
+  }
+
+  bool _hasSameItems(
+    List<OrderItemEntity> existingItems,
+    List<OrderItemEntity> updatedItems,
+  ) {
+    if (existingItems.length != updatedItems.length) {
+      return false;
+    }
+
+    for (var index = 0; index < existingItems.length; index++) {
+      final existing = existingItems[index];
+      final updated = updatedItems[index];
+
+      if (existing.productId != updated.productId) return false;
+      if (existing.quantity != updated.quantity) return false;
+      if (existing.price != updated.price) return false;
+      if ((existing.invoicedQuantity ?? 0) != (updated.invoicedQuantity ?? 0)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   Future<OrderEntity> getOrderById(int id) async {
