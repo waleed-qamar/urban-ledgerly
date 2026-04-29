@@ -1,8 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/providers/app_providers.dart';
 import '../../data/datasources/receipt_remote_datasource.dart';
 import '../../data/repositories/receipt_repository_impl.dart';
+import '../../domain/entities/disbursement_record.dart';
 import '../../domain/entities/receipt_entity.dart';
 import '../../domain/repositories/receipt_repository.dart';
 
@@ -37,3 +39,7 @@ Future<ReceiptEntity> createReceipt(Ref ref, ReceiptEntity receipt) {
 Future<void> deleteReceipt(Ref ref, int id) {
   return ref.watch(receiptRepositoryProvider).deleteReceipt(id);
 }
+
+final getAllDisbursementsProvider = FutureProvider<List<DisbursementRecord>>(
+  (ref) => ref.watch(receiptRepositoryProvider).getDisbursements(),
+);

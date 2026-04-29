@@ -8,7 +8,9 @@ class ProcurementRemoteDatasource {
   Future<List<ProcurementEntity>> getAllProcurements() async {
     final response = await _client.from('procurements').select();
 
-    return response.map((json) => ProcurementEntity.fromJson(json)).toList();
+    return (response as List)
+        .map((row) => ProcurementEntity.fromJson(_normalizeRow(row)))
+        .toList();
   }
 
   Future<ProcurementEntity> getProcurementById(int id) async {
@@ -18,11 +20,11 @@ class ProcurementRemoteDatasource {
         .eq('id', id)
         .single();
 
-    return ProcurementEntity.fromJson(response);
+    return ProcurementEntity.fromJson(_normalizeRow(response));
   }
 
   Future<void> createProcurement(ProcurementEntity procurement) async {
-    final payload = procurement.toJson()..remove('id');
+    final payload = _toDbRow(procurement.toJson())..remove('id');
 
     final inserted = await _client
         .from('procurements')
@@ -30,7 +32,7 @@ class ProcurementRemoteDatasource {
         .select()
         .single();
 
-    final created = ProcurementEntity.fromJson(inserted);
+    final created = ProcurementEntity.fromJson(_normalizeRow(inserted));
     final createdId = created.id;
 
     if (createdId == null) {
@@ -74,7 +76,7 @@ class ProcurementRemoteDatasource {
   Future<void> updateProcurement(ProcurementEntity procurement) async {
     await _client
         .from('procurements')
-        .update(procurement.toJson())
+        .update(_toDbRow(procurement.toJson()))
         .eq('id', procurement.id!);
   }
 
@@ -85,5 +87,38 @@ class ProcurementRemoteDatasource {
   DateTime _parseDate(String raw) {
     final parsed = DateTime.tryParse(raw);
     return parsed ?? DateTime.now();
+  }
+
+  Map<String, dynamic> _normalizeRow(dynamic row) {
+    final json = Map<String, dynamic>.from(row as Map);
+
+    final rawMaterialId = json['rawMaterialId'] ?? json['raw_material_id'];
+    final vendorId = json['vendorId'] ?? json['vendor_id'];
+
+    return {
+      'id': (json['id'] as num?)?.toInt(),
+      'rawMaterialId': (rawMaterialId as num?)?.toInt() ?? 0,
+      'vendorId': (vendorId as num?)?.toInt() ?? 0,
+      'procurementDate':
+          (json['procurementDate'] ?? json['procurement_date'] ?? '')
+              .toString(),
+      'quantity': (json['quantity'] as num?)?.toInt() ?? 0,
+      'price': (json['price'] as num?)?.toDouble() ?? 0.0,
+      'total': (json['total'] as num?)?.toDouble() ?? 0.0,
+      'notes': json['notes']?.toString(),
+    };
+  }
+
+  Map<String, dynamic> _toDbRow(Map<String, dynamic> json) {
+    return {
+      'id': json['id'],
+      'rawMaterialId': json['rawMaterialId'],
+      'vendorId': json['vendorId'],
+      'procurementDate': json['procurementDate'],
+      'quantity': json['quantity'],
+      'price': json['price'],
+      'total': json['total'],
+      'notes': json['notes'],
+    };
   }
 }

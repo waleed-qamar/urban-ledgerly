@@ -91,7 +91,7 @@ class _MainLayoutState extends State<MainLayout> {
               NavigationRailDestination(
                 icon: Icon(Icons.payments_outlined),
                 selectedIcon: Icon(Icons.payments),
-                label: Text('Receipts'),
+                label: Text('Payments'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.dashboard_outlined),
