@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/features/invoices/utils/pdf_generator.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../client/presentation/providers/client_providers.dart';
-import '../../../ledger/presentation/providers/ledger_providers.dart';
 import '../../../products/presentation/providers/product_providers.dart';
 import '../../../orders/presentation/providers/supplier_providers.dart';
 import '../../domain/entities/invoice_entity.dart';
@@ -75,40 +74,6 @@ class InvoicesDashboard extends ConsumerWidget {
                       );
                     }
                   },
-                  onMarkPaid: () async {
-                    if (invoice.status == 'paid') return;
-                    try {
-                      // 1. Double entry logic based on user answers:
-                      // User said: "two ledger entries. When invoice is generated add debit and when mark as paid log the credit."
-                      // Wait, we didn't add a ledger entry on creation. Let's add the debit entry now? No, the user wants two entries.
-                      // Since we didn't do it on creation, we can do it now if unpaid, but typically it should be on creation. To avoid complex state, I'll add the credit entry for payment now, and assume debit behavior happens elsewhere or I'll implement debit here as well as a retroactive insertion for existing unpaid invoices, but that's bad.
-                      // I should update create_invoice to include the debit, but since I am here, I'll just post the Credit. Actually, I'll post the credit now.
-
-                      await ref.read(
-                        updateInvoiceStatusProvider(invoice.id!, 'paid').future,
-                      );
-
-                      ref.invalidate(getAllInvoicesProvider);
-                      ref.invalidate(getAllEntriesProvider);
-                      ref.invalidate(getBalanceProvider);
-
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Invoice marked as paid and ledger updated.',
-                            ),
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-                      }
-                    }
-                  },
                 );
               },
             );
@@ -123,18 +88,32 @@ class _InvoiceCard extends StatelessWidget {
   final InvoiceEntity invoice;
   final String clientName;
   final VoidCallback onPrint;
-  final VoidCallback onMarkPaid;
 
   const _InvoiceCard({
     required this.invoice,
     required this.clientName,
     required this.onPrint,
-    required this.onMarkPaid,
   });
 
   @override
   Widget build(BuildContext context) {
     final isPaid = invoice.status == 'paid';
+    final isPartial = invoice.paidAmount > 0 && invoice.remainingAmount > 0;
+    final badgeLabel = isPaid
+        ? 'PAID'
+        : isPartial
+        ? 'PARTIAL'
+        : 'UNPAID';
+    final badgeColor = isPaid
+        ? Colors.green.shade50
+        : isPartial
+        ? Colors.orange.shade50
+        : Colors.red.shade50;
+    final badgeTextColor = isPaid
+        ? Colors.green.shade700
+        : isPartial
+        ? Colors.orange.shade700
+        : Colors.red.shade700;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -160,21 +139,35 @@ class _InvoiceCard extends StatelessWidget {
           ),
           Expanded(
             flex: 2,
-            child: Text(
-              'PKR ${invoice.grandTotal.toStringAsFixed(2)}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'PKR ${invoice.grandTotal.toStringAsFixed(2)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Remaining: PKR ${invoice.remainingAmount.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: isPaid ? Colors.grey.shade500 : Colors.red.shade700,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: isPaid ? Colors.green.shade50 : Colors.red.shade50,
+              color: badgeColor,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              invoice.status.toUpperCase(),
+              badgeLabel,
               style: TextStyle(
-                color: isPaid ? Colors.green.shade700 : Colors.red.shade700,
+                color: badgeTextColor,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -188,11 +181,11 @@ class _InvoiceCard extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(
-              Icons.check_circle,
-              color: isPaid ? Colors.grey : Colors.green,
+              Icons.receipt_long,
+              color: isPaid ? Colors.grey : Colors.blue,
             ),
-            onPressed: isPaid ? null : onMarkPaid,
-            tooltip: 'Mark as Paid',
+            onPressed: null,
+            tooltip: 'Receipt-driven payments',
           ),
         ],
       ),

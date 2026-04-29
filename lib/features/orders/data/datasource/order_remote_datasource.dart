@@ -155,9 +155,12 @@ class OrderRemoteDatasource {
     final normalized = Map<String, dynamic>.from(row);
 
     // Keep parsing resilient while existing rows are migrated.
-    normalized['delivery_term'] =
-        (normalized['delivery_term'] ?? normalized['deliveryTerm'] ?? '')
+    normalized['deliveryTerm'] =
+        (normalized['deliveryTerm'] ?? normalized['delivery_term'] ?? '')
             .toString();
+    normalized['status'] = normalized['status']?.toString();
+    normalized['department'] = normalized['department']?.toString();
+    normalized['po'] = normalized['po']?.toString();
 
     return normalized;
   }

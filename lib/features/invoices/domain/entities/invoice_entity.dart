@@ -20,6 +20,8 @@ abstract class InvoiceEntity with _$InvoiceEntity {
     @Default(18.00) double taxPercent,
     required double taxAmount,
     required double grandTotal,
+    @Default(0) double paidAmount,
+    @Default(0) double remainingAmount,
     DateTime? createdAt,
     @Default([]) List<InvoiceItemEntity> items,
   }) = _InvoiceEntity;

@@ -43,12 +43,16 @@ class SupplierRemoteDatasource {
 
     normalized['name'] = (normalized['name'] ?? '').toString();
     normalized['address'] = (normalized['address'] ?? '').toString();
-    normalized['strn_no'] = (normalized['strn_no'] ?? '').toString();
+    normalized['strnNo'] = (normalized['strnNo'] ?? normalized['strn_no'] ?? '')
+        .toString();
     normalized['ntn'] = (normalized['ntn'] ?? '').toString();
     // `delivery_terms` is currently transitional and may be null in old rows.
-    normalized['delivery_terms'] = (normalized['delivery_terms'] ?? '')
-        .toString();
-    normalized['contact_info'] = (normalized['contact_info'] ?? '').toString();
+    normalized['deliveryTerms'] =
+        (normalized['deliveryTerms'] ?? normalized['delivery_terms'] ?? '')
+            .toString();
+    normalized['contactInfo'] =
+        (normalized['contactInfo'] ?? normalized['contact_info'] ?? '')
+            .toString();
 
     return normalized;
   }

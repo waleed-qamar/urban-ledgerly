@@ -4,6 +4,7 @@ import 'package:ledgerly/features/orders/presentation/pages/order_dashboard.dart
 import 'package:ledgerly/features/procurement/presentation/pages/procurement_dashboard.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_dashboard.dart';
 import 'package:ledgerly/features/raw_material/presentation/pages/raw_material_dashboard.dart';
+import 'package:ledgerly/features/receipts/presentation/pages/receipts_dashboard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'features/client/presentation/pages/client_dashboard_view.dart';
 import 'features/expense/presentation/pages/expense_dashboard_view.dart';
@@ -24,6 +25,7 @@ class _MainLayoutState extends State<MainLayout> {
   final List<Widget> _pages = [
     const LedgerPage(),
     const OrderDashboard(),
+    const ReceiptsDashboard(),
     const ClientDashboardView(),
     const VenderDashboardView(),
     const ProductDashboard(),
@@ -85,6 +87,11 @@ class _MainLayoutState extends State<MainLayout> {
                 icon: Icon(Icons.receipt_long_outlined),
                 selectedIcon: Icon(Icons.receipt_long),
                 label: Text('Orders'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.payments_outlined),
+                selectedIcon: Icon(Icons.payments),
+                label: Text('Receipts'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.dashboard_outlined),

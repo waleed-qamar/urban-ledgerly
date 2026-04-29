@@ -28,11 +28,6 @@ Future<void> createInvoice(Ref ref, InvoiceEntity invoice) {
 }
 
 @riverpod
-Future<void> updateInvoiceStatus(Ref ref, int id, String status) {
-  return ref.watch(invoiceRepositoryProvider).updateInvoiceStatus(id, status);
-}
-
-@riverpod
 Future<InvoiceEntity> getInvoiceById(Ref ref, int id) {
   return ref.watch(invoiceRepositoryProvider).getInvoiceById(id);
 }

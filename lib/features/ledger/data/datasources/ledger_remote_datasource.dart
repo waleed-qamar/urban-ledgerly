@@ -6,14 +6,16 @@ class LedgerRemoteDatasource {
 
   LedgerRemoteDatasource(this._client);
   Future<void> addEntry(LedgerEntity entry) async {
-    final payload = entry.toJson()..remove('id');
+    final payload = _toDbRow(entry.toJson())..remove('id');
     await _client.from('ledger').insert(payload);
   }
 
   Future<List<LedgerEntity>> getAllEntries() async {
     final response = await _client.from('ledger').select();
 
-    return response.map((json) => LedgerEntity.fromJson(json)).toList();
+    return response
+        .map((json) => LedgerEntity.fromJson(_normalizeLedgerRow(json)))
+        .toList();
   }
 
   Future<List<LedgerEntity>> getEntriesByDateRange(
@@ -26,7 +28,9 @@ class LedgerRemoteDatasource {
         .gte('entry_date', start.toIso8601String())
         .lte('entry_date', end.toIso8601String());
 
-    return response.map((json) => LedgerEntity.fromJson(json)).toList();
+    return response
+        .map((json) => LedgerEntity.fromJson(_normalizeLedgerRow(json)))
+        .toList();
   }
 
   Future<List<LedgerEntity>> getEntriesByPartyType(PartyType type) async {
@@ -35,7 +39,9 @@ class LedgerRemoteDatasource {
         .select()
         .eq('party_type', type.value);
 
-    return response.map((json) => LedgerEntity.fromJson(json)).toList();
+    return response
+        .map((json) => LedgerEntity.fromJson(_normalizeLedgerRow(json)))
+        .toList();
   }
 
   Future<List<LedgerEntity>> getEntriesByParty({
@@ -50,7 +56,9 @@ class LedgerRemoteDatasource {
           .eq('party_id', partyId)
           .order('entry_date', ascending: true);
 
-      return response.map((json) => LedgerEntity.fromJson(json)).toList();
+      return response
+          .map((json) => LedgerEntity.fromJson(_normalizeLedgerRow(json)))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -97,5 +105,59 @@ class LedgerRemoteDatasource {
       // Return 0 if the query fails to avoid infinite loading state
       return 0.0;
     }
+  }
+
+  Map<String, dynamic> _normalizeLedgerRow(Map<String, dynamic> row) {
+    final normalized = Map<String, dynamic>.from(row);
+
+    normalized['id'] = normalized['id'] ?? 0;
+    normalized['partyType'] =
+        (normalized['partyType'] ?? normalized['party_type'] ?? '').toString();
+    normalized['partyId'] =
+        normalized['partyId'] ?? normalized['party_id'] ?? 0;
+    normalized['invoiceNumber'] =
+        (normalized['invoiceNumber'] ?? normalized['invoice_number'] ?? '')
+            .toString();
+    normalized['entryType'] =
+        (normalized['entryType'] ?? normalized['entry_type'] ?? '').toString();
+    normalized['amount'] = (normalized['amount'] ?? 0).toDouble();
+    normalized['paymentMethod'] =
+        (normalized['paymentMethod'] ?? normalized['payment_method'])
+            ?.toString();
+    normalized['entryDate'] =
+        (normalized['entryDate'] ??
+                normalized['entry_date'] ??
+                DateTime.now().toIso8601String())
+            .toString();
+    normalized['transactionSource'] =
+        (normalized['transactionSource'] ?? normalized['transaction_source'])
+            ?.toString();
+    normalized['referenceId'] =
+        (normalized['referenceId'] ?? normalized['reference_id'])?.toString();
+    normalized['remarks'] = normalized['remarks']?.toString();
+    normalized['createdAt'] =
+        (normalized['createdAt'] ??
+                normalized['created_at'] ??
+                DateTime.now().toIso8601String())
+            .toString();
+
+    return normalized;
+  }
+
+  Map<String, dynamic> _toDbRow(Map<String, dynamic> json) {
+    return {
+      'id': json['id'],
+      'party_type': json['partyType'],
+      'party_id': json['partyId'],
+      'invoice_number': json['invoiceNumber'],
+      'entry_type': json['entryType'],
+      'amount': json['amount'],
+      'payment_method': json['paymentMethod'],
+      'entry_date': json['entryDate'],
+      'transaction_source': json['transactionSource'],
+      'reference_id': json['referenceId'],
+      'remarks': json['remarks'],
+      'created_at': json['createdAt'],
+    };
   }
 }

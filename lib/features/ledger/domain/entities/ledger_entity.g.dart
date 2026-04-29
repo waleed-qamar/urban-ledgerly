@@ -9,33 +9,33 @@ part of 'ledger_entity.dart';
 _LedgerEntity _$LedgerEntityFromJson(Map<String, dynamic> json) =>
     _LedgerEntity(
       id: (json['id'] as num).toInt(),
-      partyType: $enumDecode(_$PartyTypeEnumMap, json['party_type']),
-      partyId: (json['party_id'] as num).toInt(),
-      invoiceNumber: json['invoice_number'] as String,
-      entryType: $enumDecode(_$EntryTypeEnumMap, json['entry_type']),
+      partyType: $enumDecode(_$PartyTypeEnumMap, json['partyType']),
+      partyId: (json['partyId'] as num).toInt(),
+      invoiceNumber: json['invoiceNumber'] as String,
+      entryType: $enumDecode(_$EntryTypeEnumMap, json['entryType']),
       amount: (json['amount'] as num).toDouble(),
-      paymentMethod: json['payment_method'] as String?,
-      entryDate: DateTime.parse(json['entry_date'] as String),
-      transactionSource: json['transaction_source'] as String?,
-      referenceId: json['reference_id'] as String?,
+      paymentMethod: json['paymentMethod'] as String?,
+      entryDate: DateTime.parse(json['entryDate'] as String),
+      transactionSource: json['transactionSource'] as String?,
+      referenceId: json['referenceId'] as String?,
       remarks: json['remarks'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String),
     );
 
 Map<String, dynamic> _$LedgerEntityToJson(_LedgerEntity instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'party_type': _$PartyTypeEnumMap[instance.partyType]!,
-      'party_id': instance.partyId,
-      'invoice_number': instance.invoiceNumber,
-      'entry_type': _$EntryTypeEnumMap[instance.entryType]!,
+      'partyType': _$PartyTypeEnumMap[instance.partyType]!,
+      'partyId': instance.partyId,
+      'invoiceNumber': instance.invoiceNumber,
+      'entryType': _$EntryTypeEnumMap[instance.entryType]!,
       'amount': instance.amount,
-      'payment_method': instance.paymentMethod,
-      'entry_date': instance.entryDate.toIso8601String(),
-      'transaction_source': instance.transactionSource,
-      'reference_id': instance.referenceId,
+      'paymentMethod': instance.paymentMethod,
+      'entryDate': instance.entryDate.toIso8601String(),
+      'transactionSource': instance.transactionSource,
+      'referenceId': instance.referenceId,
       'remarks': instance.remarks,
-      'created_at': instance.createdAt.toIso8601String(),
+      'createdAt': instance.createdAt.toIso8601String(),
     };
 
 const _$PartyTypeEnumMap = {

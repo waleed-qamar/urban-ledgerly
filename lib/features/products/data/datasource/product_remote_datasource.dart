@@ -37,8 +37,10 @@ class ProductRemoteDatasource {
     normalized['name'] = (normalized['name'] ?? '').toString();
     normalized['weight'] = (normalized['weight'] ?? 0).toDouble();
     normalized['description'] = normalized['description']?.toString();
-    normalized['created_at'] =
-        (normalized['created_at'] ?? DateTime.now().toIso8601String())
+    normalized['createdAt'] =
+        (normalized['createdAt'] ??
+                normalized['created_at'] ??
+                DateTime.now().toIso8601String())
             .toString();
 
     return normalized;

@@ -12,7 +12,7 @@ _ProductEntity _$ProductEntityFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       weight: (json['weight'] as num).toDouble(),
       description: json['description'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String),
     );
 
 Map<String, dynamic> _$ProductEntityToJson(_ProductEntity instance) =>
@@ -21,5 +21,5 @@ Map<String, dynamic> _$ProductEntityToJson(_ProductEntity instance) =>
       'name': instance.name,
       'weight': instance.weight,
       'description': instance.description,
-      'created_at': instance.createdAt.toIso8601String(),
+      'createdAt': instance.createdAt.toIso8601String(),
     };
