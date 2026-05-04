@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../account_ledger/presentation/provider/account_ledger_providers.dart';
 import '../../../ledger/domain/entities/ledger_entity.dart';
 import '../../../ledger/presentation/providers/ledger_providers.dart';
 import '../../../vender/presentation/providers/vendor_providers.dart';
@@ -23,7 +24,9 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
   final _remarksController = TextEditingController();
 
   int? _selectedVendorId;
+  int? _selectedAccountId;
   String _paymentMethod = 'cash';
+  String _bankTransferMode = 'online';
   DateTime _paidDate = DateTime.now();
   bool _isSubmitting = false;
 
@@ -55,6 +58,7 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
     final vendorLedgerAsync = ref.watch(
       getEntriesByTypeProvider(PartyType.vendor),
     );
+    final accountsAsync = ref.watch(getAllAccountsProvider);
 
     final vendorBalances = <int, double>{};
     vendorLedgerAsync.whenData((entries) {
@@ -86,137 +90,207 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
         width: 520,
         child: Form(
           key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              vendorsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => Text('Failed to load vendors: $error'),
-                data: (vendors) {
-                  if (vendors.isEmpty) {
-                    return const Text('No vendors found.');
-                  }
-
-                  return DropdownButtonFormField<int>(
-                    initialValue: _selectedVendorId,
-                    decoration: const InputDecoration(labelText: 'Vendor'),
-                    items: vendors.map((vendor) {
-                      final due = vendorBalances[vendor.id] ?? 0.0;
-                      return DropdownMenuItem(
-                        value: vendor.id,
-                        child: Text(
-                          '${vendor.vendorName} (Due: PKR ${due.toStringAsFixed(2)})',
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() => _selectedVendorId = value);
-                    },
-                    validator: (value) =>
-                        value == null ? 'Vendor is required' : null,
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              vendorLedgerAsync.when(
-                loading: () => const Text(
-                  'Calculating vendor due balances...',
-                  style: TextStyle(color: AppColors.textGrey),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                vendorsAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, _) => Text('Failed to load vendors: $error'),
+                  data: (vendors) {
+                    if (vendors.isEmpty) {
+                      return const Text('No vendors found.');
+                    }
+            
+                    return DropdownButtonFormField<int>(
+                      initialValue: _selectedVendorId,
+                      decoration: const InputDecoration(labelText: 'Vendor *'),
+                      items: vendors.map((vendor) {
+                        final due = vendorBalances[vendor.id] ?? 0.0;
+                        return DropdownMenuItem(
+                          value: vendor.id,
+                          child: Text(
+                            '${vendor.vendorName} (Due: PKR ${due.toStringAsFixed(2)})',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() => _selectedVendorId = value);
+                      },
+                      validator: (value) =>
+                          value == null ? 'Vendor is required' : null,
+                    );
+                  },
                 ),
-                error: (_, _) => const Text(
-                  'Could not fetch live due balances from ledger.',
-                  style: TextStyle(color: AppColors.errorText),
-                ),
-                data: (_) => Text(
-                  _selectedVendorId == null
-                      ? 'Select a vendor to view current due balance.'
-                      : 'Current due balance: PKR ${selectedDue.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textBlack,
+                const SizedBox(height: 12),
+                vendorLedgerAsync.when(
+                  loading: () => const Text(
+                    'Calculating vendor due balances...',
+                    style: TextStyle(color: AppColors.textGrey),
+                  ),
+                  error: (_, _) => const Text(
+                    'Could not fetch live due balances from ledger.',
+                    style: TextStyle(color: AppColors.errorText),
+                  ),
+                  data: (_) => Text(
+                    _selectedVendorId == null
+                        ? 'Select a vendor to view current due balance.'
+                        : 'Current due balance: PKR ${selectedDue.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textBlack,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _paymentMethod,
-                decoration: const InputDecoration(labelText: 'Payment Method'),
-                items: const [
-                  DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                  DropdownMenuItem(value: 'bank', child: Text('Bank')),
-                  DropdownMenuItem(value: 'cheque', child: Text('Cheque')),
+                const SizedBox(height: 12),
+                
+                DropdownButtonFormField<String>(
+                  initialValue: _paymentMethod,
+                  decoration: const InputDecoration(labelText: 'Payment Mode'),
+                  items: const [
+                    DropdownMenuItem(value: 'cash', child: Text('Cash')),
+                    DropdownMenuItem(value: 'bank', child: Text('Bank Transfer')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _paymentMethod = value;
+                        _selectedAccountId = null; // Reset selection
+                      });
+                    }
+                  },
+                ),
+                
+                if (_paymentMethod == 'bank') ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Text('Transfer Type:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 16),
+                      Radio<String>(
+                        value: 'online',
+                        groupValue: _bankTransferMode,
+                        onChanged: (val) => setState(() => _bankTransferMode = val!),
+                      ),
+                      const Text('Online Transfer'),
+                      const SizedBox(width: 16),
+                      Radio<String>(
+                        value: 'cheque',
+                        groupValue: _bankTransferMode,
+                        onChanged: (val) => setState(() => _bankTransferMode = val!),
+                      ),
+                      const Text('Cheque'),
+                    ],
+                  ),
                 ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _paymentMethod = value);
+                const SizedBox(height: 12),
+            
+                // Account Selection
+                accountsAsync.when(
+                  loading: () => const CircularProgressIndicator(),
+                  error: (err, _) => Text('Error loading accounts: $err'),
+                  data: (accounts) {
+                    final filteredAccounts = accounts.where((acc) => acc.accountType == _paymentMethod).toList();
+                    
+                    if (filteredAccounts.isEmpty) {
+                      return Text('No $_paymentMethod accounts found.', style: const TextStyle(color: Colors.red));
+                    }
+            
+                    if (filteredAccounts.length == 1 && _selectedAccountId == null) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        setState(() => _selectedAccountId = filteredAccounts.first.id);
+                      });
+                    }
+            
+                    return DropdownButtonFormField<int?>(
+                      value: _selectedAccountId,
+                      decoration: InputDecoration(
+                        labelText: 'Select $_paymentMethod Account *',
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: [
+                        const DropdownMenuItem<int?>(value: null, child: Text('Select an account')),
+                        ...filteredAccounts.map(
+                          (acc) => DropdownMenuItem<int?>(
+                            value: acc.id,
+                            child: Text('${acc.accountTitle} ${acc.bankName != null ? "(${acc.bankName})" : ""}'),
+                          ),
+                        ),
+                      ],
+                      onChanged: _isSubmitting
+                          ? null
+                          : (value) => setState(() => _selectedAccountId = value),
+                      validator: (value) => value == null ? 'Please select an account' : null,
+                    );
                   }
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
                 ),
-                onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
-                  labelText: 'Amount',
-                  hintText: 'Enter disbursement amount',
+                const SizedBox(height: 12),
+            
+                TextFormField(
+                  controller: _amountController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  onChanged: (_) => setState(() {}),
+                  decoration: const InputDecoration(
+                    labelText: 'Amount *',
+                    hintText: 'Enter disbursement amount',
+                  ),
+                  validator: (value) {
+                    final parsed = double.tryParse((value ?? '').trim());
+                    if (parsed == null || parsed <= 0) {
+                      return 'Enter a valid amount';
+                    }
+                    if (_selectedVendorId == null) {
+                      return 'Select a vendor first';
+                    }
+                    if (parsed > selectedDue) {
+                      return 'Amount cannot exceed vendor due balance';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  final parsed = double.tryParse((value ?? '').trim());
-                  if (parsed == null || parsed <= 0) {
-                    return 'Enter a valid amount';
-                  }
-                  if (_selectedVendorId == null) {
-                    return 'Select a vendor first';
-                  }
-                  if (parsed > selectedDue) {
-                    return 'Amount cannot exceed vendor due balance';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 8),
-              if (_selectedVendorId != null)
-                Text(
-                  'Remaining due after payment: PKR ${remainingDue.toStringAsFixed(2)}',
-                  style: const TextStyle(color: AppColors.textGrey),
+                const SizedBox(height: 8),
+                if (_selectedVendorId != null)
+                  Text(
+                    'Remaining due after payment: PKR ${remainingDue.toStringAsFixed(2)}',
+                    style: const TextStyle(color: AppColors.textGrey),
+                  ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _accountNoController,
+                  decoration: InputDecoration(
+                    labelText: _bankTransferMode == 'cheque' && _paymentMethod == 'bank' ? 'Cheque No' : 'Account/Ref No (Optional)',
+                  ),
                 ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _accountNoController,
-                decoration: const InputDecoration(
-                  labelText: 'Account No (Optional)',
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _categoryController,
+                  decoration: const InputDecoration(
+                    labelText: 'Category (Optional)',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _categoryController,
-                decoration: const InputDecoration(
-                  labelText: 'Category (Optional)',
+                const SizedBox(height: 12),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Paid Date: ${_paidDate.toIso8601String().split('T').first}',
+                  ),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: _selectDate,
                 ),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  'Paid Date: ${_paidDate.toIso8601String().split('T').first}',
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _remarksController,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Remarks (Optional)',
+                  ),
                 ),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: _selectDate,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _remarksController,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Remarks (Optional)',
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -232,20 +306,23 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                   if (!_formKey.currentState!.validate()) {
                     return;
                   }
-
+            
                   final amount = double.parse(_amountController.text.trim());
-                  if (_selectedVendorId == null) {
+                  if (_selectedVendorId == null || _selectedAccountId == null) {
                     return;
                   }
-
+            
                   setState(() => _isSubmitting = true);
                   try {
+                    final finalPaymentMethod = _paymentMethod == 'bank' && _bankTransferMode == 'cheque' ? 'cheque' : _paymentMethod;
+            
                     await ref
                         .read(receiptRepositoryProvider)
                         .createDisbursement(
                           supplierId: _selectedVendorId!,
                           totalAmount: amount,
-                          paymentMethod: _paymentMethod,
+                          paymentMethod: finalPaymentMethod,
+                          accountId: _selectedAccountId,
                           accountNo: _accountNoController.text.trim().isEmpty
                               ? null
                               : _accountNoController.text.trim(),
@@ -257,12 +334,13 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                               : _remarksController.text.trim(),
                           paidDate: _paidDate,
                         );
-
+            
                     if (!mounted) return;
                     ref.invalidate(getAllEntriesProvider);
                     ref.invalidate(getEntriesByTypeProvider);
                     ref.invalidate(getBalanceProvider);
                     ref.invalidate(getAllDisbursementsProvider);
+                    ref.invalidate(getAllAccountsProvider);
                     Navigator.pop(context, true);
                   } catch (error) {
                     if (mounted) {

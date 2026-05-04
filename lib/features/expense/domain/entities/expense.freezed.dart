@@ -15,8 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Expense {
 
- int get id;// required String name,
- int get expenseHeadId; double get amount; String get remarks; DateTime get date;
+ int get id;@JsonKey(name: 'expenseHeadId') int get expenseHeadId; double get amount; String get remarks; DateTime get date;
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -49,7 +48,7 @@ abstract mixin class $ExpenseCopyWith<$Res>  {
   factory $ExpenseCopyWith(Expense value, $Res Function(Expense) _then) = _$ExpenseCopyWithImpl;
 @useResult
 $Res call({
- int id, int expenseHeadId, double amount, String remarks, DateTime date
+ int id,@JsonKey(name: 'expenseHeadId') int expenseHeadId, double amount, String remarks, DateTime date
 });
 
 
@@ -158,7 +157,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int expenseHeadId,  double amount,  String remarks,  DateTime date)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'expenseHeadId')  int expenseHeadId,  double amount,  String remarks,  DateTime date)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Expense() when $default != null:
 return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.date);case _:
@@ -179,7 +178,7 @@ return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.da
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int expenseHeadId,  double amount,  String remarks,  DateTime date)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'expenseHeadId')  int expenseHeadId,  double amount,  String remarks,  DateTime date)  $default,) {final _that = this;
 switch (_that) {
 case _Expense():
 return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.date);case _:
@@ -199,7 +198,7 @@ return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.da
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int expenseHeadId,  double amount,  String remarks,  DateTime date)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'expenseHeadId')  int expenseHeadId,  double amount,  String remarks,  DateTime date)?  $default,) {final _that = this;
 switch (_that) {
 case _Expense() when $default != null:
 return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.date);case _:
@@ -214,12 +213,11 @@ return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.da
 @JsonSerializable()
 
 class _Expense implements Expense {
-   _Expense({required this.id, required this.expenseHeadId, required this.amount, required this.remarks, required this.date});
+   _Expense({required this.id, @JsonKey(name: 'expenseHeadId') required this.expenseHeadId, required this.amount, required this.remarks, required this.date});
   factory _Expense.fromJson(Map<String, dynamic> json) => _$ExpenseFromJson(json);
 
 @override final  int id;
-// required String name,
-@override final  int expenseHeadId;
+@override@JsonKey(name: 'expenseHeadId') final  int expenseHeadId;
 @override final  double amount;
 @override final  String remarks;
 @override final  DateTime date;
@@ -257,7 +255,7 @@ abstract mixin class _$ExpenseCopyWith<$Res> implements $ExpenseCopyWith<$Res> {
   factory _$ExpenseCopyWith(_Expense value, $Res Function(_Expense) _then) = __$ExpenseCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int expenseHeadId, double amount, String remarks, DateTime date
+ int id,@JsonKey(name: 'expenseHeadId') int expenseHeadId, double amount, String remarks, DateTime date
 });
 
 

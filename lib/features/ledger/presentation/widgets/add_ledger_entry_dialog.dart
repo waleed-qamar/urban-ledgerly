@@ -85,64 +85,118 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Party Type Selector
-                DropdownButtonFormField<PartyType>(
-                  initialValue: _selectedPartyType,
-                  decoration: const InputDecoration(labelText: 'Party Type'),
-                  items: PartyType.values.map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(type.name.toUpperCase()),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedPartyType = val;
-                      _selectedPartyId = null;
-                      _selectedEntryType = _defaultEntryTypeForParty(val);
-                    });
-                  },
-                  validator: (val) => val == null ? 'Required' : null,
+                // Date Picker (Moved to top)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Date: ${_selectedDate.toLocal().toString().split(' ')[0]}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: () => _selectDate(context),
                 ),
                 const SizedBox(height: 16),
 
-                // Party Selector
-                if (_selectedPartyType == PartyType.client)
-                  clientsAsync.when(
-                    data: (clients) => DropdownButtonFormField<int>(
-                      initialValue: _selectedPartyId,
-                      decoration: const InputDecoration(labelText: 'Client'),
-                      items: clients.map((c) {
-                        return DropdownMenuItem(
-                          value: c.id,
-                          child: Text(c.clientName),
-                        );
-                      }).toList(),
-                      onChanged: (val) =>
-                          setState(() => _selectedPartyId = val),
-                      validator: (val) => val == null ? 'Required' : null,
-                    ),
-                    loading: () => const CircularProgressIndicator(),
-                    error: (_, _) => const Text('Error loading clients'),
-                  )
-                else if (_selectedPartyType == PartyType.vendor)
-                  vendorsAsync.when(
-                    data: (vendors) => DropdownButtonFormField<int>(
-                      initialValue: _selectedPartyId,
-                      decoration: const InputDecoration(labelText: 'Vendor'),
-                      items: vendors.map((v) {
-                        return DropdownMenuItem(
-                          value: v.id,
-                          child: Text(v.vendorName),
-                        );
-                      }).toList(),
-                      onChanged: (val) =>
-                          setState(() => _selectedPartyId = val),
-                      validator: (val) => val == null ? 'Required' : null,
-                    ),
-                    loading: () => const CircularProgressIndicator(),
-                    error: (_, _) => const Text('Error loading vendors'),
+                // Party Type Selector
+                if (widget.initialPartyType == null) ...[
+                  DropdownButtonFormField<PartyType>(
+                    initialValue: _selectedPartyType,
+                    decoration: const InputDecoration(labelText: 'Party Type'),
+                    items: PartyType.values.map((type) {
+                      return DropdownMenuItem(
+                        value: type,
+                        child: Text(type.name.toUpperCase()),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedPartyType = val;
+                        _selectedPartyId = null;
+                        _selectedEntryType = _defaultEntryTypeForParty(val);
+                      });
+                    },
+                    validator: (val) => val == null ? 'Required' : null,
                   ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Party Selector
+                if (widget.initialPartyId == null) ...[
+                  if (_selectedPartyType == PartyType.client)
+                    clientsAsync.when(
+                      data: (clients) => DropdownButtonFormField<int>(
+                        initialValue: _selectedPartyId,
+                        decoration: const InputDecoration(labelText: 'Client'),
+                        items: clients.map((c) {
+                          return DropdownMenuItem(
+                            value: c.id,
+                            child: Text(c.clientName),
+                          );
+                        }).toList(),
+                        onChanged: (val) =>
+                            setState(() => _selectedPartyId = val),
+                        validator: (val) => val == null ? 'Required' : null,
+                      ),
+                      loading: () => const CircularProgressIndicator(),
+                      error: (_, _) => const Text('Error loading clients'),
+                    )
+                  else if (_selectedPartyType == PartyType.vendor)
+                    vendorsAsync.when(
+                      data: (vendors) => DropdownButtonFormField<int>(
+                        initialValue: _selectedPartyId,
+                        decoration: const InputDecoration(labelText: 'Vendor'),
+                        items: vendors.map((v) {
+                          return DropdownMenuItem(
+                            value: v.id,
+                            child: Text(v.vendorName),
+                          );
+                        }).toList(),
+                        onChanged: (val) =>
+                            setState(() => _selectedPartyId = val),
+                        validator: (val) => val == null ? 'Required' : null,
+                      ),
+                      loading: () => const CircularProgressIndicator(),
+                      error: (_, _) => const Text('Error loading vendors'),
+                    ),
+                  const SizedBox(height: 16),
+                ] else ...[
+                  // Read-only display of auto-filled party
+                  if (_selectedPartyType == PartyType.client)
+                    clientsAsync.when(
+                      data: (clients) {
+                        final clientName = clients
+                            .firstWhere((c) => c.id == _selectedPartyId,
+                                orElse: () => clients.first)
+                            .clientName;
+                        return TextFormField(
+                          initialValue: clientName,
+                          decoration: const InputDecoration(labelText: 'Client'),
+                          readOnly: true,
+                          enabled: false,
+                        );
+                      },
+                      loading: () => const CircularProgressIndicator(),
+                      error: (_, _) => const Text('Error loading client'),
+                    )
+                  else if (_selectedPartyType == PartyType.vendor)
+                    vendorsAsync.when(
+                      data: (vendors) {
+                        final vendorName = vendors
+                            .firstWhere((v) => v.id == _selectedPartyId,
+                                orElse: () => vendors.first)
+                            .vendorName;
+                        return TextFormField(
+                          initialValue: vendorName,
+                          decoration: const InputDecoration(labelText: 'Vendor'),
+                          readOnly: true,
+                          enabled: false,
+                        );
+                      },
+                      loading: () => const CircularProgressIndicator(),
+                      error: (_, _) => const Text('Error loading vendor'),
+                    ),
+                  const SizedBox(height: 16),
+                ],
 
                 const SizedBox(height: 16),
 
@@ -171,16 +225,7 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                 ),
                 const SizedBox(height: 16),
 
-                // Invoice Number
-                TextFormField(
-                  controller: _invoiceNumberController,
-                  decoration: const InputDecoration(
-                    labelText: 'Invoice Number',
-                    hintText: 'Enter invoice number',
-                  ),
-                  validator: (val) =>
-                      (val == null || val.isEmpty) ? 'Required' : null,
-                ),
+                // Invoice Number hidden from UI
                 const SizedBox(height: 16),
 
                 // Amount
@@ -196,16 +241,7 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                 ),
                 const SizedBox(height: 16),
 
-                // Date Picker
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    'Date: ${_selectedDate.toLocal().toString().split(' ')[0]}',
-                  ),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: () => _selectDate(context),
-                ),
-                const SizedBox(height: 16),
+
 
                 // Remarks
                 TextFormField(
@@ -236,7 +272,7 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                 id: 0,
                 partyType: _selectedPartyType!,
                 partyId: _selectedPartyId!,
-                invoiceNumber: _invoiceNumberController.text,
+                invoiceNumber: '', // pass empty string
                 entryType: _selectedEntryType,
                 amount: double.parse(_amountController.text),
                 entryDate: _selectedDate,

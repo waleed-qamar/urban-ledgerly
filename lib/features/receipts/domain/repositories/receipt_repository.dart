@@ -8,6 +8,7 @@ abstract class ReceiptRepository {
     required double totalAmount,
     required String paymentMethod,
     String? accountNo,
+    int? accountId,
     String? category,
     String? remarks,
     DateTime? paidDate,

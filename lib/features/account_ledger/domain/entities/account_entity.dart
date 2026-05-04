@@ -1,18 +1,21 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+part 'account_entity.freezed.dart';
+part 'account_entity.g.dart';
+
 @freezed
-class AccountEntity with _$AccountEntity {
+abstract class AccountEntity with _$AccountEntity {
   const factory AccountEntity({
-    required String id,
+    required int id,
     required String accountTitle,
     required String accountType,
-    required String bankName,
-    required String accountNumber,
-    String? currncy,
-    bool? isActive,
+    String? bankName,
+    String? accountNumber,
+    @Default('PKR') String currency,
+    @Default(true) bool isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
-    required double balance,
+    @Default(0.0) double currentBalance,
   }) = _AccountEntity;
 
   factory AccountEntity.fromJson(Map<String, dynamic> json) =>

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../account_ledger/presentation/provider/account_ledger_providers.dart';
 import '../../../client/presentation/providers/client_providers.dart';
 import '../../domain/entities/receipt_entity.dart';
 import '../providers/receipt_providers.dart';
@@ -22,7 +23,9 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
   bool _isSubmitting = false;
   DateTime _receivedDate = DateTime.now();
   String _paymentMethod = 'cash';
+  String _bankTransferMode = 'online'; // 'online' or 'cheque'
   int? _selectedClientId;
+  int? _selectedAccountId;
 
   @override
   void dispose() {
@@ -57,6 +60,13 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
       ).showSnackBar(const SnackBar(content: Text('Please select a client.')));
       return;
     }
+    
+    if (_selectedAccountId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select an account.')));
+      return;
+    }
 
     final paymentAmount = _parseAmount(_paymentAmountController.text);
     if (paymentAmount <= 0) {
@@ -69,13 +79,13 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
     setState(() => _isSubmitting = true);
 
     try {
-      // Receipts are now fully decoupled from invoices.
-      // Passing empty allocations — the RPC will create a credit ledger entry
-      // for the full amount under transaction_source = 'receipt_advance'.
+      final finalPaymentMethod = _paymentMethod == 'bank' && _bankTransferMode == 'cheque' ? 'cheque' : _paymentMethod;
+      
       final receipt = ReceiptEntity(
         clientId: _selectedClientId!,
         totalAmount: paymentAmount,
-        paymentMethod: _paymentMethod,
+        paymentMethod: finalPaymentMethod,
+        accountId: _selectedAccountId,
         accountNo: _accountNoController.text.trim().isEmpty
             ? null
             : _accountNoController.text.trim(),
@@ -89,6 +99,7 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
       await ref.read(createReceiptProvider(receipt).future);
 
       ref.invalidate(getAllReceiptsProvider);
+      ref.invalidate(getAllAccountsProvider);
       if (context.mounted) {
         Navigator.pop(context, true);
       }
@@ -108,6 +119,7 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
   @override
   Widget build(BuildContext context) {
     final clientsAsync = ref.watch(getAllClientsProvider);
+    final accountsAsync = ref.watch(getAllAccountsProvider);
 
     return Dialog(
       backgroundColor: AppColors.textWhite,
@@ -123,205 +135,287 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
             data: (clients) {
               return Form(
                 key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'New Receipt',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
-                                    ?.copyWith(fontWeight: FontWeight.w800),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Record a payment received from a client.',
-                                style: TextStyle(color: Colors.grey.shade600),
-                              ),
-                            ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'New Receipt',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(fontWeight: FontWeight.w800),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Record a payment received from a client.',
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          onPressed: _isSubmitting
-                              ? null
-                              : () => Navigator.pop(context),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Client dropdown
-                    DropdownButtonFormField<int?>(
-                      initialValue: _selectedClientId,
-                      decoration: const InputDecoration(
-                        labelText: 'Client *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person_outline),
+                          IconButton(
+                            onPressed: _isSubmitting
+                                ? null
+                                : () => Navigator.pop(context),
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
                       ),
-                      items: [
-                        const DropdownMenuItem<int?>(
-                          value: null,
-                          child: Text('Select client'),
+                      const SizedBox(height: 24),
+
+                      // Client dropdown
+                      DropdownButtonFormField<int?>(
+                        initialValue: _selectedClientId,
+                        decoration: const InputDecoration(
+                          labelText: 'Client *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person_outline),
                         ),
-                        ...clients.map(
-                          (client) => DropdownMenuItem<int?>(
-                            value: client.id,
-                            child: Text(client.clientName),
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('Select client'),
                           ),
+                          ...clients.map(
+                            (client) => DropdownMenuItem<int?>(
+                              value: client.id,
+                              child: Text(client.clientName),
+                            ),
+                          ),
+                        ],
+                        onChanged: _isSubmitting
+                            ? null
+                            : (value) => setState(() => _selectedClientId = value),
+                        validator: (value) =>
+                            value == null ? 'Please select a client' : null,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Amount + Payment Method row
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _paymentAmountController,
+                              keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              decoration: const InputDecoration(
+                                labelText: 'Amount *',
+                                border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.payments_outlined),
+                                prefixText: 'PKR ',
+                              ),
+                              validator: (value) {
+                                final amount = _parseAmount(value ?? '');
+                                if (amount <= 0) return 'Enter a valid amount';
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              initialValue: _paymentMethod,
+                              decoration: const InputDecoration(
+                                labelText: 'Payment Mode',
+                                border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.credit_card_outlined),
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'cash',
+                                  child: Text('Cash'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'bank',
+                                  child: Text('Bank Transfer'),
+                                ),
+                              ],
+                              onChanged: _isSubmitting
+                                  ? null
+                                  : (value) {
+                                      if (value != null) {
+                                        setState(() {
+                                          _paymentMethod = value;
+                                          _selectedAccountId = null; // reset account
+                                        });
+                                      }
+                                    },
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      if (_paymentMethod == 'bank') ...[
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Text('Transfer Type:', style: TextStyle(fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 16),
+                            Radio<String>(
+                              value: 'online',
+                              groupValue: _bankTransferMode,
+                              onChanged: (val) {
+                                setState(() {
+                                  _bankTransferMode = val!;
+                                });
+                              },
+                            ),
+                            const Text('Online Transfer'),
+                            const SizedBox(width: 16),
+                            Radio<String>(
+                              value: 'cheque',
+                              groupValue: _bankTransferMode,
+                              onChanged: (val) {
+                                setState(() {
+                                  _bankTransferMode = val!;
+                                });
+                              },
+                            ),
+                            const Text('Cheque'),
+                          ],
                         ),
                       ],
-                      onChanged: _isSubmitting
-                          ? null
-                          : (value) => setState(() => _selectedClientId = value),
-                      validator: (value) =>
-                          value == null ? 'Please select a client' : null,
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // Amount + Payment Method row
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _paymentAmountController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
+                      // Select Account based on Payment Method
+                      accountsAsync.when(
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (err, _) => Text('Error loading accounts: $err'),
+                        data: (accounts) {
+                          final filteredAccounts = accounts.where((acc) => acc.accountType == _paymentMethod).toList();
+                          
+                          if (filteredAccounts.isEmpty) {
+                            return Text('No $_paymentMethod accounts found in the database.', style: const TextStyle(color: Colors.red));
+                          }
+                          
+                          // If there's only 1 account and it's not selected yet, auto-select it
+                          if (filteredAccounts.length == 1 && _selectedAccountId == null) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              setState(() {
+                                _selectedAccountId = filteredAccounts.first.id;
+                              });
+                            });
+                          }
+                          
+                          return DropdownButtonFormField<int?>(
+                            value: _selectedAccountId,
+                            decoration: InputDecoration(
+                              labelText: 'Select $_paymentMethod Account *',
+                              border: const OutlineInputBorder(),
+                              prefixIcon: const Icon(Icons.account_balance_outlined),
                             ),
-                            decoration: const InputDecoration(
-                              labelText: 'Amount *',
-                              border: OutlineInputBorder(),
-                              prefixIcon: Icon(Icons.payments_outlined),
-                              prefixText: 'PKR ',
-                            ),
-                            validator: (value) {
-                              final amount = _parseAmount(value ?? '');
-                              if (amount <= 0) return 'Enter a valid amount';
-                              return null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: _paymentMethod,
-                            decoration: const InputDecoration(
-                              labelText: 'Payment Method',
-                              border: OutlineInputBorder(),
-                              prefixIcon: Icon(Icons.credit_card_outlined),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'cash',
-                                child: Text('Cash'),
+                            items: [
+                              const DropdownMenuItem<int?>(
+                                value: null,
+                                child: Text('Select an account'),
                               ),
-                              DropdownMenuItem(
-                                value: 'bank',
-                                child: Text('Bank Transfer'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'cheque',
-                                child: Text('Cheque'),
+                              ...filteredAccounts.map(
+                                (acc) => DropdownMenuItem<int?>(
+                                  value: acc.id,
+                                  child: Text('${acc.accountTitle} ${acc.bankName != null ? "(${acc.bankName})" : ""}'),
+                                ),
                               ),
                             ],
                             onChanged: _isSubmitting
                                 ? null
-                                : (value) {
-                                    if (value != null) {
-                                      setState(() => _paymentMethod = value);
-                                    }
-                                  },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Account No + Date row
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _accountNoController,
-                            decoration: const InputDecoration(
-                              labelText: 'Account No',
-                              border: OutlineInputBorder(),
-                              prefixIcon: Icon(Icons.account_balance_outlined),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: InkWell(
-                            onTap: _isSubmitting ? null : _pickDate,
-                            borderRadius: BorderRadius.circular(4),
-                            child: InputDecorator(
-                              decoration: const InputDecoration(
-                                labelText: 'Received Date',
-                                border: OutlineInputBorder(),
-                                prefixIcon: Icon(Icons.calendar_today_outlined),
-                              ),
-                              child: Text(
-                                '${_receivedDate.year}-${_receivedDate.month.toString().padLeft(2, '0')}-${_receivedDate.day.toString().padLeft(2, '0')}',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Remarks
-                    TextFormField(
-                      controller: _remarksController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Remarks',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.notes_outlined),
-                        alignLabelWithHint: true,
+                                : (value) => setState(() => _selectedAccountId = value),
+                            validator: (value) =>
+                                value == null ? 'Please select an account' : null,
+                          );
+                        }
                       ),
-                    ),
-                    const SizedBox(height: 24),
+                      
+                      const SizedBox(height: 16),
 
-                    // Action buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: _isSubmitting
-                              ? null
-                              : () => Navigator.pop(context),
-                          child: const Text('Cancel'),
+                      // Account No + Date row
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _accountNoController,
+                              decoration: InputDecoration(
+                                labelText: _bankTransferMode == 'cheque' && _paymentMethod == 'bank' ? 'Cheque No' : 'Account/Ref No (Optional)',
+                                border: const OutlineInputBorder(),
+                                prefixIcon: const Icon(Icons.numbers_outlined),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: InkWell(
+                              onTap: _isSubmitting ? null : _pickDate,
+                              borderRadius: BorderRadius.circular(4),
+                              child: InputDecorator(
+                                decoration: const InputDecoration(
+                                  labelText: 'Received Date',
+                                  border: OutlineInputBorder(),
+                                  prefixIcon: Icon(Icons.calendar_today_outlined),
+                                ),
+                                child: Text(
+                                  '${_receivedDate.year}-${_receivedDate.month.toString().padLeft(2, '0')}-${_receivedDate.day.toString().padLeft(2, '0')}',
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Remarks
+                      TextFormField(
+                        controller: _remarksController,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          labelText: 'Remarks',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.notes_outlined),
+                          alignLabelWithHint: true,
                         ),
-                        const SizedBox(width: 12),
-                        FilledButton.icon(
-                          onPressed: _isSubmitting ? null : _submit,
-                          icon: _isSubmitting
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.save_outlined),
-                          label: const Text('Save Receipt'),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Action buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: _isSubmitting
+                                ? null
+                                : () => Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 12),
+                          FilledButton.icon(
+                            onPressed: _isSubmitting ? null : _submit,
+                            icon: _isSubmitting
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.save_outlined),
+                            label: const Text('Save Receipt'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

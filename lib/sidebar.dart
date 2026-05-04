@@ -6,6 +6,7 @@ import 'package:ledgerly/features/products/presentation/pages/product_dashboard.
 import 'package:ledgerly/features/raw_material/presentation/pages/raw_material_dashboard.dart';
 import 'package:ledgerly/features/receipts/presentation/pages/receipts_dashboard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'features/account_ledger/presentation/pages/account_dashboard.dart';
 import 'features/client/presentation/pages/client_dashboard_view.dart';
 import 'features/expense/presentation/pages/expense_dashboard_view.dart';
 import 'features/ledger/presentation/pages/ledger_page.dart';
@@ -23,6 +24,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   // Placeholder for future modules
   final List<Widget> _pages = [
+    const AccountDashboard(),
     const LedgerPage(),
     const OrderDashboard(),
     const ReceiptsDashboard(),
@@ -78,6 +80,11 @@ class _MainLayoutState extends State<MainLayout> {
               ),
             ),
             destinations: const [
+              NavigationRailDestination(
+                icon: Icon(Icons.account_balance_outlined),
+                selectedIcon: Icon(Icons.account_balance),
+                label: Text('Accounts'),
+              ),
               NavigationRailDestination(
                 icon: Icon(Icons.book_outlined),
                 selectedIcon: Icon(Icons.book),

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ReceiptEntity {
 
- int? get id; int get clientId; String? get receiptNumber; double get totalAmount; String get paymentMethod; String? get accountNo; String? get remarks; DateTime get receivedDate; DateTime? get createdAt; List<ReceiptAllocationEntity> get allocations;
+ int? get id; int get clientId; String? get receiptNumber; double get totalAmount; String get paymentMethod; String? get accountNo; int? get accountId; String? get remarks; DateTime get receivedDate; DateTime? get createdAt; List<ReceiptAllocationEntity> get allocations;
 /// Create a copy of ReceiptEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ReceiptEntityCopyWith<ReceiptEntity> get copyWith => _$ReceiptEntityCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.receiptNumber, receiptNumber) || other.receiptNumber == receiptNumber)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.remarks, remarks) || other.remarks == remarks)&&(identical(other.receivedDate, receivedDate) || other.receivedDate == receivedDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.allocations, allocations));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReceiptEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.receiptNumber, receiptNumber) || other.receiptNumber == receiptNumber)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.remarks, remarks) || other.remarks == remarks)&&(identical(other.receivedDate, receivedDate) || other.receivedDate == receivedDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.allocations, allocations));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,clientId,receiptNumber,totalAmount,paymentMethod,accountNo,remarks,receivedDate,createdAt,const DeepCollectionEquality().hash(allocations));
+int get hashCode => Object.hash(runtimeType,id,clientId,receiptNumber,totalAmount,paymentMethod,accountNo,accountId,remarks,receivedDate,createdAt,const DeepCollectionEquality().hash(allocations));
 
 @override
 String toString() {
-  return 'ReceiptEntity(id: $id, clientId: $clientId, receiptNumber: $receiptNumber, totalAmount: $totalAmount, paymentMethod: $paymentMethod, accountNo: $accountNo, remarks: $remarks, receivedDate: $receivedDate, createdAt: $createdAt, allocations: $allocations)';
+  return 'ReceiptEntity(id: $id, clientId: $clientId, receiptNumber: $receiptNumber, totalAmount: $totalAmount, paymentMethod: $paymentMethod, accountNo: $accountNo, accountId: $accountId, remarks: $remarks, receivedDate: $receivedDate, createdAt: $createdAt, allocations: $allocations)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ReceiptEntityCopyWith<$Res>  {
   factory $ReceiptEntityCopyWith(ReceiptEntity value, $Res Function(ReceiptEntity) _then) = _$ReceiptEntityCopyWithImpl;
 @useResult
 $Res call({
- int? id, int clientId, String? receiptNumber, double totalAmount, String paymentMethod, String? accountNo, String? remarks, DateTime receivedDate, DateTime? createdAt, List<ReceiptAllocationEntity> allocations
+ int? id, int clientId, String? receiptNumber, double totalAmount, String paymentMethod, String? accountNo, int? accountId, String? remarks, DateTime receivedDate, DateTime? createdAt, List<ReceiptAllocationEntity> allocations
 });
 
 
@@ -65,7 +65,7 @@ class _$ReceiptEntityCopyWithImpl<$Res>
 
 /// Create a copy of ReceiptEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? clientId = null,Object? receiptNumber = freezed,Object? totalAmount = null,Object? paymentMethod = null,Object? accountNo = freezed,Object? remarks = freezed,Object? receivedDate = null,Object? createdAt = freezed,Object? allocations = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? clientId = null,Object? receiptNumber = freezed,Object? totalAmount = null,Object? paymentMethod = null,Object? accountNo = freezed,Object? accountId = freezed,Object? remarks = freezed,Object? receivedDate = null,Object? createdAt = freezed,Object? allocations = null,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,clientId: null == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
@@ -73,7 +73,8 @@ as int,receiptNumber: freezed == receiptNumber ? _self.receiptNumber : receiptNu
 as String?,totalAmount: null == totalAmount ? _self.totalAmount : totalAmount // ignore: cast_nullable_to_non_nullable
 as double,paymentMethod: null == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
 as String,accountNo: freezed == accountNo ? _self.accountNo : accountNo // ignore: cast_nullable_to_non_nullable
-as String?,remarks: freezed == remarks ? _self.remarks : remarks // ignore: cast_nullable_to_non_nullable
+as String?,accountId: freezed == accountId ? _self.accountId : accountId // ignore: cast_nullable_to_non_nullable
+as int?,remarks: freezed == remarks ? _self.remarks : remarks // ignore: cast_nullable_to_non_nullable
 as String?,receivedDate: null == receivedDate ? _self.receivedDate : receivedDate // ignore: cast_nullable_to_non_nullable
 as DateTime,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,allocations: null == allocations ? _self.allocations : allocations // ignore: cast_nullable_to_non_nullable
@@ -162,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int clientId,  String? receiptNumber,  double totalAmount,  String paymentMethod,  String? accountNo,  String? remarks,  DateTime receivedDate,  DateTime? createdAt,  List<ReceiptAllocationEntity> allocations)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int clientId,  String? receiptNumber,  double totalAmount,  String paymentMethod,  String? accountNo,  int? accountId,  String? remarks,  DateTime receivedDate,  DateTime? createdAt,  List<ReceiptAllocationEntity> allocations)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ReceiptEntity() when $default != null:
-return $default(_that.id,_that.clientId,_that.receiptNumber,_that.totalAmount,_that.paymentMethod,_that.accountNo,_that.remarks,_that.receivedDate,_that.createdAt,_that.allocations);case _:
+return $default(_that.id,_that.clientId,_that.receiptNumber,_that.totalAmount,_that.paymentMethod,_that.accountNo,_that.accountId,_that.remarks,_that.receivedDate,_that.createdAt,_that.allocations);case _:
   return orElse();
 
 }
@@ -183,10 +184,10 @@ return $default(_that.id,_that.clientId,_that.receiptNumber,_that.totalAmount,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int clientId,  String? receiptNumber,  double totalAmount,  String paymentMethod,  String? accountNo,  String? remarks,  DateTime receivedDate,  DateTime? createdAt,  List<ReceiptAllocationEntity> allocations)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int clientId,  String? receiptNumber,  double totalAmount,  String paymentMethod,  String? accountNo,  int? accountId,  String? remarks,  DateTime receivedDate,  DateTime? createdAt,  List<ReceiptAllocationEntity> allocations)  $default,) {final _that = this;
 switch (_that) {
 case _ReceiptEntity():
-return $default(_that.id,_that.clientId,_that.receiptNumber,_that.totalAmount,_that.paymentMethod,_that.accountNo,_that.remarks,_that.receivedDate,_that.createdAt,_that.allocations);case _:
+return $default(_that.id,_that.clientId,_that.receiptNumber,_that.totalAmount,_that.paymentMethod,_that.accountNo,_that.accountId,_that.remarks,_that.receivedDate,_that.createdAt,_that.allocations);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +204,10 @@ return $default(_that.id,_that.clientId,_that.receiptNumber,_that.totalAmount,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int clientId,  String? receiptNumber,  double totalAmount,  String paymentMethod,  String? accountNo,  String? remarks,  DateTime receivedDate,  DateTime? createdAt,  List<ReceiptAllocationEntity> allocations)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int clientId,  String? receiptNumber,  double totalAmount,  String paymentMethod,  String? accountNo,  int? accountId,  String? remarks,  DateTime receivedDate,  DateTime? createdAt,  List<ReceiptAllocationEntity> allocations)?  $default,) {final _that = this;
 switch (_that) {
 case _ReceiptEntity() when $default != null:
-return $default(_that.id,_that.clientId,_that.receiptNumber,_that.totalAmount,_that.paymentMethod,_that.accountNo,_that.remarks,_that.receivedDate,_that.createdAt,_that.allocations);case _:
+return $default(_that.id,_that.clientId,_that.receiptNumber,_that.totalAmount,_that.paymentMethod,_that.accountNo,_that.accountId,_that.remarks,_that.receivedDate,_that.createdAt,_that.allocations);case _:
   return null;
 
 }
@@ -218,7 +219,7 @@ return $default(_that.id,_that.clientId,_that.receiptNumber,_that.totalAmount,_t
 @JsonSerializable()
 
 class _ReceiptEntity implements ReceiptEntity {
-  const _ReceiptEntity({this.id, required this.clientId, this.receiptNumber, required this.totalAmount, required this.paymentMethod, this.accountNo, this.remarks, required this.receivedDate, this.createdAt, final  List<ReceiptAllocationEntity> allocations = const []}): _allocations = allocations;
+  const _ReceiptEntity({this.id, required this.clientId, this.receiptNumber, required this.totalAmount, required this.paymentMethod, this.accountNo, this.accountId, this.remarks, required this.receivedDate, this.createdAt, final  List<ReceiptAllocationEntity> allocations = const []}): _allocations = allocations;
   factory _ReceiptEntity.fromJson(Map<String, dynamic> json) => _$ReceiptEntityFromJson(json);
 
 @override final  int? id;
@@ -227,6 +228,7 @@ class _ReceiptEntity implements ReceiptEntity {
 @override final  double totalAmount;
 @override final  String paymentMethod;
 @override final  String? accountNo;
+@override final  int? accountId;
 @override final  String? remarks;
 @override final  DateTime receivedDate;
 @override final  DateTime? createdAt;
@@ -251,16 +253,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReceiptEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.receiptNumber, receiptNumber) || other.receiptNumber == receiptNumber)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.remarks, remarks) || other.remarks == remarks)&&(identical(other.receivedDate, receivedDate) || other.receivedDate == receivedDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._allocations, _allocations));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReceiptEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.receiptNumber, receiptNumber) || other.receiptNumber == receiptNumber)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.paymentMethod, paymentMethod) || other.paymentMethod == paymentMethod)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.remarks, remarks) || other.remarks == remarks)&&(identical(other.receivedDate, receivedDate) || other.receivedDate == receivedDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._allocations, _allocations));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,clientId,receiptNumber,totalAmount,paymentMethod,accountNo,remarks,receivedDate,createdAt,const DeepCollectionEquality().hash(_allocations));
+int get hashCode => Object.hash(runtimeType,id,clientId,receiptNumber,totalAmount,paymentMethod,accountNo,accountId,remarks,receivedDate,createdAt,const DeepCollectionEquality().hash(_allocations));
 
 @override
 String toString() {
-  return 'ReceiptEntity(id: $id, clientId: $clientId, receiptNumber: $receiptNumber, totalAmount: $totalAmount, paymentMethod: $paymentMethod, accountNo: $accountNo, remarks: $remarks, receivedDate: $receivedDate, createdAt: $createdAt, allocations: $allocations)';
+  return 'ReceiptEntity(id: $id, clientId: $clientId, receiptNumber: $receiptNumber, totalAmount: $totalAmount, paymentMethod: $paymentMethod, accountNo: $accountNo, accountId: $accountId, remarks: $remarks, receivedDate: $receivedDate, createdAt: $createdAt, allocations: $allocations)';
 }
 
 
@@ -271,7 +273,7 @@ abstract mixin class _$ReceiptEntityCopyWith<$Res> implements $ReceiptEntityCopy
   factory _$ReceiptEntityCopyWith(_ReceiptEntity value, $Res Function(_ReceiptEntity) _then) = __$ReceiptEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, int clientId, String? receiptNumber, double totalAmount, String paymentMethod, String? accountNo, String? remarks, DateTime receivedDate, DateTime? createdAt, List<ReceiptAllocationEntity> allocations
+ int? id, int clientId, String? receiptNumber, double totalAmount, String paymentMethod, String? accountNo, int? accountId, String? remarks, DateTime receivedDate, DateTime? createdAt, List<ReceiptAllocationEntity> allocations
 });
 
 
@@ -288,7 +290,7 @@ class __$ReceiptEntityCopyWithImpl<$Res>
 
 /// Create a copy of ReceiptEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? clientId = null,Object? receiptNumber = freezed,Object? totalAmount = null,Object? paymentMethod = null,Object? accountNo = freezed,Object? remarks = freezed,Object? receivedDate = null,Object? createdAt = freezed,Object? allocations = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? clientId = null,Object? receiptNumber = freezed,Object? totalAmount = null,Object? paymentMethod = null,Object? accountNo = freezed,Object? accountId = freezed,Object? remarks = freezed,Object? receivedDate = null,Object? createdAt = freezed,Object? allocations = null,}) {
   return _then(_ReceiptEntity(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,clientId: null == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
@@ -296,7 +298,8 @@ as int,receiptNumber: freezed == receiptNumber ? _self.receiptNumber : receiptNu
 as String?,totalAmount: null == totalAmount ? _self.totalAmount : totalAmount // ignore: cast_nullable_to_non_nullable
 as double,paymentMethod: null == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
 as String,accountNo: freezed == accountNo ? _self.accountNo : accountNo // ignore: cast_nullable_to_non_nullable
-as String?,remarks: freezed == remarks ? _self.remarks : remarks // ignore: cast_nullable_to_non_nullable
+as String?,accountId: freezed == accountId ? _self.accountId : accountId // ignore: cast_nullable_to_non_nullable
+as int?,remarks: freezed == remarks ? _self.remarks : remarks // ignore: cast_nullable_to_non_nullable
 as String?,receivedDate: null == receivedDate ? _self.receivedDate : receivedDate // ignore: cast_nullable_to_non_nullable
 as DateTime,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,allocations: null == allocations ? _self._allocations : allocations // ignore: cast_nullable_to_non_nullable

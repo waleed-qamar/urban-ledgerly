@@ -14,6 +14,7 @@ _ReceiptEntity _$ReceiptEntityFromJson(Map<String, dynamic> json) =>
       totalAmount: (json['totalAmount'] as num).toDouble(),
       paymentMethod: json['paymentMethod'] as String,
       accountNo: json['accountNo'] as String?,
+      accountId: (json['accountId'] as num?)?.toInt(),
       remarks: json['remarks'] as String?,
       receivedDate: DateTime.parse(json['receivedDate'] as String),
       createdAt: json['createdAt'] == null
@@ -37,6 +38,7 @@ Map<String, dynamic> _$ReceiptEntityToJson(_ReceiptEntity instance) =>
       'totalAmount': instance.totalAmount,
       'paymentMethod': instance.paymentMethod,
       'accountNo': instance.accountNo,
+      'accountId': instance.accountId,
       'remarks': instance.remarks,
       'receivedDate': instance.receivedDate.toIso8601String(),
       'createdAt': instance.createdAt?.toIso8601String(),

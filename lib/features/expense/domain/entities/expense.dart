@@ -6,8 +6,7 @@ part 'expense.g.dart';
 abstract class Expense with _$Expense {
   factory Expense({
     required int id,
-    // required String name,
-    required int expenseHeadId,
+    @JsonKey(name: 'expenseHeadId') required int expenseHeadId,
     required double amount,
     required String remarks,
     required DateTime date,

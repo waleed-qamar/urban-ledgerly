@@ -99,8 +99,17 @@ class ExpenseRemoteDatasource {
     await _client.from('expense_heads').delete().eq('id', headId);
   }
 
-  Future<void> addExpense(Expense expense) async {
-    final payload = expense.toJson()..remove('id');
-    await _client.from('expenses').insert(payload);
+  Future<void> addExpense(Expense expense, {int? accountId}) async {
+    await _client.rpc(
+      'create_expense',
+      params: {
+        'p_id': expense.id,
+        'p_expense_head_id': expense.expenseHeadId,
+        'p_amount': expense.amount,
+        'p_remarks': expense.remarks,
+        'p_date': expense.date.toIso8601String(),
+        'p_account_id': accountId,
+      },
+    );
   }
 }

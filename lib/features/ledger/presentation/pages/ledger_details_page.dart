@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../invoices/presentation/providers/invoice_providers.dart';
+import '../../../invoices/presentation/widgets/invoice_view_dialog.dart';
+import '../../../products/presentation/providers/product_providers.dart';
+import '../../../receipts/presentation/providers/receipt_providers.dart';
+import '../../../receipts/presentation/widgets/payment_view_dialog.dart';
 import '../../domain/entities/ledger_entity.dart';
+import '../../../account_ledger/presentation/provider/account_ledger_providers.dart';
 import '../providers/ledger_providers.dart';
 import '../widgets/add_ledger_entry_dialog.dart';
 
@@ -145,15 +151,19 @@ class LedgerDetailsPage extends ConsumerWidget {
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: ConstrainedBox(
-                            constraints: const BoxConstraints(minWidth: 1080),
+                            constraints: BoxConstraints(
+                              minWidth: constraints.maxWidth > 1080
+                                  ? constraints.maxWidth -
+                                        (horizontalPadding * 2)
+                                  : 1080,
+                            ),
                             child: Table(
                               columnWidths: const {
                                 0: FlexColumnWidth(1.2),
-                                1: FlexColumnWidth(1.9),
+                                1: FlexColumnWidth(1.2),
                                 2: FlexColumnWidth(1.2),
-                                3: FlexColumnWidth(2.1),
-                                4: FlexColumnWidth(1.2),
-                                5: FlexColumnWidth(1.3),
+                                3: FlexColumnWidth(1.5),
+                                4: FlexColumnWidth(3.0),
                               },
                               defaultVerticalAlignment:
                                   TableCellVerticalAlignment.middle,
@@ -171,11 +181,10 @@ class LedgerDetailsPage extends ConsumerWidget {
                                   ),
                                   children: [
                                     _LedgerHeaderCell('Date'),
-                                    _LedgerHeaderCell('Invoice No'),
-                                    _LedgerHeaderCell('Debit'),
-                                    _LedgerHeaderCell('Payment Mode'),
                                     _LedgerHeaderCell('Credit'),
+                                    _LedgerHeaderCell('Debit'),
                                     _LedgerHeaderCell('Balance'),
+                                    _LedgerHeaderCell('Remarks'),
                                   ],
                                 ),
                                 ...displayEntries.map((entry) {
@@ -188,34 +197,6 @@ class LedgerDetailsPage extends ConsumerWidget {
                                         DateFormat(
                                           'dd/MM/yyyy',
                                         ).format(entry.entryDate),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      _LedgerValueCell(
-                                        entry.invoiceNumber,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      _LedgerValueCell(
-                                        entry.entryType == EntryType.debit
-                                            ? LedgerDetailsPage._money(
-                                                entry.amount,
-                                              )
-                                            : '-',
-                                        textAlign: TextAlign.center,
-                                        fontWeight: FontWeight.w600,
-                                        textColor:
-                                            entry.entryType == EntryType.debit
-                                            ? AppColors.errorText
-                                            : AppColors.textGrey,
-                                      ),
-                                      _LedgerValueCell(
-                                        entry.paymentMethod?.isNotEmpty == true
-                                            ? entry.paymentMethod!
-                                            : (entry
-                                                          .transactionSource
-                                                          ?.isNotEmpty ==
-                                                      true
-                                                  ? entry.transactionSource!
-                                                  : '-'),
                                         fontWeight: FontWeight.w600,
                                       ),
                                       _LedgerValueCell(
@@ -232,6 +213,19 @@ class LedgerDetailsPage extends ConsumerWidget {
                                             : AppColors.textGrey,
                                       ),
                                       _LedgerValueCell(
+                                        entry.entryType == EntryType.debit
+                                            ? LedgerDetailsPage._money(
+                                                entry.amount,
+                                              )
+                                            : '-',
+                                        textAlign: TextAlign.center,
+                                        fontWeight: FontWeight.w600,
+                                        textColor:
+                                            entry.entryType == EntryType.debit
+                                            ? AppColors.errorText
+                                            : AppColors.textGrey,
+                                      ),
+                                      _LedgerValueCell(
                                         LedgerDetailsPage._money(
                                           runningBalance,
                                         ),
@@ -241,6 +235,11 @@ class LedgerDetailsPage extends ConsumerWidget {
                                             LedgerDetailsPage._balanceColorForAmount(
                                               runningBalance,
                                             ),
+                                      ),
+                                      _RemarksCell(
+                                        entry: entry,
+                                        partyName: partyName,
+                                        ref: ref,
                                       ),
                                     ],
                                   );
@@ -449,5 +448,162 @@ class _LedgerValueCell extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _RemarksCell extends StatelessWidget {
+  final LedgerEntity entry;
+  final String partyName;
+  final WidgetRef ref;
+
+  const _RemarksCell({
+    required this.entry,
+    required this.partyName,
+    required this.ref,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDetails =
+        entry.transactionSource == 'invoice' ||
+        entry.transactionSource == 'receipt' ||
+        entry.transactionSource == 'disbursement';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          if (hasDetails)
+            IconButton(
+              icon: const Icon(
+                Icons.info_outline,
+                color: Colors.blue,
+                size: 20,
+              ),
+              constraints: const BoxConstraints(),
+              padding: const EdgeInsets.only(right: 8),
+              onPressed: () => _showDetails(context),
+            ),
+          Expanded(
+            child: Text(
+              entry.remarks ?? '-',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showDetails(BuildContext context) async {
+    final source = entry.transactionSource;
+    final refId = int.tryParse(entry.referenceId ?? '');
+    if (refId == null) return;
+
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      if (source == 'invoice') {
+        final invoice = await ref.read(getInvoiceByIdProvider(refId).future);
+        final products = await ref.read(getAllProductsProvider.future);
+        final productNames = {for (var p in products) p.id: p.name};
+
+        if (!context.mounted) return;
+        Navigator.pop(context); // close loader
+        showDialog(
+          context: context,
+          builder: (_) => InvoiceViewDialog(
+            invoice: invoice,
+            clientName: entry.partyType == PartyType.client
+                ? partyName
+                : 'Unknown Client',
+            supplierName: entry.partyType == PartyType.vendor
+                ? partyName
+                : 'Unknown Supplier',
+            productNames: productNames,
+          ),
+        );
+      } else if (source == 'receipt') {
+        final receipts = await ref.read(getAllReceiptsProvider.future);
+        final receipt = receipts.firstWhere((r) => r.id == refId);
+
+        // Lookup account_id from account_transactions via provider
+        final resolvedAccountId = await ref
+            .read(accountLedgerRepositoryProvider)
+            .getAccountIdByReference('receipt', refId);
+
+        final accounts = await ref.read(getAllAccountsProvider.future);
+        final account = accounts.isEmpty
+            ? null
+            : accounts.where((a) => a.id == resolvedAccountId).firstOrNull;
+
+        if (!context.mounted) return;
+        Navigator.pop(context); // close loader
+        showDialog(
+          context: context,
+          builder: (_) => PaymentViewDialog(
+            title: 'Receipt Details',
+            name: partyName,
+            bankTitle: (account?.bankName?.trim().isNotEmpty == true)
+                ? account!.bankName!.trim()
+                : (receipt.accountNo?.isNotEmpty == true
+                      ? receipt.accountNo!
+                      : receipt.paymentMethod),
+            date: receipt.receivedDate,
+            amount: receipt.totalAmount,
+            remarks: receipt.remarks,
+          ),
+        );
+      } else if (source == 'disbursement') {
+        final disbursements = await ref.read(
+          getAllDisbursementsProvider.future,
+        );
+        final disp = disbursements.firstWhere((d) => d.id == refId);
+
+        // Lookup account_id from account_transactions via provider
+        final resolvedAccountId = await ref
+            .read(accountLedgerRepositoryProvider)
+            .getAccountIdByReference('disbursement', refId);
+
+        // Fetch accounts to resolve bank name
+        final accounts = await ref.read(getAllAccountsProvider.future);
+        final account = accounts.isEmpty
+            ? null
+            : accounts.where((a) => a.id == resolvedAccountId).firstOrNull;
+
+        if (!context.mounted) return;
+        Navigator.pop(context); // close loader
+        showDialog(
+          context: context,
+          builder: (_) => PaymentViewDialog(
+            title: 'Disbursement Details',
+            name: partyName,
+            bankTitle: (account?.bankName?.trim().isNotEmpty == true)
+                ? account!.bankName!.trim()
+                : (disp.accountNo?.isNotEmpty == true
+                      ? disp.accountNo!
+                      : disp.paymentMethod),
+            date: disp.paidDate,
+            amount: disp.totalAmount,
+            remarks: disp.remarks,
+          ),
+        );
+      } else {
+        if (!context.mounted) return;
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      Navigator.pop(context); // close loader
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not load details: $e')));
+    }
   }
 }

@@ -14,6 +14,7 @@ abstract class ReceiptEntity with _$ReceiptEntity {
     required double totalAmount,
     required String paymentMethod,
     String? accountNo,
+    int? accountId,
     String? remarks,
     required DateTime receivedDate,
     DateTime? createdAt,

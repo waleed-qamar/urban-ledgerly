@@ -417,128 +417,128 @@ class _ProcurementDashboardState extends ConsumerState<ProcurementDashboard> {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final String subtitle;
-  final IconData icon;
-  final Color subtitleColor;
+// class _SummaryCard extends StatelessWidget {
+//   final String title;
+//   final String value;
+//   final String subtitle;
+//   final IconData icon;
+//   final Color subtitleColor;
 
-  const _SummaryCard({
-    required this.title,
-    required this.value,
-    required this.subtitle,
-    required this.icon,
-    this.subtitleColor = AppColors.textGrey,
-  });
+//   const _SummaryCard({
+//     required this.title,
+//     required this.value,
+//     required this.subtitle,
+//     required this.icon,
+//     this.subtitleColor = AppColors.textGrey,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.textWhite,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.4),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.textGrey,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 11,
-                  ),
-                ),
-              ),
-              Icon(icon, color: AppColors.textGrey),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 38,
-              height: 0.95,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textBlack,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: TextStyle(color: subtitleColor, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       padding: const EdgeInsets.all(18),
+//       decoration: BoxDecoration(
+//         color: AppColors.textWhite,
+//         borderRadius: BorderRadius.circular(20),
+//         border: Border.all(
+//           color: AppColors.dividerColor.withValues(alpha: 0.4),
+//         ),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withValues(alpha: 0.04),
+//             blurRadius: 14,
+//             offset: const Offset(0, 6),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Expanded(
+//                 child: Text(
+//                   title,
+//                   style: const TextStyle(
+//                     color: AppColors.textGrey,
+//                     fontWeight: FontWeight.w600,
+//                     fontSize: 11,
+//                   ),
+//                 ),
+//               ),
+//               Icon(icon, color: AppColors.textGrey),
+//             ],
+//           ),
+//           const Spacer(),
+//           Text(
+//             value,
+//             style: const TextStyle(
+//               fontSize: 38,
+//               height: 0.95,
+//               fontWeight: FontWeight.bold,
+//               color: AppColors.textBlack,
+//             ),
+//           ),
+//           const SizedBox(height: 8),
+//           Text(
+//             subtitle,
+//             style: TextStyle(color: subtitleColor, fontWeight: FontWeight.w600),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
-class _QuickActionCard extends StatelessWidget {
-  const _QuickActionCard();
+// class _QuickActionCard extends StatelessWidget {
+//   const _QuickActionCard();
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.primaryDark,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'QUICK ACTION',
-            style: TextStyle(
-              color: Colors.white70,
-              fontWeight: FontWeight.w600,
-              fontSize: 11,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Generate Procurement Report',
-            style: TextStyle(
-              color: AppColors.textWhite,
-              fontWeight: FontWeight.w600,
-              fontSize: 30,
-              height: 1.03,
-            ),
-          ),
-          const Spacer(),
-          ElevatedButton.icon(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.textWhite,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            icon: const Icon(Icons.arrow_forward),
-            label: const Text('Generate Now'),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       padding: const EdgeInsets.all(18),
+//       decoration: BoxDecoration(
+//         color: AppColors.primaryDark,
+//         borderRadius: BorderRadius.circular(20),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           const Text(
+//             'QUICK ACTION',
+//             style: TextStyle(
+//               color: Colors.white70,
+//               fontWeight: FontWeight.w600,
+//               fontSize: 11,
+//             ),
+//           ),
+//           const SizedBox(height: 10),
+//           const Text(
+//             'Generate Procurement Report',
+//             style: TextStyle(
+//               color: AppColors.textWhite,
+//               fontWeight: FontWeight.w600,
+//               fontSize: 30,
+//               height: 1.03,
+//             ),
+//           ),
+//           const Spacer(),
+//           ElevatedButton.icon(
+//             onPressed: () {},
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: AppColors.primary,
+//               foregroundColor: AppColors.textWhite,
+//               shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(12),
+//               ),
+//             ),
+//             icon: const Icon(Icons.arrow_forward),
+//             label: const Text('Generate Now'),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class _TableHeader extends StatelessWidget {
   const _TableHeader();

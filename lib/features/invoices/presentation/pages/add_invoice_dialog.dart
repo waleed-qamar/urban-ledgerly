@@ -6,6 +6,7 @@ import '../../../orders/domain/entities/order_entity.dart';
 import '../../../products/presentation/providers/product_providers.dart';
 import '../providers/invoice_providers.dart';
 import '../../../orders/presentation/providers/supplier_providers.dart';
+import '../../../orders/presentation/providers/order_providers.dart';
 import '../../domain/entities/invoice_entity.dart';
 import '../../domain/entities/invoice_item_entity.dart';
 
@@ -356,7 +357,22 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
       );
 
       await ref.read(createInvoiceProvider(invoice).future);
+
+      // Check if order is fully invoiced
+      bool fullyInvoiced = true;
+      for (final line in _lines) {
+        if (line.remainingQty - line.quantity > 0) {
+          fullyInvoiced = false;
+          break;
+        }
+      }
+
+      if (fullyInvoiced) {
+        await ref.read(orderRepositoryProvider).updateOrder(widget.order.copyWith(status: 'completed'));
+      }
+
       ref.invalidate(getAllInvoicesProvider);
+      ref.invalidate(getAllOrdersProvider);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {

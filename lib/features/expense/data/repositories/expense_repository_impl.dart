@@ -33,7 +33,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
       _datasource.deleteExpenseHead(headId);
 
   @override
-  Future<void> addExpense(Expense expense) => _datasource.addExpense(expense);
+  Future<void> addExpense(Expense expense, {int? accountId}) {
+    return _datasource.addExpense(expense, accountId: accountId);
+  }
 
   @override
   Future<List<Expense>> getExpensesByDateRange(DateTime start, DateTime end) =>
