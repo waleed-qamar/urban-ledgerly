@@ -20,6 +20,7 @@ class AddInvoiceDialog extends ConsumerStatefulWidget {
 class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
   final _formKey = GlobalKey<FormState>();
   final _shippingController = TextEditingController(text: '0');
+  final _representativeController = TextEditingController();
   bool _isSubmitting = false;
   bool _applyGst = true;
 
@@ -34,10 +35,10 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
       // E.g. total ordered is 12. If already invoiced is 10, then remaining is 2.
       final invoicedQty = item.invoicedQuantity ?? 0;
       final remaining = (item.quantity - invoicedQty);
-      
+
       // Ensure remaining is non negative in edge cases.
       final effectiveRemaining = remaining < 0 ? 0 : remaining;
-      
+
       return _InvoiceLine(
         orderItemId: item.id ?? 0,
         productId: item.productId,
@@ -51,6 +52,7 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
   @override
   void dispose() {
     _shippingController.dispose();
+    _representativeController.dispose();
     super.dispose();
   }
 
@@ -70,7 +72,7 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
   @override
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(getAllProductsProvider);
-    final invoicesAsync = ref.watch(getAllInvoicesProvider);
+    final nextNumberAsync = ref.watch(nextInvoiceNumberProvider);
 
     return Dialog(
       backgroundColor: AppColors.textWhite,
@@ -88,24 +90,17 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
             error: (e, _) =>
                 SizedBox(height: 240, child: Center(child: Text('Error: $e'))),
             data: (products) {
-              return invoicesAsync.when(
+              return nextNumberAsync.when(
                 loading: () => const SizedBox(
                   height: 240,
                   child: Center(child: CircularProgressIndicator()),
                 ),
                 error: (e, _) => SizedBox(
                   height: 240,
-                  child: Center(child: Text('Error: $e')),
+                  child: Center(child: Text('Error generating invoice number: $e')),
                 ),
-                data: (invoices) {
+                data: (nextInvoiceNo) {
                   final productById = {for (var p in products) p.id: p};
-
-                  // Calculate next invoice number
-                  final maxId = invoices
-                      .map((i) => i.id ?? 0)
-                      .fold<int>(0, (max, id) => id > max ? id : max);
-                  final nextInvoiceNo = 'INV-${maxId + 1}';
-
                   return _buildContent(
                     context,
                     nextInvoiceNo,
@@ -257,6 +252,14 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
             ),
           ),
           const SizedBox(height: 16),
+          TextField(
+            controller: _representativeController,
+            decoration: const InputDecoration(
+              labelText: 'Representative',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 16),
           _SummaryCard(
             subTotal: _subTotal,
             shippingWidget: TextFormField(
@@ -341,6 +344,7 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
         supplierId: widget.order.supplierId,
         invoiceNumber: invoiceNo,
         status: 'unpaid',
+        representative: _representativeController.text,
         po: widget.order.po,
         issueDate: DateTime.now(),
         subTotal: _subTotal,

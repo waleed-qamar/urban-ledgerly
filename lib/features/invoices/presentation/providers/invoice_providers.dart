@@ -31,3 +31,15 @@ Future<void> createInvoice(Ref ref, InvoiceEntity invoice) {
 Future<InvoiceEntity> getInvoiceById(Ref ref, int id) {
   return ref.watch(invoiceRepositoryProvider).getInvoiceById(id);
 }
+
+@riverpod
+Future<void> updateInvoiceStatus(Ref ref, {required int id, required String status}) {
+  return ref.watch(invoiceRepositoryProvider).updateInvoiceStatus(id, status);
+}
+
+/// Always queries the DB fresh — never uses the cached invoices list.
+/// Prevents duplicate invoice number collisions.
+@riverpod
+Future<String> nextInvoiceNumber(Ref ref) {
+  return ref.watch(invoiceRepositoryProvider).getNextInvoiceNumber();
+}

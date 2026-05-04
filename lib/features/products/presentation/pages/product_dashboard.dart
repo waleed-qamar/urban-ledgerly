@@ -87,17 +87,17 @@ class ProductDashboard extends ConsumerWidget {
                         icon: Icons.shopping_cart,
                       ),
                     ),
-                    const SizedBox(width: 24),
-                    Expanded(
-                      child: _buildSummaryCard(
-                        title: 'Total Weight',
-                        value: products
-                            .fold<double>(0, (sum, prod) => sum + (prod.weight))
-                            .toStringAsFixed(2),
-                        subtitleLabel: 'KG',
-                        icon: Icons.scale,
-                      ),
-                    ),
+                    // const SizedBox(width: 24),
+                    // Expanded(
+                    //   child: _buildSummaryCard(
+                    //     title: 'Total Weight',
+                    //     value: products
+                    //         .fold<double>(0, (sum, prod) => sum + (prod.weight))
+                    //         .toStringAsFixed(2),
+                    //     subtitleLabel: 'KG',
+                    //     icon: Icons.scale,
+                    //   ),
+                    // ),
                   ],
                 );
               },
@@ -472,7 +472,12 @@ class ProductDashboard extends ConsumerWidget {
       if (transactionType == 'IN') {
         await repository.recordIn(productId, 'PRODUCT', quantity, notes: notes);
       } else {
-        await repository.recordOut(productId, 'PRODUCT', quantity, notes: notes);
+        await repository.recordOut(
+          productId,
+          'PRODUCT',
+          quantity,
+          notes: notes,
+        );
       }
 
       if (context.mounted) {

@@ -15,15 +15,18 @@ class ProductRemoteDatasource {
   }
 
   Future<void> addProduct(ProductEntity product) async {
-    final payload = product.toJson()..remove('id');
+    final payload = product.toJson()
+      ..remove('id')
+      ..['CreatedAt'] = payloadCreatedAt(product);
+    payload.remove('createdAt');
     await _client.from('products').insert(payload);
   }
 
   Future<void> updateProduct(ProductEntity product) async {
-    await _client
-        .from('products')
-        .update(product.toJson())
-        .eq('id', product.id);
+    final payload = product.toJson();
+    payload['CreatedAt'] = payloadCreatedAt(product);
+    payload.remove('createdAt');
+    await _client.from('products').update(payload).eq('id', product.id);
   }
 
   Future<void> deleteProduct(int productId) async {
@@ -39,10 +42,15 @@ class ProductRemoteDatasource {
     normalized['description'] = normalized['description']?.toString();
     normalized['createdAt'] =
         (normalized['createdAt'] ??
+                normalized['CreatedAt'] ??
                 normalized['created_at'] ??
                 DateTime.now().toIso8601String())
             .toString();
 
     return normalized;
+  }
+
+  String payloadCreatedAt(ProductEntity product) {
+    return product.createdAt.toIso8601String();
   }
 }

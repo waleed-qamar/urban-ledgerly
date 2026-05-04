@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$InvoiceEntity {
 
- int? get id; int get orderId; int get clientId; int get supplierId; String get invoiceNumber; String get status; String? get po; DateTime get issueDate; double get subTotal; double get shippingCost; double get taxPercent; double get taxAmount; double get grandTotal; double get paidAmount; double get remainingAmount; DateTime? get createdAt; List<InvoiceItemEntity> get items;
+ int? get id; int get orderId; int get clientId; int get supplierId; String get invoiceNumber; String get status; String? get po; DateTime get issueDate; double get subTotal; double get shippingCost; double get taxPercent; double get taxAmount; double get grandTotal; String get representative; double get paidAmount; double get remainingAmount; DateTime? get createdAt; List<InvoiceItemEntity> get items;
 /// Create a copy of InvoiceEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $InvoiceEntityCopyWith<InvoiceEntity> get copyWith => _$InvoiceEntityCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is InvoiceEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.supplierId, supplierId) || other.supplierId == supplierId)&&(identical(other.invoiceNumber, invoiceNumber) || other.invoiceNumber == invoiceNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.po, po) || other.po == po)&&(identical(other.issueDate, issueDate) || other.issueDate == issueDate)&&(identical(other.subTotal, subTotal) || other.subTotal == subTotal)&&(identical(other.shippingCost, shippingCost) || other.shippingCost == shippingCost)&&(identical(other.taxPercent, taxPercent) || other.taxPercent == taxPercent)&&(identical(other.taxAmount, taxAmount) || other.taxAmount == taxAmount)&&(identical(other.grandTotal, grandTotal) || other.grandTotal == grandTotal)&&(identical(other.paidAmount, paidAmount) || other.paidAmount == paidAmount)&&(identical(other.remainingAmount, remainingAmount) || other.remainingAmount == remainingAmount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.items, items));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InvoiceEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.supplierId, supplierId) || other.supplierId == supplierId)&&(identical(other.invoiceNumber, invoiceNumber) || other.invoiceNumber == invoiceNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.po, po) || other.po == po)&&(identical(other.issueDate, issueDate) || other.issueDate == issueDate)&&(identical(other.subTotal, subTotal) || other.subTotal == subTotal)&&(identical(other.shippingCost, shippingCost) || other.shippingCost == shippingCost)&&(identical(other.taxPercent, taxPercent) || other.taxPercent == taxPercent)&&(identical(other.taxAmount, taxAmount) || other.taxAmount == taxAmount)&&(identical(other.grandTotal, grandTotal) || other.grandTotal == grandTotal)&&(identical(other.representative, representative) || other.representative == representative)&&(identical(other.paidAmount, paidAmount) || other.paidAmount == paidAmount)&&(identical(other.remainingAmount, remainingAmount) || other.remainingAmount == remainingAmount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.items, items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,orderId,clientId,supplierId,invoiceNumber,status,po,issueDate,subTotal,shippingCost,taxPercent,taxAmount,grandTotal,paidAmount,remainingAmount,createdAt,const DeepCollectionEquality().hash(items));
+int get hashCode => Object.hash(runtimeType,id,orderId,clientId,supplierId,invoiceNumber,status,po,issueDate,subTotal,shippingCost,taxPercent,taxAmount,grandTotal,representative,paidAmount,remainingAmount,createdAt,const DeepCollectionEquality().hash(items));
 
 @override
 String toString() {
-  return 'InvoiceEntity(id: $id, orderId: $orderId, clientId: $clientId, supplierId: $supplierId, invoiceNumber: $invoiceNumber, status: $status, po: $po, issueDate: $issueDate, subTotal: $subTotal, shippingCost: $shippingCost, taxPercent: $taxPercent, taxAmount: $taxAmount, grandTotal: $grandTotal, paidAmount: $paidAmount, remainingAmount: $remainingAmount, createdAt: $createdAt, items: $items)';
+  return 'InvoiceEntity(id: $id, orderId: $orderId, clientId: $clientId, supplierId: $supplierId, invoiceNumber: $invoiceNumber, status: $status, po: $po, issueDate: $issueDate, subTotal: $subTotal, shippingCost: $shippingCost, taxPercent: $taxPercent, taxAmount: $taxAmount, grandTotal: $grandTotal, representative: $representative, paidAmount: $paidAmount, remainingAmount: $remainingAmount, createdAt: $createdAt, items: $items)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $InvoiceEntityCopyWith<$Res>  {
   factory $InvoiceEntityCopyWith(InvoiceEntity value, $Res Function(InvoiceEntity) _then) = _$InvoiceEntityCopyWithImpl;
 @useResult
 $Res call({
- int? id, int orderId, int clientId, int supplierId, String invoiceNumber, String status, String? po, DateTime issueDate, double subTotal, double shippingCost, double taxPercent, double taxAmount, double grandTotal, double paidAmount, double remainingAmount, DateTime? createdAt, List<InvoiceItemEntity> items
+ int? id, int orderId, int clientId, int supplierId, String invoiceNumber, String status, String? po, DateTime issueDate, double subTotal, double shippingCost, double taxPercent, double taxAmount, double grandTotal, String representative, double paidAmount, double remainingAmount, DateTime? createdAt, List<InvoiceItemEntity> items
 });
 
 
@@ -65,7 +65,7 @@ class _$InvoiceEntityCopyWithImpl<$Res>
 
 /// Create a copy of InvoiceEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? orderId = null,Object? clientId = null,Object? supplierId = null,Object? invoiceNumber = null,Object? status = null,Object? po = freezed,Object? issueDate = null,Object? subTotal = null,Object? shippingCost = null,Object? taxPercent = null,Object? taxAmount = null,Object? grandTotal = null,Object? paidAmount = null,Object? remainingAmount = null,Object? createdAt = freezed,Object? items = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? orderId = null,Object? clientId = null,Object? supplierId = null,Object? invoiceNumber = null,Object? status = null,Object? po = freezed,Object? issueDate = null,Object? subTotal = null,Object? shippingCost = null,Object? taxPercent = null,Object? taxAmount = null,Object? grandTotal = null,Object? representative = null,Object? paidAmount = null,Object? remainingAmount = null,Object? createdAt = freezed,Object? items = null,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
@@ -80,7 +80,8 @@ as double,shippingCost: null == shippingCost ? _self.shippingCost : shippingCost
 as double,taxPercent: null == taxPercent ? _self.taxPercent : taxPercent // ignore: cast_nullable_to_non_nullable
 as double,taxAmount: null == taxAmount ? _self.taxAmount : taxAmount // ignore: cast_nullable_to_non_nullable
 as double,grandTotal: null == grandTotal ? _self.grandTotal : grandTotal // ignore: cast_nullable_to_non_nullable
-as double,paidAmount: null == paidAmount ? _self.paidAmount : paidAmount // ignore: cast_nullable_to_non_nullable
+as double,representative: null == representative ? _self.representative : representative // ignore: cast_nullable_to_non_nullable
+as String,paidAmount: null == paidAmount ? _self.paidAmount : paidAmount // ignore: cast_nullable_to_non_nullable
 as double,remainingAmount: null == remainingAmount ? _self.remainingAmount : remainingAmount // ignore: cast_nullable_to_non_nullable
 as double,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
@@ -169,10 +170,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int orderId,  int clientId,  int supplierId,  String invoiceNumber,  String status,  String? po,  DateTime issueDate,  double subTotal,  double shippingCost,  double taxPercent,  double taxAmount,  double grandTotal,  double paidAmount,  double remainingAmount,  DateTime? createdAt,  List<InvoiceItemEntity> items)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int orderId,  int clientId,  int supplierId,  String invoiceNumber,  String status,  String? po,  DateTime issueDate,  double subTotal,  double shippingCost,  double taxPercent,  double taxAmount,  double grandTotal,  String representative,  double paidAmount,  double remainingAmount,  DateTime? createdAt,  List<InvoiceItemEntity> items)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InvoiceEntity() when $default != null:
-return $default(_that.id,_that.orderId,_that.clientId,_that.supplierId,_that.invoiceNumber,_that.status,_that.po,_that.issueDate,_that.subTotal,_that.shippingCost,_that.taxPercent,_that.taxAmount,_that.grandTotal,_that.paidAmount,_that.remainingAmount,_that.createdAt,_that.items);case _:
+return $default(_that.id,_that.orderId,_that.clientId,_that.supplierId,_that.invoiceNumber,_that.status,_that.po,_that.issueDate,_that.subTotal,_that.shippingCost,_that.taxPercent,_that.taxAmount,_that.grandTotal,_that.representative,_that.paidAmount,_that.remainingAmount,_that.createdAt,_that.items);case _:
   return orElse();
 
 }
@@ -190,10 +191,10 @@ return $default(_that.id,_that.orderId,_that.clientId,_that.supplierId,_that.inv
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int orderId,  int clientId,  int supplierId,  String invoiceNumber,  String status,  String? po,  DateTime issueDate,  double subTotal,  double shippingCost,  double taxPercent,  double taxAmount,  double grandTotal,  double paidAmount,  double remainingAmount,  DateTime? createdAt,  List<InvoiceItemEntity> items)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int orderId,  int clientId,  int supplierId,  String invoiceNumber,  String status,  String? po,  DateTime issueDate,  double subTotal,  double shippingCost,  double taxPercent,  double taxAmount,  double grandTotal,  String representative,  double paidAmount,  double remainingAmount,  DateTime? createdAt,  List<InvoiceItemEntity> items)  $default,) {final _that = this;
 switch (_that) {
 case _InvoiceEntity():
-return $default(_that.id,_that.orderId,_that.clientId,_that.supplierId,_that.invoiceNumber,_that.status,_that.po,_that.issueDate,_that.subTotal,_that.shippingCost,_that.taxPercent,_that.taxAmount,_that.grandTotal,_that.paidAmount,_that.remainingAmount,_that.createdAt,_that.items);case _:
+return $default(_that.id,_that.orderId,_that.clientId,_that.supplierId,_that.invoiceNumber,_that.status,_that.po,_that.issueDate,_that.subTotal,_that.shippingCost,_that.taxPercent,_that.taxAmount,_that.grandTotal,_that.representative,_that.paidAmount,_that.remainingAmount,_that.createdAt,_that.items);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +211,10 @@ return $default(_that.id,_that.orderId,_that.clientId,_that.supplierId,_that.inv
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int orderId,  int clientId,  int supplierId,  String invoiceNumber,  String status,  String? po,  DateTime issueDate,  double subTotal,  double shippingCost,  double taxPercent,  double taxAmount,  double grandTotal,  double paidAmount,  double remainingAmount,  DateTime? createdAt,  List<InvoiceItemEntity> items)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int orderId,  int clientId,  int supplierId,  String invoiceNumber,  String status,  String? po,  DateTime issueDate,  double subTotal,  double shippingCost,  double taxPercent,  double taxAmount,  double grandTotal,  String representative,  double paidAmount,  double remainingAmount,  DateTime? createdAt,  List<InvoiceItemEntity> items)?  $default,) {final _that = this;
 switch (_that) {
 case _InvoiceEntity() when $default != null:
-return $default(_that.id,_that.orderId,_that.clientId,_that.supplierId,_that.invoiceNumber,_that.status,_that.po,_that.issueDate,_that.subTotal,_that.shippingCost,_that.taxPercent,_that.taxAmount,_that.grandTotal,_that.paidAmount,_that.remainingAmount,_that.createdAt,_that.items);case _:
+return $default(_that.id,_that.orderId,_that.clientId,_that.supplierId,_that.invoiceNumber,_that.status,_that.po,_that.issueDate,_that.subTotal,_that.shippingCost,_that.taxPercent,_that.taxAmount,_that.grandTotal,_that.representative,_that.paidAmount,_that.remainingAmount,_that.createdAt,_that.items);case _:
   return null;
 
 }
@@ -225,7 +226,7 @@ return $default(_that.id,_that.orderId,_that.clientId,_that.supplierId,_that.inv
 @JsonSerializable()
 
 class _InvoiceEntity implements InvoiceEntity {
-  const _InvoiceEntity({this.id, required this.orderId, required this.clientId, required this.supplierId, required this.invoiceNumber, required this.status, this.po, required this.issueDate, required this.subTotal, required this.shippingCost, this.taxPercent = 18.00, required this.taxAmount, required this.grandTotal, this.paidAmount = 0, this.remainingAmount = 0, this.createdAt, final  List<InvoiceItemEntity> items = const []}): _items = items;
+  const _InvoiceEntity({this.id, required this.orderId, required this.clientId, required this.supplierId, required this.invoiceNumber, required this.status, this.po, required this.issueDate, required this.subTotal, required this.shippingCost, this.taxPercent = 18.00, required this.taxAmount, required this.grandTotal, required this.representative, this.paidAmount = 0, this.remainingAmount = 0, this.createdAt, final  List<InvoiceItemEntity> items = const []}): _items = items;
   factory _InvoiceEntity.fromJson(Map<String, dynamic> json) => _$InvoiceEntityFromJson(json);
 
 @override final  int? id;
@@ -241,6 +242,7 @@ class _InvoiceEntity implements InvoiceEntity {
 @override@JsonKey() final  double taxPercent;
 @override final  double taxAmount;
 @override final  double grandTotal;
+@override final  String representative;
 @override@JsonKey() final  double paidAmount;
 @override@JsonKey() final  double remainingAmount;
 @override final  DateTime? createdAt;
@@ -265,16 +267,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InvoiceEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.supplierId, supplierId) || other.supplierId == supplierId)&&(identical(other.invoiceNumber, invoiceNumber) || other.invoiceNumber == invoiceNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.po, po) || other.po == po)&&(identical(other.issueDate, issueDate) || other.issueDate == issueDate)&&(identical(other.subTotal, subTotal) || other.subTotal == subTotal)&&(identical(other.shippingCost, shippingCost) || other.shippingCost == shippingCost)&&(identical(other.taxPercent, taxPercent) || other.taxPercent == taxPercent)&&(identical(other.taxAmount, taxAmount) || other.taxAmount == taxAmount)&&(identical(other.grandTotal, grandTotal) || other.grandTotal == grandTotal)&&(identical(other.paidAmount, paidAmount) || other.paidAmount == paidAmount)&&(identical(other.remainingAmount, remainingAmount) || other.remainingAmount == remainingAmount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._items, _items));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InvoiceEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.supplierId, supplierId) || other.supplierId == supplierId)&&(identical(other.invoiceNumber, invoiceNumber) || other.invoiceNumber == invoiceNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.po, po) || other.po == po)&&(identical(other.issueDate, issueDate) || other.issueDate == issueDate)&&(identical(other.subTotal, subTotal) || other.subTotal == subTotal)&&(identical(other.shippingCost, shippingCost) || other.shippingCost == shippingCost)&&(identical(other.taxPercent, taxPercent) || other.taxPercent == taxPercent)&&(identical(other.taxAmount, taxAmount) || other.taxAmount == taxAmount)&&(identical(other.grandTotal, grandTotal) || other.grandTotal == grandTotal)&&(identical(other.representative, representative) || other.representative == representative)&&(identical(other.paidAmount, paidAmount) || other.paidAmount == paidAmount)&&(identical(other.remainingAmount, remainingAmount) || other.remainingAmount == remainingAmount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._items, _items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,orderId,clientId,supplierId,invoiceNumber,status,po,issueDate,subTotal,shippingCost,taxPercent,taxAmount,grandTotal,paidAmount,remainingAmount,createdAt,const DeepCollectionEquality().hash(_items));
+int get hashCode => Object.hash(runtimeType,id,orderId,clientId,supplierId,invoiceNumber,status,po,issueDate,subTotal,shippingCost,taxPercent,taxAmount,grandTotal,representative,paidAmount,remainingAmount,createdAt,const DeepCollectionEquality().hash(_items));
 
 @override
 String toString() {
-  return 'InvoiceEntity(id: $id, orderId: $orderId, clientId: $clientId, supplierId: $supplierId, invoiceNumber: $invoiceNumber, status: $status, po: $po, issueDate: $issueDate, subTotal: $subTotal, shippingCost: $shippingCost, taxPercent: $taxPercent, taxAmount: $taxAmount, grandTotal: $grandTotal, paidAmount: $paidAmount, remainingAmount: $remainingAmount, createdAt: $createdAt, items: $items)';
+  return 'InvoiceEntity(id: $id, orderId: $orderId, clientId: $clientId, supplierId: $supplierId, invoiceNumber: $invoiceNumber, status: $status, po: $po, issueDate: $issueDate, subTotal: $subTotal, shippingCost: $shippingCost, taxPercent: $taxPercent, taxAmount: $taxAmount, grandTotal: $grandTotal, representative: $representative, paidAmount: $paidAmount, remainingAmount: $remainingAmount, createdAt: $createdAt, items: $items)';
 }
 
 
@@ -285,7 +287,7 @@ abstract mixin class _$InvoiceEntityCopyWith<$Res> implements $InvoiceEntityCopy
   factory _$InvoiceEntityCopyWith(_InvoiceEntity value, $Res Function(_InvoiceEntity) _then) = __$InvoiceEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, int orderId, int clientId, int supplierId, String invoiceNumber, String status, String? po, DateTime issueDate, double subTotal, double shippingCost, double taxPercent, double taxAmount, double grandTotal, double paidAmount, double remainingAmount, DateTime? createdAt, List<InvoiceItemEntity> items
+ int? id, int orderId, int clientId, int supplierId, String invoiceNumber, String status, String? po, DateTime issueDate, double subTotal, double shippingCost, double taxPercent, double taxAmount, double grandTotal, String representative, double paidAmount, double remainingAmount, DateTime? createdAt, List<InvoiceItemEntity> items
 });
 
 
@@ -302,7 +304,7 @@ class __$InvoiceEntityCopyWithImpl<$Res>
 
 /// Create a copy of InvoiceEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? orderId = null,Object? clientId = null,Object? supplierId = null,Object? invoiceNumber = null,Object? status = null,Object? po = freezed,Object? issueDate = null,Object? subTotal = null,Object? shippingCost = null,Object? taxPercent = null,Object? taxAmount = null,Object? grandTotal = null,Object? paidAmount = null,Object? remainingAmount = null,Object? createdAt = freezed,Object? items = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? orderId = null,Object? clientId = null,Object? supplierId = null,Object? invoiceNumber = null,Object? status = null,Object? po = freezed,Object? issueDate = null,Object? subTotal = null,Object? shippingCost = null,Object? taxPercent = null,Object? taxAmount = null,Object? grandTotal = null,Object? representative = null,Object? paidAmount = null,Object? remainingAmount = null,Object? createdAt = freezed,Object? items = null,}) {
   return _then(_InvoiceEntity(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
@@ -317,7 +319,8 @@ as double,shippingCost: null == shippingCost ? _self.shippingCost : shippingCost
 as double,taxPercent: null == taxPercent ? _self.taxPercent : taxPercent // ignore: cast_nullable_to_non_nullable
 as double,taxAmount: null == taxAmount ? _self.taxAmount : taxAmount // ignore: cast_nullable_to_non_nullable
 as double,grandTotal: null == grandTotal ? _self.grandTotal : grandTotal // ignore: cast_nullable_to_non_nullable
-as double,paidAmount: null == paidAmount ? _self.paidAmount : paidAmount // ignore: cast_nullable_to_non_nullable
+as double,representative: null == representative ? _self.representative : representative // ignore: cast_nullable_to_non_nullable
+as String,paidAmount: null == paidAmount ? _self.paidAmount : paidAmount // ignore: cast_nullable_to_non_nullable
 as double,remainingAmount: null == remainingAmount ? _self.remainingAmount : remainingAmount // ignore: cast_nullable_to_non_nullable
 as double,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable

@@ -26,4 +26,9 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   Future<void> updateInvoiceStatus(int id, String status) {
     return _datasource.updateInvoiceStatus(id, status);
   }
+
+  @override
+  Future<String> getNextInvoiceNumber() {
+    return _datasource.getNextInvoiceNumber();
+  }
 }

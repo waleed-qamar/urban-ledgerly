@@ -15,6 +15,9 @@ class PdfGenerator {
     required SupplierEntity supplier,
   }) async {
     final doc = pw.Document();
+    final representativeName = invoice.representative.trim().isEmpty
+        ? 'N/A'
+        : invoice.representative.trim();
 
     doc.addPage(
       pw.Page(
@@ -45,6 +48,7 @@ class PdfGenerator {
                         'Date: ${invoice.issueDate.toLocal().toString().split(' ')[0]}',
                       ),
                       pw.Text('PO: ${invoice.po ?? 'N/A'}'),
+                      pw.Text('Representative: $representativeName'),
                     ],
                   ),
                 ],

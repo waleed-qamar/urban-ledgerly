@@ -70,15 +70,15 @@ class ClientDashboardView extends ConsumerWidget {
                         icon: Icons.business,
                       ),
                     ),
-                    const SizedBox(width: 24),
-                    Expanded(
-                      child: _buildSummaryCard(
-                        title: 'ACTIVE PROJECTS',
-                        value: '0', // Placeholder
-                        subtitle: 'Across 0 clients', // Placeholder
-                        icon: Icons.architecture,
-                      ),
-                    ),
+                    // const SizedBox(width: 24),
+                    // Expanded(
+                    //   child: _buildSummaryCard(
+                    //     title: 'ACTIVE PROJECTS',
+                    //     value: '0', // Placeholder
+                    //     subtitle: 'Across 0 clients', // Placeholder
+                    //     icon: Icons.architecture,
+                    //   ),
+                    // ),
                     // const SizedBox(width: 24),
                     // Expanded(
                     //   child: _buildSummaryCard(

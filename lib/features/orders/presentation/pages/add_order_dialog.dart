@@ -29,6 +29,9 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
   final TextEditingController _deliveryTermsController =
       TextEditingController();
 
+  String? _deliveryTerm; // null by default (nothing selected)
+  // bool _showValidationError = false;
+
   int? _selectedSupplierId;
   int? _selectedClientId;
   DateTime _orderDate = DateUtils.dateOnly(DateTime.now());
@@ -344,17 +347,62 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: TextFormField(
-                  controller: _deliveryTermsController,
-                  enabled: !_isSubmitting,
-                  decoration: const InputDecoration(
-                    labelText: 'Delivery Terms',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) => value == null || value.trim().isEmpty
-                      ? 'Enter a Delivery Term'
-                      : null,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Delivery Terms',
+                      style: TextStyle(fontSize: 16),
+                    ),
+
+                    RadioListTile<String>(
+                      title: const Text('Ex-Factory'),
+                      value: 'exfactory',
+                      groupValue: _deliveryTerm,
+                      onChanged: _isSubmitting
+                          ? null
+                          : (value) {
+                              setState(() {
+                                _deliveryTerm = value;
+                              });
+                            },
+                    ),
+
+                    RadioListTile<String>(
+                      title: const Text('Onsite'),
+                      value: 'onsite',
+                      groupValue: _deliveryTerm,
+                      onChanged: _isSubmitting
+                          ? null
+                          : (value) {
+                              setState(() {
+                                _deliveryTerm = value;
+                              });
+                            },
+                    ),
+
+                    // Validation message
+                    // if (_deliveryTerm == null)
+                    //   const Padding(
+                    //     padding: EdgeInsets.only(left: 12),
+                    //     child: Text(
+                    //       'Please select a Delivery Term',
+                    //       style: TextStyle(color: Colors.red, fontSize: 12),
+                    //     ),
+                    //   ),
+                  ],
                 ),
+                // child: TextFormField(
+                //   controller: _deliveryTermsController,
+                //   enabled: !_isSubmitting,
+                //   decoration: const InputDecoration(
+                //     labelText: 'Delivery Terms',
+                //     border: OutlineInputBorder(),
+                //   ),
+                //   validator: (value) => value == null || value.trim().isEmpty
+                //       ? 'Enter a Delivery Term'
+                //       : null,
+                // ),
               ),
               // Expanded(
               //   child: DropdownButtonFormField<String>(
@@ -604,8 +652,8 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
       return;
     }
 
-    if (deliveryTerms.isEmpty) {
-      _showError('Please enter Delivery Terms.');
+    if (_deliveryTerm == null) {
+      _showError('Please select a Delivery Term.');
       return;
     }
 
@@ -615,7 +663,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
       items: items,
       status: _status,
       department: department,
-      deliveryTerm: deliveryTerms,
+      deliveryTerm: _deliveryTerm!,
       po: _po.isEmpty ? null : _po,
       createdAt: _orderDate,
     );

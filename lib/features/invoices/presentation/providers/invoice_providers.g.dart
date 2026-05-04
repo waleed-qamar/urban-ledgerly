@@ -288,3 +288,117 @@ final class GetInvoiceByIdFamily extends $Family
   @override
   String toString() => r'getInvoiceByIdProvider';
 }
+
+@ProviderFor(updateInvoiceStatus)
+const updateInvoiceStatusProvider = UpdateInvoiceStatusFamily._();
+
+final class UpdateInvoiceStatusProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const UpdateInvoiceStatusProvider._({
+    required UpdateInvoiceStatusFamily super.from,
+    required ({int id, String status}) super.argument,
+  }) : super(
+         retry: null,
+         name: r'updateInvoiceStatusProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateInvoiceStatusHash();
+
+  @override
+  String toString() {
+    return r'updateInvoiceStatusProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as ({int id, String status});
+    return updateInvoiceStatus(ref, id: argument.id, status: argument.status);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UpdateInvoiceStatusProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$updateInvoiceStatusHash() =>
+    r'61fa5ab11d371428672b44f152f4dcf9cb4f2299';
+
+final class UpdateInvoiceStatusFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, ({int id, String status})> {
+  const UpdateInvoiceStatusFamily._()
+    : super(
+        retry: null,
+        name: r'updateInvoiceStatusProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  UpdateInvoiceStatusProvider call({required int id, required String status}) =>
+      UpdateInvoiceStatusProvider._(
+        argument: (id: id, status: status),
+        from: this,
+      );
+
+  @override
+  String toString() => r'updateInvoiceStatusProvider';
+}
+
+/// Always queries the DB fresh — never uses the cached invoices list.
+/// Prevents duplicate invoice number collisions.
+
+@ProviderFor(nextInvoiceNumber)
+const nextInvoiceNumberProvider = NextInvoiceNumberProvider._();
+
+/// Always queries the DB fresh — never uses the cached invoices list.
+/// Prevents duplicate invoice number collisions.
+
+final class NextInvoiceNumberProvider
+    extends $FunctionalProvider<AsyncValue<String>, String, FutureOr<String>>
+    with $FutureModifier<String>, $FutureProvider<String> {
+  /// Always queries the DB fresh — never uses the cached invoices list.
+  /// Prevents duplicate invoice number collisions.
+  const NextInvoiceNumberProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'nextInvoiceNumberProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$nextInvoiceNumberHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<String> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<String> create(Ref ref) {
+    return nextInvoiceNumber(ref);
+  }
+}
+
+String _$nextInvoiceNumberHash() => r'86623d353847914a1931f1bff97ba8dfa59e901e';

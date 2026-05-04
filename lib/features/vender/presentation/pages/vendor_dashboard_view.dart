@@ -62,37 +62,37 @@ class VenderDashboardView extends ConsumerWidget {
             const SizedBox(height: 48),
 
             // Summary Cards
-            vendorsAsync.when(
-              data: (vendors) {
-                return Row(
-                  children: [
-                    Expanded(
-                      child: _buildSummaryCard(
-                        title: 'Total Debit',
-                        value:
-                            '500.00', // Mock representation of the screenshot
-                        subtitleLabel: 'PAYABLES',
-                        icon: Icons.account_balance,
-                      ),
-                    ),
-                    // const SizedBox(width: 24),
-                    // Expanded(
-                    //   child: _buildSummaryCard(
-                    //     title: 'Upcoming in 30 Days',
-                    //     value: '8', // Mock
-                    //     subtitleLabel: 'RENEWALS',
-                    //     icon: Icons.calendar_today,
-                    //     trailingText: 'Contracts',
-                    //   ),
-                    // ),
-                  ],
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: $err')),
-            ),
+            // vendorsAsync.when(
+            //   data: (vendors) {
+            //     return Row(
+            //       children: [
+            //         Expanded(
+            //           child: _buildSummaryCard(
+            //             title: 'Total Debit',
+            //             value:
+            //                 '500.00', // Mock representation of the screenshot
+            //             subtitleLabel: 'PAYABLES',
+            //             icon: Icons.account_balance,
+            //           ),
+            //         ),
+            //         const SizedBox(width: 24),
+            //         Expanded(
+            //           child: _buildSummaryCard(
+            //             title: 'Upcoming in 30 Days',
+            //             value: '8', // Mock
+            //             subtitleLabel: 'RENEWALS',
+            //             icon: Icons.calendar_today,
+            //             trailingText: 'Contracts',
+            //           ),
+            //         ),
+            //       ],
+            //     );
+            //   },
+            //   loading: () => const Center(child: CircularProgressIndicator()),
+            //   error: (err, _) => Center(child: Text('Error: $err')),
+            // ),
 
-            const SizedBox(height: 48),
+            // const SizedBox(height: 48),
 
             // Filters
             Row(

@@ -20,6 +20,7 @@ abstract class InvoiceEntity with _$InvoiceEntity {
     @Default(18.00) double taxPercent,
     required double taxAmount,
     required double grandTotal,
+    required String representative,
     @Default(0) double paidAmount,
     @Default(0) double remainingAmount,
     DateTime? createdAt,

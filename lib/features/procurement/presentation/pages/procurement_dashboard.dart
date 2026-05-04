@@ -232,18 +232,18 @@ class _ProcurementDashboardState extends ConsumerState<ProcurementDashboard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Procurement Ledger',
+                        'Procurements',
                         style: Theme.of(context).textTheme.headlineMedium
                             ?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: AppColors.textBlack,
                             ),
                       ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Review and manage recent material requisitions and supplier invoices.',
-                        style: TextStyle(color: AppColors.textGrey),
-                      ),
+                      // const SizedBox(height: 6),
+                      // const Text(
+                      //   'Review and manage recent material requisitions and supplier invoices.',
+                      //   style: TextStyle(color: AppColors.textGrey),
+                      // ),
                     ],
                   ),
                 ),
@@ -259,12 +259,12 @@ class _ProcurementDashboardState extends ConsumerState<ProcurementDashboard> {
                   label: const Text('Filter'),
                 ),
                 const SizedBox(width: 10),
-                OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.file_download_outlined),
-                  label: const Text('Export'),
-                ),
-                const SizedBox(width: 10),
+                // OutlinedButton.icon(
+                //   onPressed: () {},
+                //   icon: const Icon(Icons.file_download_outlined),
+                //   label: const Text('Export'),
+                // ),
+                // const SizedBox(width: 10),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -292,65 +292,65 @@ class _ProcurementDashboardState extends ConsumerState<ProcurementDashboard> {
               ],
             ),
             const SizedBox(height: 26),
-            procurementsAsync.when(
-              loading: () => const SizedBox(
-                height: 160,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (error, _) => Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: AppColors.errorBackground.withValues(alpha: 0.12),
-                ),
-                child: Text(
-                  'Failed to load procurement summary: $error',
-                  style: const TextStyle(color: AppColors.errorText),
-                ),
-              ),
-              data: (procurements) {
-                final filtered = _applyFilters(procurements);
-                final totalAmount = filtered.fold<double>(
-                  0,
-                  (sum, item) => sum + item.total,
-                );
-                final totalPurchases = filtered.length;
-                final pendingReconciliations = filtered
-                    .where((item) => (item.notes ?? '').trim().isEmpty)
-                    .length;
+            // procurementsAsync.when(
+            //   loading: () => const SizedBox(
+            //     height: 160,
+            //     child: Center(child: CircularProgressIndicator()),
+            //   ),
+            //   error: (error, _) => Container(
+            //     width: double.infinity,
+            //     padding: const EdgeInsets.all(20),
+            //     decoration: BoxDecoration(
+            //       borderRadius: BorderRadius.circular(16),
+            //       color: AppColors.errorBackground.withValues(alpha: 0.12),
+            //     ),
+            //     child: Text(
+            //       'Failed to load procurement summary: $error',
+            //       style: const TextStyle(color: AppColors.errorText),
+            //     ),
+            //   ),
+            //   data: (procurements) {
+            //     final filtered = _applyFilters(procurements);
+            //     final totalAmount = filtered.fold<double>(
+            //       0,
+            //       (sum, item) => sum + item.total,
+            //     );
+            //     final totalPurchases = filtered.length;
+            //     final pendingReconciliations = filtered
+            //         .where((item) => (item.notes ?? '').trim().isEmpty)
+            //         .length;
 
-                return SizedBox(
-                  height: 185,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _SummaryCard(
-                          title: 'TOTAL AMOUNT DISBURSED',
-                          value: 'Rs. ${_money(totalAmount)}',
-                          subtitle: 'Filtered total',
-                          icon: Icons.receipt_long,
-                          subtitleColor: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: _SummaryCard(
-                          title: 'TOTAL PURCHASES',
-                          value: totalPurchases.toString(),
-                          subtitle:
-                              'Pending Reconciliations: $pendingReconciliations',
-                          icon: Icons.inventory_2_outlined,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      const Expanded(child: _QuickActionCard()),
-                    ],
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 30),
+            //     return SizedBox(
+            //       height: 185,
+            //       child: Row(
+            //         children: [
+            //           Expanded(
+            //             child: _SummaryCard(
+            //               title: 'TOTAL AMOUNT DISBURSED',
+            //               value: 'Rs. ${_money(totalAmount)}',
+            //               subtitle: 'Filtered total',
+            //               icon: Icons.receipt_long,
+            //               subtitleColor: AppColors.primary,
+            //             ),
+            //           ),
+            //           const SizedBox(width: 14),
+            //           Expanded(
+            //             child: _SummaryCard(
+            //               title: 'TOTAL PURCHASES',
+            //               value: totalPurchases.toString(),
+            //               subtitle:
+            //                   'Pending Reconciliations: $pendingReconciliations',
+            //               icon: Icons.inventory_2_outlined,
+            //             ),
+            //           ),
+            //           const SizedBox(width: 14),
+            //           const Expanded(child: _QuickActionCard()),
+            //         ],
+            //       ),
+            //     );
+            //   },
+            // ),
+            // const SizedBox(height: 30),
             const Text(
               'Recent Transactions',
               style: TextStyle(

@@ -121,7 +121,7 @@ class _MainLayoutState extends State<MainLayout> {
               NavigationRailDestination(
                 icon: Icon(Icons.account_balance_wallet_outlined),
                 selectedIcon: Icon(Icons.account_balance_wallet),
-                label: Text('Expenses'),
+                label: Text('Non-Vender Payments'),
               ),
 
               // NavigationRailDestination(

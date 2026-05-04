@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../client/domain/entities/client_entity.dart';
 import '../../../client/presentation/providers/client_providers.dart';
-import '../../../invoices/presentation/providers/invoice_providers.dart';
 import '../../../ledger/presentation/providers/ledger_providers.dart';
 import '../../../vender/domain/entities/vendor_entity.dart';
 import '../../../vender/presentation/providers/vendor_providers.dart';
@@ -46,7 +45,6 @@ class _ReceiptsDashboardState extends ConsumerState<ReceiptsDashboard> {
         const SnackBar(content: Text('Receipt created successfully.')),
       );
       ref.invalidate(getAllReceiptsProvider);
-      ref.invalidate(getAllInvoicesProvider);
       ref.invalidate(getAllEntriesProvider);
     }
   }
@@ -86,24 +84,24 @@ class _ReceiptsDashboardState extends ConsumerState<ReceiptsDashboard> {
         backgroundColor: AppColors.textWhite,
         elevation: 0,
         foregroundColor: AppColors.textBlack,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: OutlinedButton.icon(
-              onPressed: _openCreateDisbursementDialog,
-              icon: const Icon(Icons.payments_outlined),
-              label: const Text('Add Disbursement'),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: FilledButton.icon(
-              onPressed: _openCreateReceiptDialog,
-              icon: const Icon(Icons.add),
-              label: const Text('New Receipt'),
-            ),
-          ),
-        ],
+        // actions: [
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 12),
+        //     child: OutlinedButton.icon(
+        //       onPressed: _openCreateDisbursementDialog,
+        //       icon: const Icon(Icons.payments_outlined),
+        //       label: const Text('Add Disbursement'),
+        //     ),
+        //   ),
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 16),
+        //     child: FilledButton.icon(
+        //       onPressed: _openCreateReceiptDialog,
+        //       icon: const Icon(Icons.add),
+        //       label: const Text('New Receipt'),
+        //     ),
+        //   ),
+        // ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -368,7 +366,6 @@ class _ReceiptsSection extends StatelessWidget {
                             deleteReceiptProvider(receipt.id!).future,
                           );
                           ref.invalidate(getAllReceiptsProvider);
-                          ref.invalidate(getAllInvoicesProvider);
                           ref.invalidate(getAllEntriesProvider);
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -437,21 +434,21 @@ class _ReceiptSummaryHeader extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'Receipts are the only source of credit entries for clients.',
-                  style: TextStyle(color: Colors.grey.shade700),
-                ),
+                // const SizedBox(height: 6),
+                // Text(
+                //   'Receipts are the only source of credit entries for clients.',
+                //   style: TextStyle(color: Colors.grey.shade700),
+                // ),
               ],
             ),
           ),
           _StatPill(label: 'Receipts', value: '$receiptCount'),
           const SizedBox(width: 12),
-          _StatPill(
-            label: 'Received',
-            value: 'PKR ${totalReceived.toStringAsFixed(2)}',
-          ),
-          const SizedBox(width: 16),
+          // _StatPill(
+          //   label: 'Received',
+          //   value: 'PKR ${totalReceived.toStringAsFixed(2)}',
+          // ),
+          // const SizedBox(width: 16),
           FilledButton.icon(
             onPressed: onCreate,
             icon: const Icon(Icons.add),
@@ -634,7 +631,10 @@ class _DisbursementSection extends StatelessWidget {
               final filtered = disbursements.where((disbursement) {
                 if (query.isEmpty) return true;
                 final number = disbursement.disbursementNumber.toLowerCase();
-                final vendorName = vendorsById[disbursement.supplierId]?.vendorName.toLowerCase() ?? '';
+                final vendorName =
+                    vendorsById[disbursement.supplierId]?.vendorName
+                        .toLowerCase() ??
+                    '';
                 return number.contains(query) || vendorName.contains(query);
               }).toList();
 

@@ -5,9 +5,8 @@ class InvoiceRemoteDatasource {
   final SupabaseClient _client;
 
   static const String _invoiceSelect =
-      'id, order_id, client_id, supplier_id, invoice_number, status, po, issue_date, sub_total, shipping_cost, tax_percent, tax_amount, grand_total, created_at, '
+      'id, order_id, client_id, supplier_id, invoice_number, status, po, issue_date, sub_total, shipping_cost, tax_percent, tax_amount, grand_total, representative, created_at, '
       'items:invoice_items(id, invoice_id, order_item_id, product_id, quantity, unit_price, total_price)';
-  static const String _paymentSummarySelect = 'invoice_id, paid_amount';
 
   InvoiceRemoteDatasource(this._client);
 
@@ -20,7 +19,7 @@ class InvoiceRemoteDatasource {
           'client_id': invoice.clientId,
           'supplier_id': invoice.supplierId,
           'invoice_number': invoice.invoiceNumber,
-          'status': 'unpaid',
+          'status': 'undispatched',
           'po': invoice.po,
           'issue_date': invoice.issueDate.toIso8601String(),
           'sub_total': invoice.subTotal,
@@ -28,6 +27,7 @@ class InvoiceRemoteDatasource {
           'tax_percent': invoice.taxPercent,
           'tax_amount': invoice.taxAmount,
           'grand_total': invoice.grandTotal,
+          'representative': invoice.representative,
         })
         .select('id')
         .single();
@@ -54,8 +54,6 @@ class InvoiceRemoteDatasource {
       // Increment invoiced_quantity in order_items for each row
       // We process sequentially assuming few items per invoice
       for (var item in invoice.items) {
-        // We need to fetch current invoiced_quantity and add the new quantity
-        // Supabase REST doesn't support direct increment natively via insert, we can use RPC or fetch/update.
         final currentOrderItem = await _client
             .from('order_items')
             .select('invoiced_quantity')
@@ -66,7 +64,7 @@ class InvoiceRemoteDatasource {
 
         await _client
             .from('order_items')
-            .update({'invoiced_quantity': currentQty + item.quantity})
+            .update({'invoiced_quantity': (currentQty + item.quantity).toInt()})
             .eq('id', item.orderItemId);
       }
     }
@@ -87,9 +85,27 @@ class InvoiceRemoteDatasource {
   }
 
   Future<void> updateInvoiceStatus(int id, String status) async {
-    throw UnsupportedError(
-      'Invoice status is derived from receipts and cannot be updated manually.',
-    );
+    await _client.from('invoices').update({'status': status}).eq('id', id);
+  }
+
+  /// Always does a fresh DB query — never relies on cached provider data.
+  /// Reads all invoice_number values, parses the numeric suffix of INV-N,
+  /// and returns the next available number.
+  Future<String> getNextInvoiceNumber() async {
+    final rows = await _client
+        .from('invoices')
+        .select('invoice_number');
+
+    int maxNum = 0;
+    for (final row in (rows as List)) {
+      final invoiceNumber = (row['invoice_number'] as String?) ?? '';
+      final match = RegExp(r'INV-(\d+)').firstMatch(invoiceNumber);
+      if (match != null) {
+        final parsed = int.tryParse(match.group(1) ?? '') ?? 0;
+        if (parsed > maxNum) maxNum = parsed;
+      }
+    }
+    return 'INV-${maxNum + 1}';
   }
 
   Future<InvoiceEntity> getInvoiceById(int id) async {
@@ -98,64 +114,25 @@ class InvoiceRemoteDatasource {
         .select(_invoiceSelect)
         .eq('id', id);
     final invoiceRow = (response as List).cast<Map<String, dynamic>>().single;
-    final paymentSummary = await _loadPaymentSummaryForInvoice(id);
-    return InvoiceEntity.fromJson(
-      _normalizeInvoiceRow(invoiceRow, paymentSummary: paymentSummary),
-    );
+    return InvoiceEntity.fromJson(_normalizeInvoiceRow(invoiceRow));
   }
 
   Future<List<InvoiceEntity>> getInvoices() async {
-    final responses = await Future.wait([
-      _client
-          .from('invoices')
-          .select(_invoiceSelect)
-          .order('created_at', ascending: false),
-      _client.from('invoice_payment_summaries').select(_paymentSummarySelect),
-    ]);
+    final invoiceRows = await _client
+        .from('invoices')
+        .select(_invoiceSelect)
+        .order('created_at', ascending: false);
 
-    final invoiceRows = (responses[0] as List).cast<Map<String, dynamic>>();
-    final paymentSummaries = (responses[1] as List)
+    return (invoiceRows as List)
         .cast<Map<String, dynamic>>()
-        .fold<Map<int, double>>({}, (map, row) {
-          final invoiceId = (row['invoice_id'] as num?)?.toInt();
-          if (invoiceId != null) {
-            map[invoiceId] = (row['paid_amount'] as num?)?.toDouble() ?? 0.0;
-          }
-          return map;
-        });
-
-    return invoiceRows
-        .map(
-          (row) => InvoiceEntity.fromJson(
-            _normalizeInvoiceRow(
-              row,
-              paymentSummary:
-                  paymentSummaries[(row['id'] as num?)?.toInt() ?? 0] ?? 0.0,
-            ),
-          ),
-        )
+        .map((row) => InvoiceEntity.fromJson(_normalizeInvoiceRow(row)))
         .toList();
   }
 
-  Future<double> _loadPaymentSummaryForInvoice(int id) async {
-    final response = await _client
-        .from('invoice_payment_summaries')
-        .select(_paymentSummarySelect)
-        .eq('invoice_id', id)
-        .single();
-
-    return (response['paid_amount'] as num?)?.toDouble() ?? 0.0;
-  }
-
-  Map<String, dynamic> _normalizeInvoiceRow(
-    Map<String, dynamic> row, {
-    required double paymentSummary,
-  }) {
+  Map<String, dynamic> _normalizeInvoiceRow(Map<String, dynamic> row) {
     final normalized = Map<String, dynamic>.from(row);
     final grandTotal =
         (normalized['grandTotal'] ?? normalized['grand_total'] ?? 0).toDouble();
-    final paidAmount = paymentSummary.clamp(0.0, grandTotal).toDouble();
-    final remainingAmount = (grandTotal - paidAmount).clamp(0.0, grandTotal);
 
     normalized['id'] = normalized['id'] ?? 0;
     normalized['orderId'] =
@@ -167,7 +144,9 @@ class InvoiceRemoteDatasource {
     normalized['invoiceNumber'] =
         (normalized['invoiceNumber'] ?? normalized['invoice_number'] ?? '')
             .toString();
-    normalized['status'] = (normalized['status'] ?? '').toString();
+    // Status is dispatched/undispatched — read directly from DB.
+    final rawStatus = (normalized['status'] ?? 'undispatched').toString();
+    normalized['status'] = rawStatus.isEmpty ? 'undispatched' : rawStatus;
     normalized['po'] = normalized['po']?.toString();
     normalized['issueDate'] =
         (normalized['issueDate'] ??
@@ -185,15 +164,13 @@ class InvoiceRemoteDatasource {
     normalized['taxAmount'] =
         (normalized['taxAmount'] ?? normalized['tax_amount'] ?? 0).toDouble();
     normalized['grandTotal'] = grandTotal;
-    normalized['paidAmount'] = paidAmount;
-    normalized['remainingAmount'] = remainingAmount;
+    normalized['representative'] = (normalized['representative'] ?? '')
+        .toString();
+    // paidAmount/remainingAmount are no longer tracked on the invoice.
+    normalized['paidAmount'] = 0.0;
+    normalized['remainingAmount'] = 0.0;
     normalized['createdAt'] =
         normalized['createdAt'] ?? normalized['created_at'];
-    normalized['status'] = paidAmount <= 0
-        ? 'unpaid'
-        : paidAmount >= grandTotal
-        ? 'paid'
-        : 'unpaid';
     normalized['items'] =
         (normalized['items'] as List<dynamic>?)
             ?.map(_normalizeInvoiceItemRow)
