@@ -49,7 +49,7 @@ Future<void> deleteInventoryTransaction(Ref ref, int transactionId) {
 Future<void> updateInventoryTransaction(
   Ref ref,
   int transactionId,
-  int quantity,
+  double quantity,
   String transactionType, {
   String? notes,
   String? referenceType,

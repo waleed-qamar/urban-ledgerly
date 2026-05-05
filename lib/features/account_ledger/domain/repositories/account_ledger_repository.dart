@@ -7,4 +7,10 @@ abstract class AccountLedgerRepository {
   Future<List<AccountTransactionEntity>> getAccountTransactions(int accountId);
   Future<AccountEntity> createAccount(AccountEntity account);
   Future<int?> getAccountIdByReference(String referenceType, int referenceId);
+  Future<void> transferBetweenAccounts({
+    required int fromAccountId,
+    required int toAccountId,
+    required double amount,
+    required String description,
+  });
 }

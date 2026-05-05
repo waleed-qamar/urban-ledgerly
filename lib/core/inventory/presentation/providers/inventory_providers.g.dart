@@ -325,7 +325,7 @@ final class UpdateInventoryTransactionProvider
     required UpdateInventoryTransactionFamily super.from,
     required (
       int,
-      int,
+      double,
       String, {
       String? notes,
       String? referenceType,
@@ -361,7 +361,7 @@ final class UpdateInventoryTransactionProvider
         this.argument
             as (
               int,
-              int,
+              double,
               String, {
               String? notes,
               String? referenceType,
@@ -391,7 +391,7 @@ final class UpdateInventoryTransactionProvider
 }
 
 String _$updateInventoryTransactionHash() =>
-    r'9938e51c9c0746210dab3d7c6ec5a2b529a9ef59';
+    r'cf49ff1633a8a0543f45d84f972333b92d2327a5';
 
 /// Update a transaction's quantity, type, and notes.
 
@@ -401,7 +401,7 @@ final class UpdateInventoryTransactionFamily extends $Family
           FutureOr<void>,
           (
             int,
-            int,
+            double,
             String, {
             String? notes,
             String? referenceType,
@@ -421,7 +421,7 @@ final class UpdateInventoryTransactionFamily extends $Family
 
   UpdateInventoryTransactionProvider call(
     int transactionId,
-    int quantity,
+    double quantity,
     String transactionType, {
     String? notes,
     String? referenceType,

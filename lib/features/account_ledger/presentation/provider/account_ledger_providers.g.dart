@@ -306,3 +306,198 @@ final class GetAccountTransactionsFamily extends $Family
   @override
   String toString() => r'getAccountTransactionsProvider';
 }
+
+@ProviderFor(getAccountIdByReference)
+const getAccountIdByReferenceProvider = GetAccountIdByReferenceFamily._();
+
+final class GetAccountIdByReferenceProvider
+    extends $FunctionalProvider<AsyncValue<int?>, int?, FutureOr<int?>>
+    with $FutureModifier<int?>, $FutureProvider<int?> {
+  const GetAccountIdByReferenceProvider._({
+    required GetAccountIdByReferenceFamily super.from,
+    required ({String referenceType, int referenceId}) super.argument,
+  }) : super(
+         retry: null,
+         name: r'getAccountIdByReferenceProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$getAccountIdByReferenceHash();
+
+  @override
+  String toString() {
+    return r'getAccountIdByReferenceProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<int?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<int?> create(Ref ref) {
+    final argument = this.argument as ({String referenceType, int referenceId});
+    return getAccountIdByReference(
+      ref,
+      referenceType: argument.referenceType,
+      referenceId: argument.referenceId,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is GetAccountIdByReferenceProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$getAccountIdByReferenceHash() =>
+    r'afbbaed29ff2a4e82ea6d67f27853edc28e3b69d';
+
+final class GetAccountIdByReferenceFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<int?>,
+          ({String referenceType, int referenceId})
+        > {
+  const GetAccountIdByReferenceFamily._()
+    : super(
+        retry: null,
+        name: r'getAccountIdByReferenceProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  GetAccountIdByReferenceProvider call({
+    required String referenceType,
+    required int referenceId,
+  }) => GetAccountIdByReferenceProvider._(
+    argument: (referenceType: referenceType, referenceId: referenceId),
+    from: this,
+  );
+
+  @override
+  String toString() => r'getAccountIdByReferenceProvider';
+}
+
+@ProviderFor(transferBetweenAccounts)
+const transferBetweenAccountsProvider = TransferBetweenAccountsFamily._();
+
+final class TransferBetweenAccountsProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const TransferBetweenAccountsProvider._({
+    required TransferBetweenAccountsFamily super.from,
+    required ({
+      int fromAccountId,
+      int toAccountId,
+      double amount,
+      String description,
+    })
+    super.argument,
+  }) : super(
+         retry: null,
+         name: r'transferBetweenAccountsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$transferBetweenAccountsHash();
+
+  @override
+  String toString() {
+    return r'transferBetweenAccountsProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument =
+        this.argument
+            as ({
+              int fromAccountId,
+              int toAccountId,
+              double amount,
+              String description,
+            });
+    return transferBetweenAccounts(
+      ref,
+      fromAccountId: argument.fromAccountId,
+      toAccountId: argument.toAccountId,
+      amount: argument.amount,
+      description: argument.description,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is TransferBetweenAccountsProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$transferBetweenAccountsHash() =>
+    r'99bd291e674a86955267ec1e8384f9d19557a6af';
+
+final class TransferBetweenAccountsFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<void>,
+          ({
+            int fromAccountId,
+            int toAccountId,
+            double amount,
+            String description,
+          })
+        > {
+  const TransferBetweenAccountsFamily._()
+    : super(
+        retry: null,
+        name: r'transferBetweenAccountsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  TransferBetweenAccountsProvider call({
+    required int fromAccountId,
+    required int toAccountId,
+    required double amount,
+    required String description,
+  }) => TransferBetweenAccountsProvider._(
+    argument: (
+      fromAccountId: fromAccountId,
+      toAccountId: toAccountId,
+      amount: amount,
+      description: description,
+    ),
+    from: this,
+  );
+
+  @override
+  String toString() => r'transferBetweenAccountsProvider';
+}

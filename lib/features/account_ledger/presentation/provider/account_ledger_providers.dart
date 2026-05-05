@@ -16,7 +16,9 @@ AccountLedgerRemoteDatasource accountLedgerRemoteDatasource(Ref ref) {
 
 @riverpod
 AccountLedgerRepository accountLedgerRepository(Ref ref) {
-  return AccountLedgerRepositoryImpl(ref.watch(accountLedgerRemoteDatasourceProvider));
+  return AccountLedgerRepositoryImpl(
+    ref.watch(accountLedgerRemoteDatasourceProvider),
+  );
 }
 
 @riverpod
@@ -30,11 +32,40 @@ Future<AccountEntity> getAccountById(Ref ref, int accountId) {
 }
 
 @riverpod
-Future<List<AccountTransactionEntity>> getAccountTransactions(Ref ref, int accountId) {
-  return ref.watch(accountLedgerRepositoryProvider).getAccountTransactions(accountId);
+Future<List<AccountTransactionEntity>> getAccountTransactions(
+  Ref ref,
+  int accountId,
+) {
+  return ref
+      .watch(accountLedgerRepositoryProvider)
+      .getAccountTransactions(accountId);
 }
 
 @riverpod
-Future<int?> getAccountIdByReference(Ref ref, {required String referenceType, required int referenceId}) {
-  return ref.watch(accountLedgerRepositoryProvider).getAccountIdByReference(referenceType, referenceId);
+Future<int?> getAccountIdByReference(
+  Ref ref, {
+  required String referenceType,
+  required int referenceId,
+}) {
+  return ref
+      .watch(accountLedgerRepositoryProvider)
+      .getAccountIdByReference(referenceType, referenceId);
+}
+
+@riverpod
+Future<void> transferBetweenAccounts(
+  Ref ref, {
+  required int fromAccountId,
+  required int toAccountId,
+  required double amount,
+  required String description,
+}) {
+  return ref
+      .watch(accountLedgerRepositoryProvider)
+      .transferBetweenAccounts(
+        fromAccountId: fromAccountId,
+        toAccountId: toAccountId,
+        amount: amount,
+        description: description,
+      );
 }

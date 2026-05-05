@@ -124,9 +124,11 @@ class OrderRemoteDatasource {
       if (existing.productId != updated.productId) return false;
       if (existing.quantity != updated.quantity) return false;
       if (existing.price != updated.price) return false;
-      if ((existing.invoicedQuantity ?? 0) != (updated.invoicedQuantity ?? 0)) {
-        return false;
-      }
+      // Ignore invoicedQuantity differences because invoiced counts are
+      // updated separately when invoices are created. Treating only the
+      // core line attributes (productId, quantity, price) as the basis for
+      // deciding whether to replace order_items prevents accidental deletes
+      // of order_items that are referenced by newly created invoice_items.
     }
 
     return true;

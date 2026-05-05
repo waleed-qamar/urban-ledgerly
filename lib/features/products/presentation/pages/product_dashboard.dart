@@ -470,12 +470,17 @@ class ProductDashboard extends ConsumerWidget {
     final repository = ref.read(inventoryRepositoryProvider);
     try {
       if (transactionType == 'IN') {
-        await repository.recordIn(productId, 'PRODUCT', quantity, notes: notes);
+        await repository.recordIn(
+          productId,
+          'PRODUCT',
+          quantity.toDouble(),
+          notes: notes,
+        );
       } else {
         await repository.recordOut(
           productId,
           'PRODUCT',
-          quantity,
+          quantity.toDouble(),
           notes: notes,
         );
       }

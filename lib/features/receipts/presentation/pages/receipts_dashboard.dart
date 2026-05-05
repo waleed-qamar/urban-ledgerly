@@ -545,24 +545,22 @@ class _ReceiptCard extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
-          Expanded(
-            child: Text(
-              receipt.allocations.isEmpty
-                  ? 'Advance'
-                  : '${receipt.allocations.length} invoice(s)',
-              textAlign: TextAlign.center,
-            ),
-          ),
-          IconButton(
-            onPressed: onOpen,
-            icon: const Icon(Icons.visibility_outlined),
-            tooltip: 'View details',
-          ),
-          IconButton(
-            onPressed: onDelete,
-            icon: const Icon(Icons.delete_outline, color: Colors.red),
-            tooltip: 'Delete receipt',
-          ),
+          // Expanded(
+          //   child: Text(
+          //     '${receipt.allocations.length} invoice(s)',
+          //     textAlign: TextAlign.center,
+          //   ),
+          // ),
+          // IconButton(
+          //   onPressed: onOpen,
+          //   icon: const Icon(Icons.visibility_outlined),
+          //   tooltip: 'View details',
+          // ),
+          // IconButton(
+          //   onPressed: onDelete,
+          //   icon: const Icon(Icons.delete_outline, color: Colors.red),
+          //   tooltip: 'Delete receipt',
+          // ),
         ],
       ),
     );

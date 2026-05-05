@@ -11,6 +11,7 @@ import 'features/client/presentation/pages/client_dashboard_view.dart';
 import 'features/expense/presentation/pages/expense_dashboard_view.dart';
 import 'features/ledger/presentation/pages/ledger_page.dart';
 import 'features/vender/presentation/pages/vendor_dashboard_view.dart';
+import 'package:ledgerly/features/dps/presentation/pages/dps_dashboard.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -34,6 +35,7 @@ class _MainLayoutState extends State<MainLayout> {
     const RawMaterialDashboard(),
     const ProcurementDashboard(),
     const ExpenseDashboardView(),
+    const DpsDashboard(),
     // const Center(child: Text('Settings Module')),
   ];
 
@@ -129,6 +131,11 @@ class _MainLayoutState extends State<MainLayout> {
                 icon: Icon(Icons.account_balance_wallet_outlined),
                 selectedIcon: Icon(Icons.account_balance_wallet),
                 label: Text('Non-Vender Payments'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.precision_manufacturing_outlined),
+                selectedIcon: Icon(Icons.precision_manufacturing),
+                label: Text('DPS'),
               ),
 
               // NavigationRailDestination(

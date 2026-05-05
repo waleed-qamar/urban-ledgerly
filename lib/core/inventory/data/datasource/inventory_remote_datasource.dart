@@ -30,7 +30,7 @@ class InventoryRemoteDatasource {
   Future<void> recordIn(
     int itemId,
     String itemType,
-    int quantity, {
+    double quantity, {
     String? notes,
     String? referenceType,
     int? referenceId,
@@ -41,15 +41,15 @@ class InventoryRemoteDatasource {
       'transaction_type': 'IN',
       'quantity': quantity,
       if (notes != null && notes.isNotEmpty) 'notes': notes,
-      'reference_type': ?referenceType,
-      'reference_id': ?referenceId,
+      'reference_type': referenceType,
+      'reference_id': referenceId,
     });
   }
 
   Future<void> recordOut(
     int itemId,
     String itemType,
-    int quantity, {
+    double quantity, {
     String? notes,
     String? referenceType,
     int? referenceId,
@@ -60,14 +60,14 @@ class InventoryRemoteDatasource {
       'transaction_type': 'OUT',
       'quantity': quantity,
       if (notes != null && notes.isNotEmpty) 'notes': notes,
-      'reference_type': ?referenceType,
-      'reference_id': ?referenceId,
+      'reference_type': referenceType,
+      'reference_id': referenceId,
     });
   }
 
   Future<void> updateTransaction(
     int transactionId, {
-    required int quantity,
+    required double quantity,
     required String transactionType,
     String? notes,
     String? referenceType,

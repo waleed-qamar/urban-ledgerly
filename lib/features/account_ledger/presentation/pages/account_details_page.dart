@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:excel/excel.dart' hide Border;
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -5,27 +9,48 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../provider/account_ledger_providers.dart';
 
-class AccountDetailsPage extends ConsumerWidget {
+class AccountDetailsPage extends ConsumerStatefulWidget {
   final int accountId;
 
   const AccountDetailsPage({super.key, required this.accountId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final accountAsync = ref.watch(getAccountByIdProvider(accountId));
-    final transactionsAsync = ref.watch(getAccountTransactionsProvider(accountId));
+  ConsumerState<AccountDetailsPage> createState() => _AccountDetailsPageState();
+}
+
+class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
+  @override
+  Widget build(BuildContext context) {
+    final accountAsync = ref.watch(getAccountByIdProvider(widget.accountId));
+    final transactionsAsync = ref.watch(
+      getAccountTransactionsProvider(widget.accountId),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
       appBar: AppBar(
         title: accountAsync.when(
-          data: (acc) => Text(acc.accountTitle, style: const TextStyle(fontWeight: FontWeight.w800)),
+          data: (acc) => Text(
+            acc.accountTitle,
+            style: const TextStyle(fontWeight: FontWeight.w800),
+          ),
           loading: () => const Text('Loading...'),
-          error: (_, __) => const Text('Error'),
+          error: (_, _) => const Text('Error'),
         ),
         backgroundColor: AppColors.textWhite,
         elevation: 0,
         foregroundColor: AppColors.textBlack,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: FilledButton.icon(
+              onPressed: () =>
+                  _exportToXlsx(context, accountAsync, transactionsAsync),
+              icon: const Icon(Icons.download_outlined),
+              label: const Text('Export XLSX'),
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -34,7 +59,7 @@ class AccountDetailsPage extends ConsumerWidget {
           children: [
             accountAsync.when(
               loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
               data: (account) {
                 return Container(
                   padding: const EdgeInsets.all(20),
@@ -43,7 +68,9 @@ class AccountDetailsPage extends ConsumerWidget {
                       colors: [Colors.blue.shade50, Colors.indigo.shade50],
                     ),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.dividerColor.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: AppColors.dividerColor.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -51,27 +78,39 @@ class AccountDetailsPage extends ConsumerWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Account Info', style: TextStyle(color: Colors.grey)),
+                          const Text(
+                            'Account Info',
+                            style: TextStyle(color: Colors.grey),
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             account.bankName ?? 'Cash Account',
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          if (account.accountNumber != null && account.accountNumber!.isNotEmpty)
+                          if (account.accountNumber != null &&
+                              account.accountNumber!.isNotEmpty)
                             Text(account.accountNumber!),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text('Current Balance', style: TextStyle(color: Colors.grey)),
+                          const Text(
+                            'Current Balance',
+                            style: TextStyle(color: Colors.grey),
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             '${account.currency} ${account.currentBalance.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w900,
-                              color: account.currentBalance >= 0 ? Colors.green.shade700 : Colors.red.shade700,
+                              color: account.currentBalance >= 0
+                                  ? Colors.green.shade700
+                                  : Colors.red.shade700,
                             ),
                           ),
                         ],
@@ -82,25 +121,46 @@ class AccountDetailsPage extends ConsumerWidget {
               },
             ),
             const SizedBox(height: 24),
-            Text(
-              'Transactions History',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Transactions History',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                FilledButton.icon(
+                  onPressed: () => _openTransferDialog(context),
+                  icon: const Icon(Icons.compare_arrows),
+                  label: const Text('Transfer Money'),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             Expanded(
               child: transactionsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+                error: (err, _) => Center(
+                  child: Text(
+                    'Error: $err',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
                 data: (transactions) {
                   if (transactions.isEmpty) {
-                    return const Center(child: Text('No transactions found for this account.'));
+                    return const Center(
+                      child: Text('No transactions found for this account.'),
+                    );
                   }
-                  
+
                   return Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.dividerColor.withValues(alpha: 0.35)),
+                      border: Border.all(
+                        color: AppColors.dividerColor.withValues(alpha: 0.35),
+                      ),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
@@ -108,64 +168,141 @@ class AccountDetailsPage extends ConsumerWidget {
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: ConstrainedBox(
-                            constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width - 48),
+                            constraints: BoxConstraints(
+                              minWidth: MediaQuery.of(context).size.width - 48,
+                            ),
                             child: DataTable(
-                              headingRowColor: WidgetStateProperty.all(Colors.grey.shade50),
+                              headingRowColor: WidgetStateProperty.all(
+                                Colors.grey.shade50,
+                              ),
                               columns: const [
-                                DataColumn(label: Text('Date', style: TextStyle(fontWeight: FontWeight.bold))),
-                                DataColumn(label: Text('Remarks', style: TextStyle(fontWeight: FontWeight.bold))),
-                                DataColumn(label: Text('Ref Type', style: TextStyle(fontWeight: FontWeight.bold))),
-                                DataColumn(label: Text('Credit', style: TextStyle(fontWeight: FontWeight.bold))),
-                                DataColumn(label: Text('Debit', style: TextStyle(fontWeight: FontWeight.bold))),
-                                DataColumn(label: Text('Balance', style: TextStyle(fontWeight: FontWeight.bold))),
+                                DataColumn(
+                                  label: Text(
+                                    'Date',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Text(
+                                    'Remarks',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Text(
+                                    'Ref Type',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Text(
+                                    'Credit',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Text(
+                                    'Debit',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Text(
+                                    'Balance',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ],
                               rows: transactions.map((tx) {
                                 final isCredit = tx.transactionType == 'credit';
-                                final dateFormat = DateFormat('dd MMM yyyy, HH:mm');
+                                final dateFormat = DateFormat(
+                                  'dd MMM yyyy, HH:mm',
+                                );
                                 return DataRow(
                                   cells: [
-                                    DataCell(Text(dateFormat.format(tx.transactionDate))),
+                                    DataCell(
+                                      Text(
+                                        dateFormat.format(tx.transactionDate),
+                                      ),
+                                    ),
                                     DataCell(
                                       SizedBox(
                                         width: 300,
-                                        child: Text(tx.description ?? '', overflow: TextOverflow.ellipsis),
+                                        child: Text(
+                                          tx.description ?? '',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
                                     ),
                                     DataCell(
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 2,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: Colors.grey.shade100,
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                         child: Text(
                                           tx.referenceType.toUpperCase(),
-                                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
                                     DataCell(
                                       Text(
-                                        isCredit ? tx.amount.toStringAsFixed(2) : '-',
+                                        isCredit
+                                            ? tx.amount.toStringAsFixed(2)
+                                            : '-',
                                         style: TextStyle(
-                                          color: isCredit ? Colors.green.shade700 : Colors.black,
-                                          fontWeight: isCredit ? FontWeight.bold : FontWeight.normal,
+                                          color: isCredit
+                                              ? Colors.green.shade700
+                                              : Colors.black,
+                                          fontWeight: isCredit
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
                                         ),
                                       ),
                                     ),
                                     DataCell(
                                       Text(
-                                        !isCredit ? tx.amount.toStringAsFixed(2) : '-',
+                                        !isCredit
+                                            ? tx.amount.toStringAsFixed(2)
+                                            : '-',
                                         style: TextStyle(
-                                          color: !isCredit ? Colors.red.shade700 : Colors.black,
-                                          fontWeight: !isCredit ? FontWeight.bold : FontWeight.normal,
+                                          color: !isCredit
+                                              ? Colors.red.shade700
+                                              : Colors.black,
+                                          fontWeight: !isCredit
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
                                         ),
                                       ),
                                     ),
                                     DataCell(
                                       Text(
                                         tx.runningBalance.toStringAsFixed(2),
-                                        style: const TextStyle(fontWeight: FontWeight.w800),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -183,6 +320,493 @@ class AccountDetailsPage extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _openTransferDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) =>
+          _TransferMoneyDialog(fromAccountId: widget.accountId),
+    );
+  }
+
+  Future<void> _exportToXlsx(
+    BuildContext context,
+    AsyncValue accountAsync,
+    AsyncValue transactionsAsync,
+  ) async {
+    try {
+      final account = accountAsync.asData?.value;
+      final transactions = transactionsAsync.asData?.value ?? [];
+
+      if (account == null || transactions.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No data available to export')),
+        );
+        return;
+      }
+
+      // Create workbook and sheet
+      final excel = Excel.createExcel();
+      final sheet = excel['Sheet1'];
+
+      // Set column widths
+      sheet.setColumnWidth(0, 18); // Date
+      sheet.setColumnWidth(1, 40); // Description
+      sheet.setColumnWidth(2, 15); // Ref Type
+      sheet.setColumnWidth(3, 15); // Credit
+      sheet.setColumnWidth(4, 15); // Debit
+      sheet.setColumnWidth(5, 15); // Balance
+
+      // Use appendRow with TextCellValue and apply lightweight styling
+      int row = 0;
+
+      // Title
+      sheet.appendRow([TextCellValue('BANK STATEMENT')]);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .cellStyle = CellStyle(
+        fontFamily: 'Times New Roman',
+        fontSize: 16,
+        bold: true,
+      );
+      row++;
+      sheet.appendRow([TextCellValue('')]);
+      row++;
+
+      // Account info (label in bold)
+      sheet.appendRow([
+        TextCellValue('Account Name:'),
+        TextCellValue(account.accountTitle),
+      ]);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .cellStyle = CellStyle(
+        bold: true,
+      );
+      row++;
+
+      sheet.appendRow([
+        TextCellValue('Account Number:'),
+        TextCellValue(account.accountNumber ?? 'N/A'),
+      ]);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .cellStyle = CellStyle(
+        bold: true,
+      );
+      row++;
+
+      sheet.appendRow([
+        TextCellValue('Bank:'),
+        TextCellValue(account.bankName ?? 'Cash Account'),
+      ]);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .cellStyle = CellStyle(
+        bold: true,
+      );
+      row++;
+
+      sheet.appendRow([
+        TextCellValue('Currency:'),
+        TextCellValue(account.currency),
+      ]);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .cellStyle = CellStyle(
+        bold: true,
+      );
+      row++;
+
+      sheet.appendRow([
+        TextCellValue('Statement Date:'),
+        TextCellValue(DateFormat('dd MMM yyyy').format(DateTime.now())),
+      ]);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .cellStyle = CellStyle(
+        bold: true,
+      );
+      row++;
+      sheet.appendRow([TextCellValue('')]);
+      row++;
+
+      // Table headers
+      sheet.appendRow([
+        TextCellValue('Date'),
+        TextCellValue('Description'),
+        TextCellValue('Ref Type'),
+        TextCellValue('Credit'),
+        TextCellValue('Debit'),
+        TextCellValue('Balance'),
+      ]);
+      for (int col = 0; col < 6; col++) {
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row))
+            .cellStyle = CellStyle(
+          bold: true,
+          backgroundColorHex: ExcelColor.fromHexString('#F0F0F0'),
+        );
+      }
+      row++;
+
+      // Transactions
+      final dateFormat = DateFormat('dd MMM yyyy, HH:mm');
+      for (final tx in transactions) {
+        final isCredit = tx.transactionType == 'credit';
+        final date = dateFormat.format(tx.transactionDate);
+
+        sheet.appendRow([
+          TextCellValue(date),
+          TextCellValue(tx.description ?? ''),
+          TextCellValue(tx.referenceType.toUpperCase()),
+          TextCellValue(isCredit ? tx.amount.toStringAsFixed(2) : '-'),
+          TextCellValue(!isCredit ? tx.amount.toStringAsFixed(2) : '-'),
+          TextCellValue(tx.runningBalance.toStringAsFixed(2)),
+        ]);
+
+        // Right-align numeric columns
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: row))
+            .cellStyle = CellStyle(
+          horizontalAlign: HorizontalAlign.Right,
+        );
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: row))
+            .cellStyle = CellStyle(
+          horizontalAlign: HorizontalAlign.Right,
+        );
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: row))
+            .cellStyle = CellStyle(
+          horizontalAlign: HorizontalAlign.Right,
+        );
+
+        row++;
+      }
+
+      // Summary
+      sheet.appendRow([TextCellValue('')]);
+      row++;
+      final firstTx = transactions.isNotEmpty
+          ? transactions.first.runningBalance -
+                (transactions.first.transactionType == 'credit'
+                    ? transactions.first.amount
+                    : -transactions.first.amount)
+          : 0.0;
+      sheet.appendRow([
+        TextCellValue('Opening Balance:'),
+        TextCellValue(firstTx.toStringAsFixed(2)),
+      ]);
+      row++;
+      final lastBalance = transactions.isNotEmpty
+          ? transactions.last.runningBalance
+          : account.currentBalance;
+      sheet.appendRow([
+        TextCellValue('Closing Balance:'),
+        TextCellValue(lastBalance.toStringAsFixed(2)),
+      ]);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .cellStyle = CellStyle(
+        bold: true,
+      );
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+          .cellStyle = CellStyle(
+        horizontalAlign: HorizontalAlign.Right,
+        bold: true,
+      );
+
+      // Generate bytes and save
+      final bytes = excel.encode();
+
+      if (bytes != null) {
+        final fileName =
+            '${account.accountTitle}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.xlsx';
+
+        // Capture scaffold messenger before async gap
+        final scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+
+        await FileSaver.instance.saveFile(
+          name: fileName,
+          bytes: Uint8List.fromList(bytes),
+          mimeType: MimeType.microsoftExcel,
+        );
+
+        if (!mounted) return;
+        scaffoldMessenger?.showSnackBar(
+          SnackBar(content: Text('Statement exported: $fileName')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Export failed: $e')));
+    }
+  }
+
+  // Using appendRow with TextCellValue for Excel export; no per-cell helper needed.
+}
+
+/// Dialog for transferring money between accounts
+class _TransferMoneyDialog extends ConsumerStatefulWidget {
+  final int fromAccountId;
+
+  const _TransferMoneyDialog({required this.fromAccountId});
+
+  @override
+  ConsumerState<_TransferMoneyDialog> createState() =>
+      _TransferMoneyDialogState();
+}
+
+class _TransferMoneyDialogState extends ConsumerState<_TransferMoneyDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  int? _selectedToAccountId;
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedToAccountId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a destination account')),
+      );
+      return;
+    }
+
+    final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
+    if (amount <= 0) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter a valid amount')));
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      // Capture navigator and messenger before async call to avoid using
+      // BuildContext across async gaps.
+      final navigator = Navigator.of(context);
+      final scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+
+      await ref.read(
+        transferBetweenAccountsProvider(
+          fromAccountId: widget.fromAccountId,
+          toAccountId: _selectedToAccountId!,
+          amount: amount,
+          description: _descriptionController.text.trim().isEmpty
+              ? 'Transfer between accounts'
+              : _descriptionController.text.trim(),
+        ).future,
+      );
+
+      ref.invalidate(getAllAccountsProvider);
+      ref.invalidate(getAccountByIdProvider(widget.fromAccountId));
+      ref.invalidate(getAccountTransactionsProvider(widget.fromAccountId));
+      if (_selectedToAccountId != null) {
+        ref.invalidate(getAccountByIdProvider(_selectedToAccountId!));
+        ref.invalidate(getAccountTransactionsProvider(_selectedToAccountId!));
+      }
+
+      if (!mounted) return;
+      navigator.pop();
+      scaffoldMessenger?.showSnackBar(
+        const SnackBar(content: Text('Transfer completed successfully')),
+      );
+    } catch (e) {
+      final scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+      scaffoldMessenger?.showSnackBar(
+        SnackBar(content: Text('Transfer failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final allAccountsAsync = ref.watch(getAllAccountsProvider);
+    final fromAccountAsync = ref.watch(
+      getAccountByIdProvider(widget.fromAccountId),
+    );
+
+    return AlertDialog(
+      backgroundColor: AppColors.textWhite,
+      title: const Text(
+        'Transfer Money',
+        style: TextStyle(fontWeight: FontWeight.w800),
+      ),
+      content: SizedBox(
+        width: 480,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // From Account
+                fromAccountAsync.when(
+                  loading: () => const CircularProgressIndicator(),
+                  error: (err, _) => Text('Error: $err'),
+                  data: (fromAccount) => Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'From Account:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Text(
+                          fromAccount.accountTitle,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          'Balance: ${fromAccount.currency} ${fromAccount.currentBalance.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            color: fromAccount.currentBalance >= 0
+                                ? Colors.green.shade700
+                                : Colors.red.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // To Account Dropdown
+                allAccountsAsync.when(
+                  loading: () => const CircularProgressIndicator(),
+                  error: (err, _) => Text('Error: $err'),
+                  data: (accounts) {
+                    final otherAccounts = accounts
+                        .where((acc) => acc.id != widget.fromAccountId)
+                        .toList();
+
+                    return DropdownButtonFormField<int>(
+                      initialValue: _selectedToAccountId,
+                      decoration: const InputDecoration(
+                        labelText: 'To Account *',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.account_balance_outlined),
+                      ),
+                      items: [
+                        const DropdownMenuItem<int>(
+                          value: -1,
+                          child: Text('Select destination account'),
+                        ),
+                        ...otherAccounts.map(
+                          (account) => DropdownMenuItem<int>(
+                            value: account.id,
+                            child: Text(account.accountTitle),
+                          ),
+                        ),
+                      ],
+                      onChanged: _isSubmitting
+                          ? null
+                          : (value) {
+                              if (value != -1) {
+                                setState(() => _selectedToAccountId = value);
+                              } else {
+                                setState(() => _selectedToAccountId = null);
+                              }
+                            },
+                      validator: (value) => value == null || value == -1
+                          ? 'Please select a destination account'
+                          : null,
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Amount
+                TextFormField(
+                  controller: _amountController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Amount *',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.payments_outlined),
+                    prefixText: 'PKR ',
+                  ),
+                  validator: (value) {
+                    final amount = double.tryParse(value?.trim() ?? '');
+                    if (amount == null || amount <= 0) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Description
+                TextFormField(
+                  controller: _descriptionController,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Description (Optional)',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.notes_outlined),
+                    alignLabelWithHint: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton.icon(
+          onPressed: _isSubmitting ? null : _submit,
+          icon: _isSubmitting
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                  ),
+                )
+              : const Icon(Icons.compare_arrows),
+          label: Text(_isSubmitting ? 'Transferring...' : 'Transfer'),
+        ),
+      ],
     );
   }
 }

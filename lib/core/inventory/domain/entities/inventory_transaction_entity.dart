@@ -18,7 +18,7 @@ class InventoryTransactionEntity {
   /// 'IN' or 'OUT'
   final String transactionType;
 
-  final int quantity;
+  final double quantity;
 
   /// Optional: 'SALE', 'PROCUREMENT', 'PRODUCTION', 'INVOICE', 'BOM'
   final String? referenceType;
@@ -48,7 +48,7 @@ class InventoryTransactionEntity {
       itemId: json['item_id'] as int,
       itemType: json['item_type'] as String,
       transactionType: json['transaction_type'] as String,
-      quantity: json['quantity'] as int,
+      quantity: (json['quantity'] as num).toDouble(),
       referenceType: json['reference_type'] as String?,
       referenceId: json['reference_id'] as int?,
       notes: json['notes'] as String?,

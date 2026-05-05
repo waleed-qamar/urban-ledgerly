@@ -32,4 +32,19 @@ class AccountLedgerRepositoryImpl implements AccountLedgerRepository {
   Future<int?> getAccountIdByReference(String referenceType, int referenceId) {
     return _datasource.getAccountIdByReference(referenceType, referenceId);
   }
+
+  @override
+  Future<void> transferBetweenAccounts({
+    required int fromAccountId,
+    required int toAccountId,
+    required double amount,
+    required String description,
+  }) {
+    return _datasource.transferBetweenAccounts(
+      fromAccountId: fromAccountId,
+      toAccountId: toAccountId,
+      amount: amount,
+      description: description,
+    );
+  }
 }

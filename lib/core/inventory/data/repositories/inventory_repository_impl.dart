@@ -18,7 +18,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   Future<void> recordIn(
     int itemId,
     String itemType,
-    int quantity, {
+    double quantity, {
     String? notes,
     String? referenceType,
     int? referenceId,
@@ -36,7 +36,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   Future<void> recordOut(
     int itemId,
     String itemType,
-    int quantity, {
+    double quantity, {
     String? notes,
     String? referenceType,
     int? referenceId,
@@ -53,7 +53,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<void> updateTransaction(
     int transactionId, {
-    required int quantity,
+    required double quantity,
     required String transactionType,
     String? notes,
     String? referenceType,

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../account_ledger/presentation/provider/account_ledger_providers.dart';
 import '../../../client/presentation/providers/client_providers.dart';
+import '../../../ledger/domain/entities/ledger_entity.dart';
+import '../../../ledger/presentation/providers/ledger_providers.dart';
 import '../../domain/entities/receipt_entity.dart';
 import '../providers/receipt_providers.dart';
 
@@ -60,11 +62,11 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
       ).showSnackBar(const SnackBar(content: Text('Please select a client.')));
       return;
     }
-    
+
     if (_selectedAccountId == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please select an account.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select an account.')),
+      );
       return;
     }
 
@@ -79,8 +81,11 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
     setState(() => _isSubmitting = true);
 
     try {
-      final finalPaymentMethod = _paymentMethod == 'bank' && _bankTransferMode == 'cheque' ? 'cheque' : _paymentMethod;
-      
+      final finalPaymentMethod =
+          _paymentMethod == 'bank' && _bankTransferMode == 'cheque'
+          ? 'cheque'
+          : _paymentMethod;
+
       final receipt = ReceiptEntity(
         clientId: _selectedClientId!,
         totalAmount: paymentAmount,
@@ -194,10 +199,22 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                         ],
                         onChanged: _isSubmitting
                             ? null
-                            : (value) => setState(() => _selectedClientId = value),
+                            : (value) =>
+                                  setState(() => _selectedClientId = value),
                         validator: (value) =>
                             value == null ? 'Please select a client' : null,
                       ),
+                      const SizedBox(height: 12),
+                      if (_selectedClientId != null)
+                        _ClientBalanceDisplay(clientId: _selectedClientId!)
+                      else
+                        Text(
+                          'Select a client to view current receivable balance.',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textBlack,
+                          ),
+                        ),
                       const SizedBox(height: 16),
 
                       // Amount + Payment Method row
@@ -207,9 +224,10 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                           Expanded(
                             child: TextFormField(
                               controller: _paymentAmountController,
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
                               decoration: const InputDecoration(
                                 labelText: 'Amount *',
                                 border: OutlineInputBorder(),
@@ -248,7 +266,8 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                                       if (value != null) {
                                         setState(() {
                                           _paymentMethod = value;
-                                          _selectedAccountId = null; // reset account
+                                          _selectedAccountId =
+                                              null; // reset account
                                         });
                                       }
                                     },
@@ -256,12 +275,15 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                           ),
                         ],
                       ),
-                      
+
                       if (_paymentMethod == 'bank') ...[
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            const Text('Transfer Type:', style: TextStyle(fontWeight: FontWeight.bold)),
+                            const Text(
+                              'Transfer Type:',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                             const SizedBox(width: 16),
                             Radio<String>(
                               value: 'online',
@@ -291,30 +313,39 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
 
                       // Select Account based on Payment Method
                       accountsAsync.when(
-                        loading: () => const Center(child: CircularProgressIndicator()),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
                         error: (err, _) => Text('Error loading accounts: $err'),
                         data: (accounts) {
-                          final filteredAccounts = accounts.where((acc) => acc.accountType == _paymentMethod).toList();
-                          
+                          final filteredAccounts = accounts
+                              .where((acc) => acc.accountType == _paymentMethod)
+                              .toList();
+
                           if (filteredAccounts.isEmpty) {
-                            return Text('No $_paymentMethod accounts found in the database.', style: const TextStyle(color: Colors.red));
+                            return Text(
+                              'No $_paymentMethod accounts found in the database.',
+                              style: const TextStyle(color: Colors.red),
+                            );
                           }
-                          
+
                           // If there's only 1 account and it's not selected yet, auto-select it
-                          if (filteredAccounts.length == 1 && _selectedAccountId == null) {
+                          if (filteredAccounts.length == 1 &&
+                              _selectedAccountId == null) {
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               setState(() {
                                 _selectedAccountId = filteredAccounts.first.id;
                               });
                             });
                           }
-                          
+
                           return DropdownButtonFormField<int?>(
                             value: _selectedAccountId,
                             decoration: InputDecoration(
                               labelText: 'Select $_paymentMethod Account *',
                               border: const OutlineInputBorder(),
-                              prefixIcon: const Icon(Icons.account_balance_outlined),
+                              prefixIcon: const Icon(
+                                Icons.account_balance_outlined,
+                              ),
                             ),
                             items: [
                               const DropdownMenuItem<int?>(
@@ -324,19 +355,24 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                               ...filteredAccounts.map(
                                 (acc) => DropdownMenuItem<int?>(
                                   value: acc.id,
-                                  child: Text('${acc.accountTitle} ${acc.bankName != null ? "(${acc.bankName})" : ""}'),
+                                  child: Text(
+                                    '${acc.accountTitle} ${acc.bankName != null ? "(${acc.bankName})" : ""}',
+                                  ),
                                 ),
                               ),
                             ],
                             onChanged: _isSubmitting
                                 ? null
-                                : (value) => setState(() => _selectedAccountId = value),
-                            validator: (value) =>
-                                value == null ? 'Please select an account' : null,
+                                : (value) => setState(
+                                    () => _selectedAccountId = value,
+                                  ),
+                            validator: (value) => value == null
+                                ? 'Please select an account'
+                                : null,
                           );
-                        }
+                        },
                       ),
-                      
+
                       const SizedBox(height: 16),
 
                       // Account No + Date row
@@ -347,7 +383,11 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                             child: TextFormField(
                               controller: _accountNoController,
                               decoration: InputDecoration(
-                                labelText: _bankTransferMode == 'cheque' && _paymentMethod == 'bank' ? 'Cheque No' : 'Account/Ref No (Optional)',
+                                labelText:
+                                    _bankTransferMode == 'cheque' &&
+                                        _paymentMethod == 'bank'
+                                    ? 'Cheque No'
+                                    : 'Account/Ref No (Optional)',
                                 border: const OutlineInputBorder(),
                                 prefixIcon: const Icon(Icons.numbers_outlined),
                               ),
@@ -362,7 +402,9 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                                 decoration: const InputDecoration(
                                   labelText: 'Received Date',
                                   border: OutlineInputBorder(),
-                                  prefixIcon: Icon(Icons.calendar_today_outlined),
+                                  prefixIcon: Icon(
+                                    Icons.calendar_today_outlined,
+                                  ),
                                 ),
                                 child: Text(
                                   '${_receivedDate.year}-${_receivedDate.month.toString().padLeft(2, '0')}-${_receivedDate.day.toString().padLeft(2, '0')}',
@@ -420,6 +462,38 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
               );
             },
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Widget to display client receivable balance
+class _ClientBalanceDisplay extends ConsumerWidget {
+  final int clientId;
+
+  const _ClientBalanceDisplay({required this.clientId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final balanceAsync = ref.watch(
+      getBalanceProvider(partyType: PartyType.client, partyId: clientId),
+    );
+
+    return balanceAsync.when(
+      loading: () => const Text(
+        'Calculating client receivable balance...',
+        style: TextStyle(color: AppColors.textGrey),
+      ),
+      error: (_, _) => const Text(
+        'Could not fetch live receivable balance from ledger.',
+        style: TextStyle(color: AppColors.errorText),
+      ),
+      data: (balance) => Text(
+        'Current receivable balance: PKR ${balance.toStringAsFixed(2)}',
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          color: AppColors.textBlack,
         ),
       ),
     );

@@ -154,7 +154,8 @@ class RawMaterialDashboard extends ConsumerWidget {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => RawMaterialDetailPage(material: mat),
+                              builder: (_) =>
+                                  RawMaterialDetailPage(material: mat),
                             ),
                           );
                         },
@@ -302,9 +303,10 @@ class RawMaterialDashboard extends ConsumerWidget {
                                     if (context.mounted) {
                                       showDialog(
                                         context: context,
-                                        builder: (context) => AddRawMaterialDialog(
-                                          materialToEdit: mat,
-                                        ),
+                                        builder: (context) =>
+                                            AddRawMaterialDialog(
+                                              materialToEdit: mat,
+                                            ),
                                       );
                                     }
                                   } else if (val == 'delete') {
@@ -469,9 +471,19 @@ class RawMaterialDashboard extends ConsumerWidget {
     final repository = ref.read(inventoryRepositoryProvider);
     try {
       if (transactionType == 'IN') {
-        await repository.recordIn(materialId, 'RAW_MATERIAL', quantity, notes: notes);
+        await repository.recordIn(
+          materialId,
+          'RAW_MATERIAL',
+          quantity.toDouble(),
+          notes: notes,
+        );
       } else {
-        await repository.recordOut(materialId, 'RAW_MATERIAL', quantity, notes: notes);
+        await repository.recordOut(
+          materialId,
+          'RAW_MATERIAL',
+          quantity.toDouble(),
+          notes: notes,
+        );
       }
 
       if (context.mounted) {

@@ -216,7 +216,7 @@ class RawMaterialDetailPage extends ConsumerWidget {
                           labelText: 'Quantity',
                         ),
                         validator: (value) {
-                          final parsed = int.tryParse(value ?? '');
+                          final parsed = double.tryParse(value ?? '');
                           if (parsed == null || parsed <= 0) {
                             return 'Enter a valid positive quantity';
                           }
@@ -256,7 +256,7 @@ class RawMaterialDetailPage extends ConsumerWidget {
 
       if (shouldSave != true) return;
 
-      final quantity = int.parse(quantityController.text.trim());
+      final quantity = double.parse(quantityController.text.trim());
       final notes = notesController.text.trim().isEmpty
           ? null
           : notesController.text.trim();
@@ -351,7 +351,7 @@ class RawMaterialDetailPage extends ConsumerWidget {
     var quantityText = '';
     var notesText = '';
 
-    final quantity = await showDialog<int>(
+    final quantity = await showDialog<double>(
       context: context,
       builder: (dialogContext) {
         final formKey = GlobalKey<FormState>();
@@ -369,7 +369,7 @@ class RawMaterialDetailPage extends ConsumerWidget {
                   decoration: const InputDecoration(labelText: 'Quantity'),
                   onChanged: (value) => quantityText = value,
                   validator: (value) {
-                    final parsed = int.tryParse(value ?? '');
+                    final parsed = double.tryParse(value ?? '');
                     if (parsed == null || parsed <= 0) {
                       return 'Enter a valid positive quantity';
                     }
@@ -395,7 +395,7 @@ class RawMaterialDetailPage extends ConsumerWidget {
             ElevatedButton(
               onPressed: () {
                 if (formKey.currentState?.validate() ?? false) {
-                  Navigator.of(dialogContext).pop(int.parse(quantityText));
+                  Navigator.of(dialogContext).pop(double.parse(quantityText));
                 }
               },
               child: const Text('Save'),
@@ -697,18 +697,18 @@ class _TransactionTile extends StatelessWidget {
 }
 
 class _TransactionTotals {
-  final int totalIn;
-  final int totalOut;
+  final double totalIn;
+  final double totalOut;
 
   const _TransactionTotals({required this.totalIn, required this.totalOut});
 
-  int get net => totalIn - totalOut;
+  double get net => totalIn - totalOut;
 
   factory _TransactionTotals.from(
     List<InventoryTransactionEntity> transactions,
   ) {
-    var totalIn = 0;
-    var totalOut = 0;
+    var totalIn = 0.0;
+    var totalOut = 0.0;
 
     for (final transaction in transactions) {
       if (transaction.isIn) {

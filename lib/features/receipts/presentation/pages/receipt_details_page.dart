@@ -166,7 +166,7 @@ class _EmptyAllocationsCard extends StatelessWidget {
           color: AppColors.dividerColor.withValues(alpha: 0.35),
         ),
       ),
-      child: const Text('This receipt is treated as an advance payment.'),
+      child: const Text('This receipt has been credited to the client ledger.'),
     );
   }
 }

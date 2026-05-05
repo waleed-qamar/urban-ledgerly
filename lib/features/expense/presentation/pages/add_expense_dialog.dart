@@ -47,7 +47,10 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate() || _selectedHeadId == null || _selectedAccountId == null) return;
+    if (!_formKey.currentState!.validate() ||
+        _selectedHeadId == null ||
+        _selectedAccountId == null)
+      return;
 
     setState(() => _isLoading = true);
 
@@ -60,7 +63,9 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
     );
 
     try {
-      await ref.read(expenseRepositoryProvider).addExpense(newExpense, accountId: _selectedAccountId);
+      await ref
+          .read(expenseRepositoryProvider)
+          .addExpense(newExpense, accountId: _selectedAccountId);
       // Invalidate the provider so it fetches the fresh 1.5-day list from the DB
       ref.invalidate(recentExpensesProvider);
       ref.invalidate(monthlyInsightsProvider);
@@ -98,7 +103,9 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                   child: OutlinedButton.icon(
                     onPressed: _pickDate,
                     icon: const Icon(Icons.calendar_today),
-                    label: Text(DateFormat('dd MMM yyyy').format(_selectedDate)),
+                    label: Text(
+                      DateFormat('dd MMM yyyy').format(_selectedDate),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -158,9 +165,12 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                   data: (accounts) {
                     // Usually cash, but let user choose any account
                     if (accounts.isEmpty) {
-                      return const Text('Please create an account first.', style: TextStyle(color: Colors.red));
+                      return const Text(
+                        'Please create an account first.',
+                        style: TextStyle(color: Colors.red),
+                      );
                     }
-                    
+
                     if (accounts.length == 1 && _selectedAccountId == null) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         setState(() {
@@ -168,9 +178,9 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                         });
                       });
                     }
-                    
+
                     return DropdownButtonFormField<int>(
-                      value: _selectedAccountId,
+                      initialValue: _selectedAccountId,
                       decoration: const InputDecoration(
                         labelText: 'Paid From Account *',
                         border: OutlineInputBorder(),
@@ -179,11 +189,14 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                           .map(
                             (a) => DropdownMenuItem(
                               value: a.id,
-                              child: Text('${a.accountTitle} (${a.accountType})'),
+                              child: Text(
+                                '${a.accountTitle} (${a.accountType})',
+                              ),
                             ),
                           )
                           .toList(),
-                      onChanged: (val) => setState(() => _selectedAccountId = val),
+                      onChanged: (val) =>
+                          setState(() => _selectedAccountId = val),
                       validator: (val) =>
                           val == null ? 'Please select an account' : null,
                     );
@@ -214,7 +227,12 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
           ),
-          onPressed: _isLoading || _selectedHeadId == null || _selectedAccountId == null ? null : _submit,
+          onPressed:
+              _isLoading ||
+                  _selectedHeadId == null ||
+                  _selectedAccountId == null
+              ? null
+              : _submit,
           child: _isLoading
               ? const SizedBox(
                   width: 20,

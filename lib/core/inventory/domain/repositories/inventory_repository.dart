@@ -14,7 +14,7 @@ abstract class InventoryRepository {
   Future<void> recordIn(
     int itemId,
     String itemType,
-    int quantity, {
+    double quantity, {
     String? notes,
     String? referenceType,
     int? referenceId,
@@ -23,7 +23,7 @@ abstract class InventoryRepository {
   Future<void> recordOut(
     int itemId,
     String itemType,
-    int quantity, {
+    double quantity, {
     String? notes,
     String? referenceType,
     int? referenceId,
@@ -31,7 +31,7 @@ abstract class InventoryRepository {
 
   Future<void> updateTransaction(
     int transactionId, {
-    required int quantity,
+    required double quantity,
     required String transactionType,
     String? notes,
     String? referenceType,
