@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$EmployeeEntity {
 
- int get id; String get name; String get phone; String? get cnic; DateTime get joiningDate; bool get isActive; DateTime? get createdAt;
+ int get id; String get name; String get phone; String? get cnic; DateTime get joiningDate; bool get isActive; String? get role; String? get userId; DateTime? get createdAt;
 /// Create a copy of EmployeeEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $EmployeeEntityCopyWith<EmployeeEntity> get copyWith => _$EmployeeEntityCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EmployeeEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.cnic, cnic) || other.cnic == cnic)&&(identical(other.joiningDate, joiningDate) || other.joiningDate == joiningDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EmployeeEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.cnic, cnic) || other.cnic == cnic)&&(identical(other.joiningDate, joiningDate) || other.joiningDate == joiningDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.role, role) || other.role == role)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,phone,cnic,joiningDate,isActive,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,phone,cnic,joiningDate,isActive,role,userId,createdAt);
 
 @override
 String toString() {
-  return 'EmployeeEntity(id: $id, name: $name, phone: $phone, cnic: $cnic, joiningDate: $joiningDate, isActive: $isActive, createdAt: $createdAt)';
+  return 'EmployeeEntity(id: $id, name: $name, phone: $phone, cnic: $cnic, joiningDate: $joiningDate, isActive: $isActive, role: $role, userId: $userId, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $EmployeeEntityCopyWith<$Res>  {
   factory $EmployeeEntityCopyWith(EmployeeEntity value, $Res Function(EmployeeEntity) _then) = _$EmployeeEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String phone, String? cnic, DateTime joiningDate, bool isActive, DateTime? createdAt
+ int id, String name, String phone, String? cnic, DateTime joiningDate, bool isActive, String? role, String? userId, DateTime? createdAt
 });
 
 
@@ -65,7 +65,7 @@ class _$EmployeeEntityCopyWithImpl<$Res>
 
 /// Create a copy of EmployeeEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? phone = null,Object? cnic = freezed,Object? joiningDate = null,Object? isActive = null,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? phone = null,Object? cnic = freezed,Object? joiningDate = null,Object? isActive = null,Object? role = freezed,Object? userId = freezed,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -73,7 +73,9 @@ as String,phone: null == phone ? _self.phone : phone // ignore: cast_nullable_to
 as String,cnic: freezed == cnic ? _self.cnic : cnic // ignore: cast_nullable_to_non_nullable
 as String?,joiningDate: null == joiningDate ? _self.joiningDate : joiningDate // ignore: cast_nullable_to_non_nullable
 as DateTime,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as bool,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as String?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }
@@ -159,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String phone,  String? cnic,  DateTime joiningDate,  bool isActive,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String phone,  String? cnic,  DateTime joiningDate,  bool isActive,  String? role,  String? userId,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EmployeeEntity() when $default != null:
-return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.role,_that.userId,_that.createdAt);case _:
   return orElse();
 
 }
@@ -180,10 +182,10 @@ return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String phone,  String? cnic,  DateTime joiningDate,  bool isActive,  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String phone,  String? cnic,  DateTime joiningDate,  bool isActive,  String? role,  String? userId,  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _EmployeeEntity():
-return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.role,_that.userId,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +202,10 @@ return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String phone,  String? cnic,  DateTime joiningDate,  bool isActive,  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String phone,  String? cnic,  DateTime joiningDate,  bool isActive,  String? role,  String? userId,  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _EmployeeEntity() when $default != null:
-return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.role,_that.userId,_that.createdAt);case _:
   return null;
 
 }
@@ -215,7 +217,7 @@ return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_th
 @JsonSerializable()
 
 class _EmployeeEntity implements EmployeeEntity {
-  const _EmployeeEntity({required this.id, required this.name, required this.phone, this.cnic, required this.joiningDate, required this.isActive, this.createdAt});
+  const _EmployeeEntity({required this.id, required this.name, required this.phone, this.cnic, required this.joiningDate, required this.isActive, this.role, this.userId, this.createdAt});
   factory _EmployeeEntity.fromJson(Map<String, dynamic> json) => _$EmployeeEntityFromJson(json);
 
 @override final  int id;
@@ -224,6 +226,8 @@ class _EmployeeEntity implements EmployeeEntity {
 @override final  String? cnic;
 @override final  DateTime joiningDate;
 @override final  bool isActive;
+@override final  String? role;
+@override final  String? userId;
 @override final  DateTime? createdAt;
 
 /// Create a copy of EmployeeEntity
@@ -239,16 +243,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EmployeeEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.cnic, cnic) || other.cnic == cnic)&&(identical(other.joiningDate, joiningDate) || other.joiningDate == joiningDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EmployeeEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.cnic, cnic) || other.cnic == cnic)&&(identical(other.joiningDate, joiningDate) || other.joiningDate == joiningDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.role, role) || other.role == role)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,phone,cnic,joiningDate,isActive,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,phone,cnic,joiningDate,isActive,role,userId,createdAt);
 
 @override
 String toString() {
-  return 'EmployeeEntity(id: $id, name: $name, phone: $phone, cnic: $cnic, joiningDate: $joiningDate, isActive: $isActive, createdAt: $createdAt)';
+  return 'EmployeeEntity(id: $id, name: $name, phone: $phone, cnic: $cnic, joiningDate: $joiningDate, isActive: $isActive, role: $role, userId: $userId, createdAt: $createdAt)';
 }
 
 
@@ -259,7 +263,7 @@ abstract mixin class _$EmployeeEntityCopyWith<$Res> implements $EmployeeEntityCo
   factory _$EmployeeEntityCopyWith(_EmployeeEntity value, $Res Function(_EmployeeEntity) _then) = __$EmployeeEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String phone, String? cnic, DateTime joiningDate, bool isActive, DateTime? createdAt
+ int id, String name, String phone, String? cnic, DateTime joiningDate, bool isActive, String? role, String? userId, DateTime? createdAt
 });
 
 
@@ -276,7 +280,7 @@ class __$EmployeeEntityCopyWithImpl<$Res>
 
 /// Create a copy of EmployeeEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? phone = null,Object? cnic = freezed,Object? joiningDate = null,Object? isActive = null,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? phone = null,Object? cnic = freezed,Object? joiningDate = null,Object? isActive = null,Object? role = freezed,Object? userId = freezed,Object? createdAt = freezed,}) {
   return _then(_EmployeeEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -284,7 +288,9 @@ as String,phone: null == phone ? _self.phone : phone // ignore: cast_nullable_to
 as String,cnic: freezed == cnic ? _self.cnic : cnic // ignore: cast_nullable_to_non_nullable
 as String?,joiningDate: null == joiningDate ? _self.joiningDate : joiningDate // ignore: cast_nullable_to_non_nullable
 as DateTime,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as bool,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as String?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }

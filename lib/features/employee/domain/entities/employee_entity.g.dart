@@ -12,11 +12,13 @@ _EmployeeEntity _$EmployeeEntityFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       phone: json['phone'] as String,
       cnic: json['cnic'] as String?,
-      joiningDate: DateTime.parse(json['joining_date'] as String),
-      isActive: json['is_active'] as bool,
-      createdAt: json['created_at'] == null
+      joiningDate: DateTime.parse(json['joiningDate'] as String),
+      isActive: json['isActive'] as bool,
+      role: json['role'] as String?,
+      userId: json['userId'] as String?,
+      createdAt: json['createdAt'] == null
           ? null
-          : DateTime.parse(json['created_at'] as String),
+          : DateTime.parse(json['createdAt'] as String),
     );
 
 Map<String, dynamic> _$EmployeeEntityToJson(_EmployeeEntity instance) =>
@@ -25,7 +27,9 @@ Map<String, dynamic> _$EmployeeEntityToJson(_EmployeeEntity instance) =>
       'name': instance.name,
       'phone': instance.phone,
       'cnic': instance.cnic,
-      'joining_date': instance.joiningDate.toIso8601String(),
-      'is_active': instance.isActive,
-      'created_at': instance.createdAt?.toIso8601String(),
+      'joiningDate': instance.joiningDate.toIso8601String(),
+      'isActive': instance.isActive,
+      'role': instance.role,
+      'userId': instance.userId,
+      'createdAt': instance.createdAt?.toIso8601String(),
     };

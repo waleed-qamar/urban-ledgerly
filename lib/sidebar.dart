@@ -1,6 +1,6 @@
 // features/expense/presentation/views/sidebar.dart
 import 'package:flutter/material.dart';
-import 'package:ledgerly/features/employee/presentation/pages/employee_dashboard.dart';
+import 'package:ledgerly/features/employee/presentation/pages/operator_dashboard.dart';
 import 'package:ledgerly/features/orders/presentation/pages/order_dashboard.dart';
 import 'package:ledgerly/features/procurement/presentation/pages/procurement_dashboard.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_dashboard.dart';
@@ -14,33 +14,20 @@ import 'features/ledger/presentation/pages/ledger_page.dart';
 import 'features/vender/presentation/pages/vendor_dashboard_view.dart';
 import 'package:ledgerly/features/dps/presentation/pages/dps_dashboard.dart';
 
-class MainLayout extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ledgerly/features/auth/presentation/provider/current_employee_provider.dart';
+
+class MainLayout extends ConsumerStatefulWidget {
   const MainLayout({super.key});
 
   @override
-  State<MainLayout> createState() => _MainLayoutState();
+  ConsumerState<MainLayout> createState() => _MainLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
+class _MainLayoutState extends ConsumerState<MainLayout> {
   int _selectedIndex = 0; // Default to Expenses as per your request
 
   // Placeholder for future modules
-  final List<Widget> _pages = [
-    const AccountDashboard(),
-    const LedgerPage(),
-    const OrderDashboard(),
-    const ReceiptsDashboard(),
-    const ClientDashboardView(),
-    const VenderDashboardView(),
-    const ProductDashboard(),
-    const RawMaterialDashboard(),
-    const ProcurementDashboard(),
-    const ExpenseDashboardView(),
-    const DpsDashboard(),
-    const EmployeeDashboard(),
-    // const Center(child: Text('Settings Module')),
-  ];
-
   Future<void> _signOut() async {
     await Supabase.instance.client.auth.signOut();
     // The AuthWrapper will automatically redirect you back to the Login Screen!
@@ -48,6 +35,88 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final employeeAsync = ref.watch(currentEmployeeProvider);
+    final isMaster = employeeAsync.value?.role == 'master';
+
+    // Build lists dynamically
+    final List<Widget> pages = [
+      const AccountDashboard(),
+      const LedgerPage(),
+      const OrderDashboard(),
+      const ReceiptsDashboard(),
+      const ClientDashboardView(),
+      const VenderDashboardView(),
+      const ProductDashboard(),
+      const RawMaterialDashboard(),
+      const ProcurementDashboard(),
+      const ExpenseDashboardView(),
+      const DpsDashboard(),
+      const OperatorDashboard(),
+    ];
+
+    final List<NavigationRailDestination> destinations = [
+      const NavigationRailDestination(
+        icon: Icon(Icons.account_balance_outlined),
+        selectedIcon: Icon(Icons.account_balance),
+        label: Text('Accounts'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.book_outlined),
+        selectedIcon: Icon(Icons.book),
+        label: Text('Ledger'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.receipt_long_outlined),
+        selectedIcon: Icon(Icons.receipt_long),
+        label: Text('Orders'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.payments_outlined),
+        selectedIcon: Icon(Icons.payments),
+        label: Text('Payments'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.dashboard_outlined),
+        selectedIcon: Icon(Icons.dashboard),
+        label: Text('Clients'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.bar_chart_outlined),
+        selectedIcon: Icon(Icons.bar_chart),
+        label: Text('Venders'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.inventory_2_outlined),
+        selectedIcon: Icon(Icons.inventory_2),
+        label: Text('Products'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.category_outlined),
+        selectedIcon: Icon(Icons.category),
+        label: Text('Raw Materials'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.shopping_cart_outlined),
+        selectedIcon: Icon(Icons.shopping_cart),
+        label: Text('Procurement'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.account_balance_wallet_outlined),
+        selectedIcon: Icon(Icons.account_balance_wallet),
+        label: Text('Non-Vender Payments'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.precision_manufacturing_outlined),
+        selectedIcon: Icon(Icons.precision_manufacturing),
+        label: Text('DPS'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.emoji_people_outlined),
+        selectedIcon: Icon(Icons.emoji_people),
+        label: Text('Employees'),
+      ),
+    ];
+
     return Scaffold(
       body: Row(
         children: [
@@ -55,7 +124,9 @@ class _MainLayoutState extends State<MainLayout> {
           NavigationRail(
             extended: true, // Set to false if you want it collapsed
             backgroundColor: Colors.white,
-            selectedIndex: _selectedIndex,
+            selectedIndex: _selectedIndex >= destinations.length
+                ? destinations.length - 1
+                : _selectedIndex,
             onDestinationSelected: (int index) {
               setState(() {
                 _selectedIndex = index;
@@ -83,75 +154,7 @@ class _MainLayoutState extends State<MainLayout> {
                 ],
               ),
             ),
-            destinations: const [
-              NavigationRailDestination(
-                icon: Icon(Icons.account_balance_outlined),
-                selectedIcon: Icon(Icons.account_balance),
-                label: Text('Accounts'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.book_outlined),
-                selectedIcon: Icon(Icons.book),
-                label: Text('Ledger'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.receipt_long_outlined),
-                selectedIcon: Icon(Icons.receipt_long),
-                label: Text('Orders'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.payments_outlined),
-                selectedIcon: Icon(Icons.payments),
-                label: Text('Payments'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.dashboard_outlined),
-                selectedIcon: Icon(Icons.dashboard),
-                label: Text('Clients'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.bar_chart_outlined),
-                selectedIcon: Icon(Icons.bar_chart),
-                label: Text('Venders'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.inventory_2_outlined),
-                selectedIcon: Icon(Icons.inventory_2),
-                label: Text('Products'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.category_outlined),
-                selectedIcon: Icon(Icons.category),
-                label: Text('Raw Materials'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.shopping_cart_outlined),
-                selectedIcon: Icon(Icons.shopping_cart),
-                label: Text('Procurement'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.account_balance_wallet_outlined),
-                selectedIcon: Icon(Icons.account_balance_wallet),
-                label: Text('Non-Vender Payments'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.precision_manufacturing_outlined),
-                selectedIcon: Icon(Icons.precision_manufacturing),
-                label: Text('DPS'),
-              ),
-
-              NavigationRailDestination(
-                icon: Icon(Icons.emoji_people_outlined),
-                selectedIcon: Icon(Icons.emoji_people),
-                label: Text('Employees'),
-              ),
-
-              // NavigationRailDestination(
-              //   icon: Icon(Icons.settings_outlined),
-              //   selectedIcon: Icon(Icons.settings),
-              //   label: Text('Settings'),
-              // ),
-            ],
+            destinations: destinations,
             // Signout button at the bottom of the rail
             trailing: Expanded(
               child: Align(
@@ -191,7 +194,7 @@ class _MainLayoutState extends State<MainLayout> {
           ),
 
           // Main Content Area
-          Expanded(child: _pages[_selectedIndex]),
+          Expanded(child: pages[_selectedIndex]),
         ],
       ),
     );

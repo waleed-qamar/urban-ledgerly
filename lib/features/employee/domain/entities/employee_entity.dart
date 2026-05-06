@@ -12,6 +12,8 @@ abstract class EmployeeEntity with _$EmployeeEntity {
     String? cnic,
     required DateTime joiningDate,
     required bool isActive,
+    String? role,
+    String? userId,
     DateTime? createdAt,
   }) = _EmployeeEntity;
 

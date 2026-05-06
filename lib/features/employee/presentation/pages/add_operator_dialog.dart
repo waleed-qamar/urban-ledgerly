@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ledgerly/features/employee/domain/entities/operator_entity.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../domain/entities/employee_entity.dart';
-import '../provider/employee_providers.dart';
+import '../provider/operator_providers.dart';
 
 class AddEmployeeDialog extends ConsumerStatefulWidget {
   final dynamic clientToEdit;
@@ -54,7 +54,7 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
 
     setState(() => _isLoading = true);
 
-    final employee = EmployeeEntity(
+    final employee = OperatorEntity(
       id: widget.clientToEdit?.id ?? 0,
       name: _nameController.text.trim(),
       phone: _phoneController.text.trim(),
@@ -68,12 +68,12 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
 
     try {
       if (widget.clientToEdit != null) {
-        await ref.read(employeeRepositoryProvider).updateEmployee(employee);
+        await ref.read(operatorRepositoryProvider).updateEmployee(employee);
       } else {
-        await ref.read(employeeRepositoryProvider).addEmployee(employee);
+        await ref.read(operatorRepositoryProvider).addEmployee(employee);
       }
 
-      ref.invalidate(getAllEmployeesProvider);
+      ref.invalidate(getAllOperatorsProvider);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {

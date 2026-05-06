@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:ledgerly/features/employee/presentation/provider/employee_providers.dart';
+import 'package:ledgerly/features/employee/presentation/provider/operator_providers.dart';
 import '../../domain/entities/dps_models.dart';
 import '../providers/dps_providers.dart';
 import '../../../products/presentation/providers/product_providers.dart';
@@ -18,7 +18,6 @@ class _AddDpsReportPageState extends ConsumerState<AddDpsReportPage> {
   @override
   Widget build(BuildContext context) {
     final machinesAsyncValue = ref.watch(dpsMachinesProvider);
-    final employeeAsyncValue = ref.watch(getAllEmployeesProvider);
     final formState = ref.watch(dpsFormProvider);
 
     return Scaffold(
@@ -138,7 +137,7 @@ class _EnergyFormCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final employeeAsyncValue = ref.watch(getAllEmployeesProvider);
+    final employeeAsyncValue = ref.watch(getAllOperatorsProvider);
     final formState = ref.watch(dpsFormProvider);
     final log =
         formState.energyLogs[machine.id] ?? DpsEnergyLog(machineId: machine.id);

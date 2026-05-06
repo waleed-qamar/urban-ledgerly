@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'employee_providers.dart';
+part of 'operator_providers.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,10 +9,10 @@ part of 'employee_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(employeeRemoteDatasource)
-const employeeRemoteDatasourceProvider = EmployeeRemoteDatasourceProvider._();
+@ProviderFor(operatorRemoteDatasource)
+const operatorRemoteDatasourceProvider = OperatorRemoteDatasourceProvider._();
 
-final class EmployeeRemoteDatasourceProvider
+final class OperatorRemoteDatasourceProvider
     extends
         $FunctionalProvider<
           EmployeeRemoteDatasource,
@@ -20,19 +20,19 @@ final class EmployeeRemoteDatasourceProvider
           EmployeeRemoteDatasource
         >
     with $Provider<EmployeeRemoteDatasource> {
-  const EmployeeRemoteDatasourceProvider._()
+  const OperatorRemoteDatasourceProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'employeeRemoteDatasourceProvider',
+        name: r'operatorRemoteDatasourceProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$employeeRemoteDatasourceHash();
+  String debugGetCreateSourceHash() => _$operatorRemoteDatasourceHash();
 
   @$internal
   @override
@@ -42,7 +42,7 @@ final class EmployeeRemoteDatasourceProvider
 
   @override
   EmployeeRemoteDatasource create(Ref ref) {
-    return employeeRemoteDatasource(ref);
+    return operatorRemoteDatasource(ref);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -54,13 +54,13 @@ final class EmployeeRemoteDatasourceProvider
   }
 }
 
-String _$employeeRemoteDatasourceHash() =>
-    r'540078860120387ecdf814039739b84b874bca9d';
+String _$operatorRemoteDatasourceHash() =>
+    r'bbf4c3aea32ac5dd156f73f739c874c78b80b772';
 
-@ProviderFor(employeeRepository)
-const employeeRepositoryProvider = EmployeeRepositoryProvider._();
+@ProviderFor(operatorRepository)
+const operatorRepositoryProvider = OperatorRepositoryProvider._();
 
-final class EmployeeRepositoryProvider
+final class OperatorRepositoryProvider
     extends
         $FunctionalProvider<
           EmployeeRepository,
@@ -68,19 +68,19 @@ final class EmployeeRepositoryProvider
           EmployeeRepository
         >
     with $Provider<EmployeeRepository> {
-  const EmployeeRepositoryProvider._()
+  const OperatorRepositoryProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'employeeRepositoryProvider',
+        name: r'operatorRepositoryProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$employeeRepositoryHash();
+  String debugGetCreateSourceHash() => _$operatorRepositoryHash();
 
   @$internal
   @override
@@ -90,7 +90,7 @@ final class EmployeeRepositoryProvider
 
   @override
   EmployeeRepository create(Ref ref) {
-    return employeeRepository(ref);
+    return operatorRepository(ref);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -102,73 +102,73 @@ final class EmployeeRepositoryProvider
   }
 }
 
-String _$employeeRepositoryHash() =>
-    r'58c758357b1b9dfa9c68adeb6ab91aaa87b31c74';
+String _$operatorRepositoryHash() =>
+    r'222163a077311db9772f50b75ccb5c2697246ec6';
 
-@ProviderFor(getAllEmployees)
-const getAllEmployeesProvider = GetAllEmployeesProvider._();
+@ProviderFor(getAllOperators)
+const getAllOperatorsProvider = GetAllOperatorsProvider._();
 
-final class GetAllEmployeesProvider
+final class GetAllOperatorsProvider
     extends
         $FunctionalProvider<
-          AsyncValue<List<EmployeeEntity>>,
-          List<EmployeeEntity>,
-          FutureOr<List<EmployeeEntity>>
+          AsyncValue<List<OperatorEntity>>,
+          List<OperatorEntity>,
+          FutureOr<List<OperatorEntity>>
         >
     with
-        $FutureModifier<List<EmployeeEntity>>,
-        $FutureProvider<List<EmployeeEntity>> {
-  const GetAllEmployeesProvider._()
+        $FutureModifier<List<OperatorEntity>>,
+        $FutureProvider<List<OperatorEntity>> {
+  const GetAllOperatorsProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'getAllEmployeesProvider',
+        name: r'getAllOperatorsProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$getAllEmployeesHash();
+  String debugGetCreateSourceHash() => _$getAllOperatorsHash();
 
   @$internal
   @override
-  $FutureProviderElement<List<EmployeeEntity>> $createElement(
+  $FutureProviderElement<List<OperatorEntity>> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<List<EmployeeEntity>> create(Ref ref) {
-    return getAllEmployees(ref);
+  FutureOr<List<OperatorEntity>> create(Ref ref) {
+    return getAllOperators(ref);
   }
 }
 
-String _$getAllEmployeesHash() => r'685441ce0e3a2ce03c93cf5578e100574f420b21';
+String _$getAllOperatorsHash() => r'cc9afbb7532fa3bb135a8b7cd189290db6a97a9d';
 
-@ProviderFor(addEmployee)
-const addEmployeeProvider = AddEmployeeFamily._();
+@ProviderFor(addOperator)
+const addOperatorProvider = AddOperatorFamily._();
 
-final class AddEmployeeProvider
+final class AddOperatorProvider
     extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
     with $FutureModifier<void>, $FutureProvider<void> {
-  const AddEmployeeProvider._({
-    required AddEmployeeFamily super.from,
-    required EmployeeEntity super.argument,
+  const AddOperatorProvider._({
+    required AddOperatorFamily super.from,
+    required OperatorEntity super.argument,
   }) : super(
          retry: null,
-         name: r'addEmployeeProvider',
+         name: r'addOperatorProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$addEmployeeHash();
+  String debugGetCreateSourceHash() => _$addOperatorHash();
 
   @override
   String toString() {
-    return r'addEmployeeProvider'
+    return r'addOperatorProvider'
         ''
         '($argument)';
   }
@@ -180,13 +180,13 @@ final class AddEmployeeProvider
 
   @override
   FutureOr<void> create(Ref ref) {
-    final argument = this.argument as EmployeeEntity;
-    return addEmployee(ref, argument);
+    final argument = this.argument as OperatorEntity;
+    return addOperator(ref, argument);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AddEmployeeProvider && other.argument == argument;
+    return other is AddOperatorProvider && other.argument == argument;
   }
 
   @override
@@ -195,49 +195,49 @@ final class AddEmployeeProvider
   }
 }
 
-String _$addEmployeeHash() => r'a0182388e1b1ae1f51a91f918489ad4e93c4f7b8';
+String _$addOperatorHash() => r'e1956a18b6bed76846335522198b1c996586ff65';
 
-final class AddEmployeeFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<void>, EmployeeEntity> {
-  const AddEmployeeFamily._()
+final class AddOperatorFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, OperatorEntity> {
+  const AddOperatorFamily._()
     : super(
         retry: null,
-        name: r'addEmployeeProvider',
+        name: r'addOperatorProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  AddEmployeeProvider call(EmployeeEntity employee) =>
-      AddEmployeeProvider._(argument: employee, from: this);
+  AddOperatorProvider call(OperatorEntity employee) =>
+      AddOperatorProvider._(argument: employee, from: this);
 
   @override
-  String toString() => r'addEmployeeProvider';
+  String toString() => r'addOperatorProvider';
 }
 
-@ProviderFor(deleteEmployee)
-const deleteEmployeeProvider = DeleteEmployeeFamily._();
+@ProviderFor(deleteOperator)
+const deleteOperatorProvider = DeleteOperatorFamily._();
 
-final class DeleteEmployeeProvider
+final class DeleteOperatorProvider
     extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
     with $FutureModifier<void>, $FutureProvider<void> {
-  const DeleteEmployeeProvider._({
-    required DeleteEmployeeFamily super.from,
+  const DeleteOperatorProvider._({
+    required DeleteOperatorFamily super.from,
     required int super.argument,
   }) : super(
          retry: null,
-         name: r'deleteEmployeeProvider',
+         name: r'deleteOperatorProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$deleteEmployeeHash();
+  String debugGetCreateSourceHash() => _$deleteOperatorHash();
 
   @override
   String toString() {
-    return r'deleteEmployeeProvider'
+    return r'deleteOperatorProvider'
         ''
         '($argument)';
   }
@@ -250,12 +250,12 @@ final class DeleteEmployeeProvider
   @override
   FutureOr<void> create(Ref ref) {
     final argument = this.argument as int;
-    return deleteEmployee(ref, argument);
+    return deleteOperator(ref, argument);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is DeleteEmployeeProvider && other.argument == argument;
+    return other is DeleteOperatorProvider && other.argument == argument;
   }
 
   @override
@@ -264,49 +264,49 @@ final class DeleteEmployeeProvider
   }
 }
 
-String _$deleteEmployeeHash() => r'fba8bbe77271c0bbf579caa66d793e0f31b763b9';
+String _$deleteOperatorHash() => r'2dd0ad531545593f62a99225982fe05eba9d3941';
 
-final class DeleteEmployeeFamily extends $Family
+final class DeleteOperatorFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<void>, int> {
-  const DeleteEmployeeFamily._()
+  const DeleteOperatorFamily._()
     : super(
         retry: null,
-        name: r'deleteEmployeeProvider',
+        name: r'deleteOperatorProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  DeleteEmployeeProvider call(int id) =>
-      DeleteEmployeeProvider._(argument: id, from: this);
+  DeleteOperatorProvider call(int id) =>
+      DeleteOperatorProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'deleteEmployeeProvider';
+  String toString() => r'deleteOperatorProvider';
 }
 
-@ProviderFor(updateEmployee)
-const updateEmployeeProvider = UpdateEmployeeFamily._();
+@ProviderFor(updateOperator)
+const updateOperatorProvider = UpdateOperatorFamily._();
 
-final class UpdateEmployeeProvider
+final class UpdateOperatorProvider
     extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
     with $FutureModifier<void>, $FutureProvider<void> {
-  const UpdateEmployeeProvider._({
-    required UpdateEmployeeFamily super.from,
-    required EmployeeEntity super.argument,
+  const UpdateOperatorProvider._({
+    required UpdateOperatorFamily super.from,
+    required OperatorEntity super.argument,
   }) : super(
          retry: null,
-         name: r'updateEmployeeProvider',
+         name: r'updateOperatorProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$updateEmployeeHash();
+  String debugGetCreateSourceHash() => _$updateOperatorHash();
 
   @override
   String toString() {
-    return r'updateEmployeeProvider'
+    return r'updateOperatorProvider'
         ''
         '($argument)';
   }
@@ -318,13 +318,13 @@ final class UpdateEmployeeProvider
 
   @override
   FutureOr<void> create(Ref ref) {
-    final argument = this.argument as EmployeeEntity;
-    return updateEmployee(ref, argument);
+    final argument = this.argument as OperatorEntity;
+    return updateOperator(ref, argument);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is UpdateEmployeeProvider && other.argument == argument;
+    return other is UpdateOperatorProvider && other.argument == argument;
   }
 
   @override
@@ -333,22 +333,22 @@ final class UpdateEmployeeProvider
   }
 }
 
-String _$updateEmployeeHash() => r'78b143e8c2e18f46bf5e76c004483bd8845f8908';
+String _$updateOperatorHash() => r'2c928031d3290d32d166dd75b23bc27be63c7bdf';
 
-final class UpdateEmployeeFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<void>, EmployeeEntity> {
-  const UpdateEmployeeFamily._()
+final class UpdateOperatorFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, OperatorEntity> {
+  const UpdateOperatorFamily._()
     : super(
         retry: null,
-        name: r'updateEmployeeProvider',
+        name: r'updateOperatorProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  UpdateEmployeeProvider call(EmployeeEntity employee) =>
-      UpdateEmployeeProvider._(argument: employee, from: this);
+  UpdateOperatorProvider call(OperatorEntity employee) =>
+      UpdateOperatorProvider._(argument: employee, from: this);
 
   @override
-  String toString() => r'updateEmployeeProvider';
+  String toString() => r'updateOperatorProvider';
 }

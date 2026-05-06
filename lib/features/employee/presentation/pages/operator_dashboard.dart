@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
-import 'package:ledgerly/features/employee/presentation/provider/employee_providers.dart';
-import 'add_employee_dialog.dart';
+import 'package:ledgerly/features/employee/presentation/provider/operator_providers.dart';
+import 'add_operator_dialog.dart';
 
-class EmployeeDashboard extends ConsumerWidget {
-  const EmployeeDashboard({super.key});
+class OperatorDashboard extends ConsumerWidget {
+  const OperatorDashboard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final employeeAsyncValue = ref.watch(getAllEmployeesProvider);
+    final employeeAsyncValue = ref.watch(getAllOperatorsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
