@@ -635,12 +635,38 @@ class _TransactionTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  isIn ? 'Stock In' : 'Stock Out',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textBlack,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      isIn ? 'Stock In' : 'Stock Out',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textBlack,
+                      ),
+                    ),
+                    if (transaction.referenceType == 'INVOICE') ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.blue.shade200),
+                        ),
+                        child: Text(
+                          'Invoice #${transaction.referenceId}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blue.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(

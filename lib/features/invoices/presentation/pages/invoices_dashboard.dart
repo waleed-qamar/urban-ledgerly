@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:ledgerly/features/invoices/utils/pdf_generator.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/inventory/presentation/providers/inventory_providers.dart';
 import '../../../client/domain/entities/client_entity.dart';
 import '../../../client/presentation/providers/client_providers.dart';
 import '../../../products/presentation/providers/product_providers.dart';
@@ -232,6 +233,22 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
           status: newStatus,
         ).future,
       );
+
+      // If marking as dispatched, create stock OUT transactions
+      if (newStatus == 'dispatched' && invoice.id != null) {
+        final inventoryRepository = ref.read(inventoryRepositoryProvider);
+        for (final item in invoice.items) {
+          await inventoryRepository.recordOut(
+            item.productId,
+            'PRODUCT',
+            item.quantity.toDouble(),
+            notes: 'Invoice ${invoice.invoiceNumber} dispatched',
+            referenceType: 'INVOICE',
+            referenceId: invoice.id,
+          );
+        }
+      }
+
       ref.invalidate(getAllInvoicesProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

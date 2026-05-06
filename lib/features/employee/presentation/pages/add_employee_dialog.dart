@@ -1,0 +1,191 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/theme/app_colors.dart';
+import '../../domain/entities/employee_entity.dart';
+import '../provider/employee_providers.dart';
+
+class AddEmployeeDialog extends ConsumerStatefulWidget {
+  final dynamic clientToEdit;
+
+  const AddEmployeeDialog({super.key, this.clientToEdit});
+
+  @override
+  ConsumerState<AddEmployeeDialog> createState() => _AddEmployeeDialogState();
+}
+
+class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _cnicController;
+  late DateTime _joiningDate;
+  late bool _isActive;
+
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(
+      text: widget.clientToEdit?.name ?? '',
+    );
+    _phoneController = TextEditingController(
+      text: widget.clientToEdit?.phone ?? '',
+    );
+    _cnicController = TextEditingController(
+      text: widget.clientToEdit?.cnic ?? '',
+    );
+    _joiningDate = widget.clientToEdit?.joiningDate ?? DateTime.now();
+    _isActive = widget.clientToEdit?.isActive ?? true;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _cnicController.dispose();
+
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    final employee = EmployeeEntity(
+      id: widget.clientToEdit?.id ?? 0,
+      name: _nameController.text.trim(),
+      phone: _phoneController.text.trim(),
+      cnic: _cnicController.text.trim().isEmpty
+          ? null
+          : _cnicController.text.trim(),
+      joiningDate: _joiningDate,
+      isActive: _isActive,
+      createdAt: widget.clientToEdit?.createdAt ?? DateTime.now(),
+    );
+
+    try {
+      if (widget.clientToEdit != null) {
+        await ref.read(employeeRepositoryProvider).updateEmployee(employee);
+      } else {
+        await ref.read(employeeRepositoryProvider).addEmployee(employee);
+      }
+
+      ref.invalidate(getAllEmployeesProvider);
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.textWhite,
+      title: Text(
+        widget.clientToEdit != null ? 'Edit Employee' : 'Add New Employee',
+      ),
+      content: SizedBox(
+        width: 400,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Full Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (val) =>
+                    val == null || val.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _phoneController,
+                decoration: const InputDecoration(
+                  labelText: 'Phone',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (val) =>
+                    val == null || val.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _cnicController,
+                decoration: const InputDecoration(
+                  labelText: 'CNIC (Optional)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Joining Date: ${_joiningDate.year.toString().padLeft(4, '0')}-${_joiningDate.month.toString().padLeft(2, '0')}-${_joiningDate.day.toString().padLeft(2, '0')}',
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _joiningDate,
+                        firstDate: DateTime(1950),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) setState(() => _joiningDate = picked);
+                    },
+                    icon: const Icon(Icons.calendar_today),
+                    label: const Text('Select'),
+                  ),
+                ],
+              ),
+              SwitchListTile(
+                title: const Text('Is Active'),
+                value: _isActive,
+                onChanged: (val) => setState(() => _isActive = val),
+                activeThumbColor: AppColors.primary,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.textWhite,
+          ),
+          onPressed: _isLoading ? null : _submit,
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : Text(
+                  widget.clientToEdit != null ? 'Update Record' : 'Save Record',
+                ),
+        ),
+      ],
+    );
+  }
+}

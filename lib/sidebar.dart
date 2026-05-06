@@ -1,5 +1,6 @@
 // features/expense/presentation/views/sidebar.dart
 import 'package:flutter/material.dart';
+import 'package:ledgerly/features/employee/presentation/pages/employee_dashboard.dart';
 import 'package:ledgerly/features/orders/presentation/pages/order_dashboard.dart';
 import 'package:ledgerly/features/procurement/presentation/pages/procurement_dashboard.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_dashboard.dart';
@@ -36,6 +37,7 @@ class _MainLayoutState extends State<MainLayout> {
     const ProcurementDashboard(),
     const ExpenseDashboardView(),
     const DpsDashboard(),
+    const EmployeeDashboard(),
     // const Center(child: Text('Settings Module')),
   ];
 
@@ -136,6 +138,12 @@ class _MainLayoutState extends State<MainLayout> {
                 icon: Icon(Icons.precision_manufacturing_outlined),
                 selectedIcon: Icon(Icons.precision_manufacturing),
                 label: Text('DPS'),
+              ),
+
+              NavigationRailDestination(
+                icon: Icon(Icons.emoji_people_outlined),
+                selectedIcon: Icon(Icons.emoji_people),
+                label: Text('Employees'),
               ),
 
               // NavigationRailDestination(

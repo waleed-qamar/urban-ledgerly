@@ -149,8 +149,8 @@ class ProductDashboard extends ConsumerWidget {
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final prod = products[index];
-                      return InkWell(
-                        borderRadius: BorderRadius.circular(12),
+                      return _ProductListItem(
+                        product: prod,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -158,177 +158,32 @@ class ProductDashboard extends ConsumerWidget {
                             ),
                           );
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 20,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.textWhite,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppColors.dividerColor.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.textGrey.withValues(
-                                  alpha: 0.05,
-                                ),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              // Avatar
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: AppColors.lightBackground,
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.shopping_bag,
-                                    color: AppColors.textGrey,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-
-                              // Name & Description
-                              Expanded(
-                                flex: 3,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      prod.name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                        color: AppColors.textBlack,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    if (prod.description != null &&
-                                        prod.description!.isNotEmpty)
-                                      Text(
-                                        prod.description ?? '',
-                                        style: const TextStyle(
-                                          color: AppColors.textGrey,
-                                          fontSize: 12,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                  ],
-                                ),
-                              ),
-
-                              // Weight
-                              Expanded(
-                                flex: 2,
-                                child: Row(
-                                  children: [
-                                    TextButton(
-                                      onPressed: () {
-                                        _recordTransaction(
-                                          context,
-                                          ref,
-                                          prod.id,
-                                          transactionType: 'IN',
-                                        );
-                                      },
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.add),
-                                          Text('Add'),
-                                        ],
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        _recordTransaction(
-                                          context,
-                                          ref,
-                                          prod.id,
-                                          transactionType: 'OUT',
-                                        );
-                                      },
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.delete),
-                                          Text('Remove'),
-                                        ],
-                                      ),
-                                    ),
-                                    Spacer(),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        const Text(
-                                          'Weight',
-                                          style: TextStyle(
-                                            color: AppColors.textGrey,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '${prod.weight.toStringAsFixed(2)} kg',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                            color: AppColors.textBlack,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(width: 16),
-                              PopupMenuButton<String>(
-                                color: AppColors.textWhite,
-                                onSelected: (val) async {
-                                  if (val == 'edit') {
-                                    if (context.mounted) {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AddProductDialog(
-                                          productToEdit: prod,
-                                        ),
-                                      );
-                                    }
-                                  } else if (val == 'delete') {
-                                    _showDeleteConfirmation(context, ref, prod);
-                                  }
-                                },
-                                itemBuilder: (_) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Text('Edit'),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Text('Delete'),
-                                  ),
-                                ],
-                                icon: const Icon(
-                                  Icons.more_vert,
-                                  color: AppColors.textGrey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        onAddStock: () {
+                          _recordTransaction(
+                            context,
+                            ref,
+                            prod.id,
+                            transactionType: 'IN',
+                          );
+                        },
+                        onRemoveStock: () {
+                          _recordTransaction(
+                            context,
+                            ref,
+                            prod.id,
+                            transactionType: 'OUT',
+                          );
+                        },
+                        onEdit: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) =>
+                                AddProductDialog(productToEdit: prod),
+                          );
+                        },
+                        onDelete: () {
+                          _showDeleteConfirmation(context, ref, prod);
+                        },
                       );
                     },
                   );
@@ -497,6 +352,184 @@ class ProductDashboard extends ConsumerWidget {
         );
       }
     }
+  }
+}
+
+class _ProductListItem extends ConsumerWidget {
+  final dynamic product;
+  final VoidCallback onTap;
+  final VoidCallback onAddStock;
+  final VoidCallback onRemoveStock;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ProductListItem({
+    required this.product,
+    required this.onTap,
+    required this.onAddStock,
+    required this.onRemoveStock,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final transactionsAsync = ref.watch(
+      inventoryTransactionsForItemProvider(product.id, 'PRODUCT'),
+    );
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        decoration: BoxDecoration(
+          color: AppColors.textWhite,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.dividerColor.withValues(alpha: 0.5),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.textGrey.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.lightBackground,
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: const Center(
+                child: Icon(Icons.shopping_bag, color: AppColors.textGrey),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: AppColors.textBlack,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  if (product.description != null &&
+                      product.description!.isNotEmpty)
+                    Text(
+                      product.description ?? '',
+                      style: const TextStyle(
+                        color: AppColors.textGrey,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Row(
+                children: [
+                  TextButton(
+                    onPressed: onAddStock,
+                    child: const Row(children: [Icon(Icons.add), Text('Add')]),
+                  ),
+                  TextButton(
+                    onPressed: onRemoveStock,
+                    child: const Row(
+                      children: [Icon(Icons.delete), Text('Remove')],
+                    ),
+                  ),
+                  const Spacer(),
+                  transactionsAsync.when(
+                    data: (transactions) {
+                      double totalIn = 0;
+                      double totalOut = 0;
+                      for (final t in transactions) {
+                        if (t.isIn) {
+                          totalIn += t.quantity;
+                        } else {
+                          totalOut += t.quantity;
+                        }
+                      }
+                      final available = totalIn - totalOut;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text(
+                            'In Stock',
+                            style: TextStyle(
+                              color: AppColors.textGrey,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            available.toStringAsFixed(0),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: AppColors.textBlack,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                    loading: () => const SizedBox(
+                      width: 40,
+                      child: Center(
+                        child: SizedBox(
+                          height: 14,
+                          width: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                    error: (_, __) => const Text(
+                      '-',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: AppColors.textGrey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            PopupMenuButton<String>(
+              color: AppColors.textWhite,
+              onSelected: (val) {
+                if (val == 'edit') {
+                  onEdit();
+                } else if (val == 'delete') {
+                  onDelete();
+                }
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                const PopupMenuItem(value: 'delete', child: Text('Delete')),
+              ],
+              icon: const Icon(Icons.more_vert, color: AppColors.textGrey),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

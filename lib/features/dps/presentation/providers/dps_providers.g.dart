@@ -48,7 +48,7 @@ final class DpsRepositoryProvider
   }
 }
 
-String _$dpsRepositoryHash() => r'c7951a77eadd9f785cd8184c5c6fc6ccf92a19ff';
+String _$dpsRepositoryHash() => r'5b6fd6dcba8e0143ea0394e7626610a9f377d3b6';
 
 @ProviderFor(dpsMachines)
 const dpsMachinesProvider = DpsMachinesProvider._();

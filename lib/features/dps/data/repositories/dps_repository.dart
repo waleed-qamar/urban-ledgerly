@@ -1,37 +1,60 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/dps_models.dart';
+import '../../domain/repositories/dps_repository.dart';
+import '../datasources/dps_remote_datasource.dart';
 
-class DpsRepository {
-  final SupabaseClient _client;
+class DpsRepositoryImpl implements DpsRepository {
+  final DpsRemoteDataSource remote;
 
-  DpsRepository(this._client);
+  DpsRepositoryImpl(this.remote);
 
-  Future<List<Machine>> getMachines() async {
-    final response = await _client.from('machines').select().order('name');
-    return response.map((json) => Machine.fromJson(json)).toList();
-  }
+  @override
+  Future<List<Machine>> getMachines() => remote.getMachines();
 
-  Future<List<DpsReport>> getReports() async {
-    final response = await _client.from('dps_reports').select().order('report_date', ascending: false);
-    return response.map((json) => DpsReport.fromJson(json)).toList();
-  }
+  @override
+  Future<List<DpsReport>> getReports() => remote.getReports();
 
+  @override
+  Future<List<DpsEnergyLog>> getEnergyLogsForReport(int reportId) =>
+      remote.getEnergyLogsForReport(reportId);
+
+  @override
+  Future<List<DpsProductionLog>> getProductionLogsForReport(int reportId) =>
+      remote.getProductionLogsForReport(reportId);
+
+  @override
+  Future<List<DpsConsumptionLog>> getConsumptionLogsForReport(int reportId) =>
+      remote.getConsumptionLogsForReport(reportId);
+
+  @override
+  Future<List<DpsDamageLog>> getDamageLogsForReport(int reportId) =>
+      remote.getDamageLogsForReport(reportId);
+
+  @override
+  Future<List<DpsProductionLog>> getProductionLogsForReportIds(
+    List<int> reportIds,
+  ) => remote.getProductionLogsForReportIds(reportIds);
+
+  @override
+  Future<List<DpsConsumptionLog>> getConsumptionLogsForReportIds(
+    List<int> reportIds,
+  ) => remote.getConsumptionLogsForReportIds(reportIds);
+
+  @override
+  Future<List<DpsDamageLog>> getDamageLogsForReportIds(List<int> reportIds) =>
+      remote.getDamageLogsForReportIds(reportIds);
+
+  @override
   Future<int> createReport({
     required DateTime reportDate,
     required List<DpsEnergyLog> energyLogs,
     required List<DpsProductionLog> productionLogs,
     required List<DpsConsumptionLog> consumptionLogs,
     required List<DpsDamageLog> damageLogs,
-  }) async {
-    final payload = {
-      'report_date': reportDate.toIso8601String().split('T').first,
-      'energy': energyLogs.map((e) => e.toJson()).toList(),
-      'production': productionLogs.map((e) => e.toJson()).toList(),
-      'consumption': consumptionLogs.map((e) => e.toJson()).toList(),
-      'damage': damageLogs.map((e) => e.toJson()).toList(),
-    };
-
-    final response = await _client.rpc('create_dps_report', params: {'payload': payload});
-    return response as int;
-  }
+  }) => remote.createReport(
+    reportDate: reportDate,
+    energyLogs: energyLogs,
+    productionLogs: productionLogs,
+    consumptionLogs: consumptionLogs,
+    damageLogs: damageLogs,
+  );
 }

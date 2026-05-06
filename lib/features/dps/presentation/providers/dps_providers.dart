@@ -1,13 +1,17 @@
 import 'package:ledgerly/core/providers/app_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../data/repositories/dps_repository.dart';
 import '../../domain/entities/dps_models.dart';
+import '../../domain/repositories/dps_repository.dart';
+import '../../data/datasources/dps_remote_datasource.dart';
+import '../../data/repositories/dps_repository.dart' as impl;
 
 part 'dps_providers.g.dart';
 
 @riverpod
 DpsRepository dpsRepository(Ref ref) {
-  return DpsRepository(ref.watch(supabaseClientProvider));
+  final client = ref.watch(supabaseClientProvider);
+  final remote = DpsRemoteDataSource(client);
+  return impl.DpsRepositoryImpl(remote);
 }
 
 @riverpod
@@ -151,21 +155,28 @@ class DpsFormNotifier extends _$DpsFormNotifier {
     try {
       final allEnergyLogs = state.energyLogs.values.toList();
       final allProdLogs = state.productionLogs.values.expand((e) => e).toList();
-      final allConsLogs = state.consumptionLogs.values.expand((e) => e).toList();
+      final allConsLogs = state.consumptionLogs.values
+          .expand((e) => e)
+          .toList();
       final allDamLogs = state.damageLogs.values.expand((e) => e).toList();
 
-      if (allEnergyLogs.isEmpty && allProdLogs.isEmpty && allConsLogs.isEmpty && allDamLogs.isEmpty) {
+      if (allEnergyLogs.isEmpty &&
+          allProdLogs.isEmpty &&
+          allConsLogs.isEmpty &&
+          allDamLogs.isEmpty) {
         return false; // Prevent empty submission
       }
 
-      await ref.read(dpsRepositoryProvider).createReport(
+      await ref
+          .read(dpsRepositoryProvider)
+          .createReport(
             reportDate: state.selectedDate,
             energyLogs: allEnergyLogs,
             productionLogs: allProdLogs,
             consumptionLogs: allConsLogs,
             damageLogs: allDamLogs,
           );
-      
+
       ref.invalidate(dpsReportsProvider);
       return true;
     } catch (e) {
