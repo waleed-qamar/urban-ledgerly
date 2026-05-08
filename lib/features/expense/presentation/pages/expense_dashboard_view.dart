@@ -1,5 +1,6 @@
 // features/expense/presentation/views/expense_dashboard_view.dart
 import 'package:flutter/material.dart';
+import 'package:ledgerly/features/expense/presentation/pages/vnv_report_view.dart';
 import '../../../../core/theme/app_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -273,6 +274,131 @@ class ExpenseDashboardView extends ConsumerWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        // Show dialog to pick Vendor / Non-Vendor / Both and date range
+                        String selection = 'both';
+                        DateTimeRange? pickedRange;
+
+                        final applied = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => StatefulBuilder(
+                            builder: (context, setState) {
+                              return AlertDialog(
+                                title: const Text('Export V / NV Report'),
+                                content: SizedBox(
+                                  width: 420,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Column(
+                                        children: [
+                                          RadioListTile<String>(
+                                            title: const Text('Vendors (V)'),
+                                            value: 'vendor',
+                                            groupValue: selection,
+                                            onChanged: (v) =>
+                                                setState(() => selection = v!),
+                                          ),
+                                          RadioListTile<String>(
+                                            title: const Text(
+                                              'Non-Vendors (NV)',
+                                            ),
+                                            value: 'nonvendor',
+                                            groupValue: selection,
+                                            onChanged: (v) =>
+                                                setState(() => selection = v!),
+                                          ),
+                                          RadioListTile<String>(
+                                            title: const Text('Both'),
+                                            value: 'both',
+                                            groupValue: selection,
+                                            onChanged: (v) =>
+                                                setState(() => selection = v!),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: OutlinedButton.icon(
+                                              onPressed: () async {
+                                                final picked =
+                                                    await _showDialogDatePicker(
+                                                      context,
+                                                      pickedRange,
+                                                    );
+                                                if (picked != null) {
+                                                  setState(
+                                                    () => pickedRange = picked,
+                                                  );
+                                                }
+                                              },
+                                              icon: const Icon(
+                                                Icons.calendar_month,
+                                              ),
+                                              label: Text(
+                                                pickedRange == null
+                                                    ? 'Select Date Range (optional)'
+                                                    : '${DateFormat.MMMd().format(pickedRange!.start)} - ${DateFormat.MMMd().format(pickedRange!.end)}',
+                                              ),
+                                            ),
+                                          ),
+                                          if (pickedRange != null) ...[
+                                            const SizedBox(width: 8),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.clear,
+                                                color: Colors.red,
+                                              ),
+                                              onPressed: () => setState(
+                                                () => pickedRange = null,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                    ),
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text(
+                                      'Apply',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        );
+
+                        if (applied == true) {
+                          // Navigate to report page with chosen filters
+                          if (!context.mounted) return;
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => VnvReportView(
+                                filter: selection,
+                                range: pickedRange,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.file_download_outlined),
+                      label: const Text('Export V/NV Report'),
                     ),
                   ],
                 ),
