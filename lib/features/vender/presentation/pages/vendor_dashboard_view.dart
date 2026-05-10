@@ -267,30 +267,30 @@ class VenderDashboardView extends ConsumerWidget {
                             ),
 
                             // Balance Due
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: const [
-                                  Text(
-                                    'Balance Due',
-                                    style: TextStyle(
-                                      color: AppColors.textGrey,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    '0.00', // Mocked placeholder
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      color: AppColors.textBlack,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            // Expanded(
+                            //   flex: 2,
+                            //   child: Column(
+                            //     crossAxisAlignment: CrossAxisAlignment.end,
+                            //     children: const [
+                            //       Text(
+                            //         'Balance Due',
+                            //         style: TextStyle(
+                            //           color: AppColors.textGrey,
+                            //           fontSize: 12,
+                            //         ),
+                            //       ),
+                            //       SizedBox(height: 4),
+                            //       Text(
+                            //         '0.00', // Mocked placeholder
+                            //         style: TextStyle(
+                            //           fontWeight: FontWeight.bold,
+                            //           fontSize: 14,
+                            //           color: AppColors.textBlack,
+                            //         ),
+                            //       ),
+                            //     ],
+                            //   ),
+                            // ),
 
                             // const SizedBox(width: 32),
 

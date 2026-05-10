@@ -32,6 +32,24 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
   bool _sortAscending = false;
   int? _filterClientId;
 
+  int _compareInvoiceNumbers(String a, String b) {
+    int parseSuffix(String value) {
+      final match = RegExp(r'^(.*?)(\d+)$').firstMatch(value);
+      if (match == null) return -1;
+      return int.tryParse(match.group(2) ?? '') ?? -1;
+    }
+
+    final aSuffix = parseSuffix(a);
+    final bSuffix = parseSuffix(b);
+
+    if (aSuffix != -1 && bSuffix != -1) {
+      final cmp = aSuffix.compareTo(bSuffix);
+      if (cmp != 0) return cmp;
+    }
+
+    return a.compareTo(b);
+  }
+
   List<InvoiceEntity> _sorted(
     List<InvoiceEntity> invoices,
     Map<int, ClientEntity> clientById,
@@ -44,13 +62,16 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
       int cmp;
       switch (_sortField) {
         case _SortField.invoiceNumber:
-          cmp = a.invoiceNumber.compareTo(b.invoiceNumber);
+          cmp = _compareInvoiceNumbers(a.invoiceNumber, b.invoiceNumber);
+          break;
         case _SortField.orderNumber:
           cmp = a.orderId.compareTo(b.orderId);
+          break;
         case _SortField.client:
           final nameA = clientById[a.clientId]?.clientName ?? '';
           final nameB = clientById[b.clientId]?.clientName ?? '';
           cmp = nameA.compareTo(nameB);
+          break;
       }
       return _sortAscending ? cmp : -cmp;
     });

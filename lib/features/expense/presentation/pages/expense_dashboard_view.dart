@@ -562,7 +562,9 @@ class ExpenseDashboardView extends ConsumerWidget {
                               ),
                             ),
                             data: (insights) {
-                              final change = insights['change'] as double;
+                              final change = (insights['change'] is num)
+                                  ? (insights['change'] as num).toDouble()
+                                  : 0.0;
                               final isPositive = change >= 0;
 
                               return Column(
@@ -582,7 +584,12 @@ class ExpenseDashboardView extends ConsumerWidget {
                                     // Make sure to import 'package:intl/intl.dart'; at the top of the file
                                     NumberFormat.currency(
                                       symbol: 'PKR ',
-                                    ).format(insights['total']),
+                                    ).format(
+                                      (insights['total'] is num)
+                                          ? (insights['total'] as num)
+                                                .toDouble()
+                                          : 0.0,
+                                    ),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 28,

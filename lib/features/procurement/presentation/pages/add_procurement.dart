@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/features/procurement/domain/entities/procurement_entity.dart';
 import 'package:ledgerly/features/procurement/presentation/providers/procurement_providers.dart';
@@ -95,7 +96,17 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
       await ref
           .read(procurementRepositoryProvider)
           .createProcurement(procurement);
-      ref.invalidate(getAllProcurementsProvider);
+
+      // Await the refresh to ensure data is fetched before closing
+      // This refreshes both procurement data and inventory transactions
+      await ref.refresh(getAllProcurementsProvider);
+      await ref.refresh(
+        inventoryTransactionsForItemProvider(
+          _selectedRawMaterialId!,
+          'RAW_MATERIAL',
+        ),
+      );
+
       if (mounted) {
         Navigator.of(context).pop(true);
       }

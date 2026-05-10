@@ -17,7 +17,17 @@ class ExpenseRemoteDatasource {
   Future<List<Expense>> fectchExpenses() async {
     final response = await _client.from('expenses').select();
 
-    return response.map((json) => Expense.fromJson(json)).toList();
+    final rows = (response as List).map<Map<String, dynamic>>((r) {
+      final m = Map<String, dynamic>.from(r as Map);
+      if (m['amount'] == null) m['amount'] = 0;
+      if (m['id'] == null) m['id'] = 0;
+      if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
+        m['expenseHeadId'] = m['expense_head_id'];
+      }
+      return m;
+    }).toList();
+
+    return rows.map((json) => Expense.fromJson(json)).toList();
   }
 
   Future<List<Expense>> fectchExpensesByHead(int headId) async {
@@ -25,8 +35,17 @@ class ExpenseRemoteDatasource {
         .from('expenses')
         .select()
         .eq('expense_head_id', headId);
+    final rows = (response as List).map<Map<String, dynamic>>((r) {
+      final m = Map<String, dynamic>.from(r as Map);
+      if (m['amount'] == null) m['amount'] = 0;
+      if (m['id'] == null) m['id'] = 0;
+      if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
+        m['expenseHeadId'] = m['expense_head_id'];
+      }
+      return m;
+    }).toList();
 
-    return response.map((json) => Expense.fromJson(json)).toList();
+    return rows.map((json) => Expense.fromJson(json)).toList();
   }
 
   Future<List<Expense>> fetchExpensesByDateRange(
@@ -48,8 +67,17 @@ class ExpenseRemoteDatasource {
         .gte('date', fromUtc)
         .lte('date', toUtc)
         .order('date', ascending: false);
+    final rows = (response as List).map<Map<String, dynamic>>((r) {
+      final m = Map<String, dynamic>.from(r as Map);
+      if (m['amount'] == null) m['amount'] = 0;
+      if (m['id'] == null) m['id'] = 0;
+      if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
+        m['expenseHeadId'] = m['expense_head_id'];
+      }
+      return m;
+    }).toList();
 
-    return response.map((json) => Expense.fromJson(json)).toList();
+    return rows.map((json) => Expense.fromJson(json)).toList();
   }
 
   Future<List<Expense>> fetchFilteredExpenses({
@@ -75,7 +103,17 @@ class ExpenseRemoteDatasource {
       }
 
       final response = await query.order('date', ascending: false);
-      return response.map((json) => Expense.fromJson(json)).toList();
+      final rows = (response as List).map<Map<String, dynamic>>((r) {
+        final m = Map<String, dynamic>.from(r as Map);
+        if (m['amount'] == null) m['amount'] = 0;
+        if (m['id'] == null) m['id'] = 0;
+        if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
+          m['expenseHeadId'] = m['expense_head_id'];
+        }
+        return m;
+      }).toList();
+
+      return rows.map((json) => Expense.fromJson(json)).toList();
     } catch (e) {
       // If it fails, print the error to console and pass it to Riverpod
       // print("Supabase Query Error: $e");
@@ -103,7 +141,6 @@ class ExpenseRemoteDatasource {
     await _client.rpc(
       'create_expense',
       params: {
-        'p_id': expense.id,
         'p_expense_head_id': expense.expenseHeadId,
         'p_amount': expense.amount,
         'p_remarks': expense.remarks,

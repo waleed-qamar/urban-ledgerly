@@ -1,5 +1,6 @@
 // features/expense/presentation/views/sidebar.dart
 import 'package:flutter/material.dart';
+import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/features/employee/presentation/pages/operator_dashboard.dart';
 import 'package:ledgerly/features/orders/presentation/pages/order_dashboard.dart';
 import 'package:ledgerly/features/procurement/presentation/pages/procurement_dashboard.dart';
@@ -123,7 +124,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
           // The Sidebar
           NavigationRail(
             extended: true, // Set to false if you want it collapsed
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.05),
             selectedIndex: _selectedIndex >= destinations.length
                 ? destinations.length - 1
                 : _selectedIndex,
