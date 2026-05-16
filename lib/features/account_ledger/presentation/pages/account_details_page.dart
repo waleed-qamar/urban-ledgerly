@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:excel/excel.dart' hide Border;
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -755,6 +756,9 @@ class _TransferMoneyDialogState extends ConsumerState<_TransferMoneyDialog> {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
                   decoration: const InputDecoration(
                     labelText: 'Amount *',
                     border: OutlineInputBorder(),

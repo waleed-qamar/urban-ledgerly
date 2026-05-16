@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:ledgerly/core/providers/app_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'dps_providers.dart';
 import '../../domain/entities/dps_models.dart';
@@ -77,10 +76,10 @@ class DpsSummaryResult {
   });
 
   double get productionTotal =>
-      production.fold(0.0, (p, e) => p + (e.quantity ?? 0));
+      production.fold(0.0, (p, e) => p + (e.quantity));
   double get consumptionTotal =>
-      consumption.fold(0.0, (p, e) => p + (e.quantity ?? 0));
-  double get damagesTotal => damages.fold(0.0, (p, e) => p + (e.quantity ?? 0));
+      consumption.fold(0.0, (p, e) => p + (e.quantity));
+  double get damagesTotal => damages.fold(0.0, (p, e) => p + (e.quantity));
 }
 
 @riverpod
@@ -92,8 +91,9 @@ Future<DpsSummaryResult> dpsSummary(Ref ref) async {
   final allReports = await repo.getReports();
   final filtered = allReports.where((r) {
     final date = r.reportDate;
-    if (filter.startDate != null && date.isBefore(filter.startDate!))
+    if (filter.startDate != null && date.isBefore(filter.startDate!)) {
       return false;
+    }
     if (filter.endDate != null && date.isAfter(filter.endDate!)) return false;
     return true;
   }).toList();

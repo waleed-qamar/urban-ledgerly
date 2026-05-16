@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/features/client/domain/entities/client_entity.dart';
@@ -488,6 +489,9 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
               enabled: !_isSubmitting,
               decoration: const InputDecoration(
                 labelText: 'Discount %',
@@ -752,7 +756,6 @@ class _SupplierDetailsCard extends StatelessWidget {
           _DetailRow(label: 'Contact', value: supplier.contactInfo ?? '-'),
           _DetailRow(label: 'STRN', value: supplier.strnNo ?? '-'),
           _DetailRow(label: 'NTN', value: supplier.ntn ?? '-'),
-          // _DetailRow(label: 'Delivery Terms', value: supplier.deliveryTerms),
         ],
       ),
     );
@@ -850,7 +853,12 @@ class _OrderLineEditor extends StatelessWidget {
             width: 110,
             child: TextFormField(
               initialValue: line.quantity.toString(),
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Qty',
@@ -877,6 +885,9 @@ class _OrderLineEditor extends StatelessWidget {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Price',

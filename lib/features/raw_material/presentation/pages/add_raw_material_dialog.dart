@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/features/raw_material/domain/entities/raw_material_entity.dart';
@@ -10,7 +11,8 @@ class AddRawMaterialDialog extends ConsumerStatefulWidget {
   const AddRawMaterialDialog({super.key, this.materialToEdit});
 
   @override
-  ConsumerState<AddRawMaterialDialog> createState() => _AddRawMaterialDialogState();
+  ConsumerState<AddRawMaterialDialog> createState() =>
+      _AddRawMaterialDialogState();
 }
 
 class _AddRawMaterialDialogState extends ConsumerState<AddRawMaterialDialog> {
@@ -20,7 +22,7 @@ class _AddRawMaterialDialogState extends ConsumerState<AddRawMaterialDialog> {
   late final TextEditingController _descriptionController;
 
   bool _isLoading = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -59,7 +61,9 @@ class _AddRawMaterialDialogState extends ConsumerState<AddRawMaterialDialog> {
     );
     try {
       if (widget.materialToEdit != null) {
-        await ref.read(rawMaterialRepositoryProvider).updateRawMaterial(material);
+        await ref
+            .read(rawMaterialRepositoryProvider)
+            .updateRawMaterial(material);
       } else {
         await ref.read(rawMaterialRepositoryProvider).addRawMaterial(material);
       }
@@ -82,7 +86,9 @@ class _AddRawMaterialDialogState extends ConsumerState<AddRawMaterialDialog> {
     return AlertDialog(
       backgroundColor: AppColors.textWhite,
       title: Text(
-        widget.materialToEdit != null ? 'Edit Raw Material' : 'Add Raw Material',
+        widget.materialToEdit != null
+            ? 'Edit Raw Material'
+            : 'Add Raw Material',
       ),
       content: SizedBox(
         width: 400,
@@ -100,10 +106,15 @@ class _AddRawMaterialDialogState extends ConsumerState<AddRawMaterialDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _priceController,
-                decoration: const InputDecoration(labelText: 'Estimated Average Price'),
+                decoration: const InputDecoration(
+                  labelText: 'Estimated Average Price',
+                ),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return 'Required';
                   final price = double.tryParse(value.trim());

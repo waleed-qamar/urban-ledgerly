@@ -267,30 +267,16 @@ class VenderDashboardView extends ConsumerWidget {
                             ),
 
                             // Balance Due
-                            // Expanded(
-                            //   flex: 2,
-                            //   child: Column(
-                            //     crossAxisAlignment: CrossAxisAlignment.end,
-                            //     children: const [
-                            //       Text(
-                            //         'Balance Due',
-                            //         style: TextStyle(
-                            //           color: AppColors.textGrey,
-                            //           fontSize: 12,
-                            //         ),
-                            //       ),
-                            //       SizedBox(height: 4),
-                            //       Text(
-                            //         '0.00', // Mocked placeholder
-                            //         style: TextStyle(
-                            //           fontWeight: FontWeight.bold,
-                            //           fontSize: 14,
-                            //           color: AppColors.textBlack,
-                            //         ),
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                vender.contactNumber,
+                                style: TextStyle(
+                                  color: AppColors.textGrey,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
 
                             // const SizedBox(width: 32),
 
@@ -427,82 +413,82 @@ class VenderDashboardView extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryCard({
-    required String title,
-    required String value,
-    required String subtitleLabel,
-    required IconData icon,
-    String? trailingText,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.textWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.5),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textGrey.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.textGrey,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Spacer(),
-              CircleAvatar(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                radius: 20,
-                child: Icon(icon, color: AppColors.primary, size: 18),
-              ),
-              SizedBox(width: 8),
-              Text(subtitleLabel, style: const TextStyle(fontSize: 14)),
-            ],
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textBlack,
-                ),
-              ),
-              if (trailingText != null) ...[
-                const SizedBox(width: 8),
-                Text(
-                  trailingText,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textGrey,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildSummaryCard({
+  //   required String title,
+  //   required String value,
+  //   required String subtitleLabel,
+  //   required IconData icon,
+  //   String? trailingText,
+  // }) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(24),
+  //     decoration: BoxDecoration(
+  //       color: AppColors.textWhite,
+  //       borderRadius: BorderRadius.circular(16),
+  //       border: Border.all(
+  //         color: AppColors.dividerColor.withValues(alpha: 0.5),
+  //       ),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: AppColors.textGrey.withValues(alpha: 0.05),
+  //           blurRadius: 10,
+  //           offset: const Offset(0, 4),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         Row(
+  //           crossAxisAlignment: CrossAxisAlignment.center,
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: [
+  //             const SizedBox(height: 16),
+  //             Text(
+  //               title,
+  //               style: const TextStyle(
+  //                 color: AppColors.textGrey,
+  //                 fontSize: 14,
+  //                 fontWeight: FontWeight.w500,
+  //               ),
+  //             ),
+  //             Spacer(),
+  //             CircleAvatar(
+  //               backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+  //               radius: 20,
+  //               child: Icon(icon, color: AppColors.primary, size: 18),
+  //             ),
+  //             SizedBox(width: 8),
+  //             Text(subtitleLabel, style: const TextStyle(fontSize: 14)),
+  //           ],
+  //         ),
+  //         Row(
+  //           crossAxisAlignment: CrossAxisAlignment.baseline,
+  //           textBaseline: TextBaseline.alphabetic,
+  //           children: [
+  //             Text(
+  //               value,
+  //               style: const TextStyle(
+  //                 fontSize: 36,
+  //                 fontWeight: FontWeight.bold,
+  //                 color: AppColors.textBlack,
+  //               ),
+  //             ),
+  //             if (trailingText != null) ...[
+  //               const SizedBox(width: 8),
+  //               Text(
+  //                 trailingText,
+  //                 style: const TextStyle(
+  //                   fontSize: 14,
+  //                   color: AppColors.textGrey,
+  //                 ),
+  //               ),
+  //             ],
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildFilterPill(
     String label, {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
@@ -103,6 +104,9 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return 'Required';
                   final weight = double.tryParse(value.trim());

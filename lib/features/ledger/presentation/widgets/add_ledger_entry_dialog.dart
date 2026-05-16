@@ -5,6 +5,7 @@ import '../../domain/entities/ledger_entity.dart';
 import '../providers/ledger_providers.dart';
 import '../../../client/presentation/providers/client_providers.dart';
 import '../../../vender/presentation/providers/vendor_providers.dart';
+import 'package:flutter/services.dart';
 // import '../../../client/domain/entities/client_entity.dart';
 // import '../../../vender/domain/entities/vendor_entity.dart';
 
@@ -165,12 +166,16 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                     clientsAsync.when(
                       data: (clients) {
                         final clientName = clients
-                            .firstWhere((c) => c.id == _selectedPartyId,
-                                orElse: () => clients.first)
+                            .firstWhere(
+                              (c) => c.id == _selectedPartyId,
+                              orElse: () => clients.first,
+                            )
                             .clientName;
                         return TextFormField(
                           initialValue: clientName,
-                          decoration: const InputDecoration(labelText: 'Client'),
+                          decoration: const InputDecoration(
+                            labelText: 'Client',
+                          ),
                           readOnly: true,
                           enabled: false,
                         );
@@ -182,12 +187,16 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                     vendorsAsync.when(
                       data: (vendors) {
                         final vendorName = vendors
-                            .firstWhere((v) => v.id == _selectedPartyId,
-                                orElse: () => vendors.first)
+                            .firstWhere(
+                              (v) => v.id == _selectedPartyId,
+                              orElse: () => vendors.first,
+                            )
                             .vendorName;
                         return TextFormField(
                           initialValue: vendorName,
-                          decoration: const InputDecoration(labelText: 'Vendor'),
+                          decoration: const InputDecoration(
+                            labelText: 'Vendor',
+                          ),
                           readOnly: true,
                           enabled: false,
                         );
@@ -232,7 +241,12 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                 TextFormField(
                   controller: _amountController,
                   decoration: const InputDecoration(labelText: 'Amount'),
-                  keyboardType: TextInputType.number,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
                   validator: (val) {
                     if (val == null || val.isEmpty) return 'Required';
                     if (double.tryParse(val) == null) return 'Invalid amount';
@@ -240,8 +254,6 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                   },
                 ),
                 const SizedBox(height: 16),
-
-
 
                 // Remarks
                 TextFormField(

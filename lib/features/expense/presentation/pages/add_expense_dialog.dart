@@ -1,5 +1,6 @@
 // features/expense/presentation/views/add_expense_dialog.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -150,6 +151,9 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
                   validator: (val) {
                     if (val == null || val.isEmpty) return 'Required';
                     if (double.tryParse(val) == null) {

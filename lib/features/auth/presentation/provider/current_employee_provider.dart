@@ -7,14 +7,19 @@ part 'current_employee_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 Future<EmployeeEntity?> currentEmployee(Ref ref) async {
-  final authState = await ref.watch(authStateStreamProvider.future);
-  
-  if (authState.session?.user == null) {
+  final authState = ref.watch(authStateStreamProvider);
+  final session = authState.when(
+    data: (state) => state.session,
+    loading: () => null,
+    error: (_, __) => null,
+  );
+
+  if (session?.user == null) {
     return null;
   }
 
   try {
-    final uid = authState.session!.user.id;
+    final uid = session!.user.id;
     final response = await Supabase.instance.client
         .from('employees')
         .select()
@@ -22,7 +27,20 @@ Future<EmployeeEntity?> currentEmployee(Ref ref) async {
         .maybeSingle();
 
     if (response == null) return null;
-    return EmployeeEntity.fromJson(response);
+
+    final normalizedResponse = <String, dynamic>{
+      'id': response['id'],
+      'name': response['name'],
+      'phone': response['phone'],
+      'cnic': response['cnic'],
+      'joiningDate': response['joining_date'],
+      'isActive': response['is_active'],
+      'role': response['role'],
+      'userId': response['user_id'],
+      'createdAt': response['created_at'],
+    };
+
+    return EmployeeEntity.fromJson(normalizedResponse);
   } catch (e) {
     return null;
   }

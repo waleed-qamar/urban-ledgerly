@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
@@ -295,7 +296,12 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
                       child: TextFormField(
                         controller: _quantityController,
                         enabled: !_isSaving,
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                        ],
                         decoration: const InputDecoration(
                           labelText: 'Quantity *',
                           hintText: 'Enter Quantity',
@@ -321,6 +327,9 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                        ],
                         decoration: const InputDecoration(
                           labelText: 'Rate *',
                           hintText: 'Enter Rate',

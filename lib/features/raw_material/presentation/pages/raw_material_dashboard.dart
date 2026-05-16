@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
@@ -279,7 +280,12 @@ class RawMaterialDashboard extends ConsumerWidget {
               children: [
                 TextFormField(
                   autofocus: true,
-                  keyboardType: TextInputType.number,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
                   decoration: const InputDecoration(labelText: 'Quantity'),
                   onChanged: (value) => quantityText = value,
                   validator: (value) {

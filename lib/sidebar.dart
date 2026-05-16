@@ -41,10 +41,10 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
 
     // Build lists dynamically
     final List<Widget> pages = [
-      const AccountDashboard(),
+      if (isMaster) const AccountDashboard(),
       const LedgerPage(),
       const OrderDashboard(),
-      const ReceiptsDashboard(),
+      if (isMaster) const ReceiptsDashboard(),
       const ClientDashboardView(),
       const VenderDashboardView(),
       const ProductDashboard(),
@@ -56,11 +56,12 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
     ];
 
     final List<NavigationRailDestination> destinations = [
-      const NavigationRailDestination(
-        icon: Icon(Icons.account_balance_outlined),
-        selectedIcon: Icon(Icons.account_balance),
-        label: Text('Accounts'),
-      ),
+      if (isMaster)
+        const NavigationRailDestination(
+          icon: Icon(Icons.account_balance_outlined),
+          selectedIcon: Icon(Icons.account_balance),
+          label: Text('Accounts'),
+        ),
       const NavigationRailDestination(
         icon: Icon(Icons.book_outlined),
         selectedIcon: Icon(Icons.book),
@@ -71,11 +72,12 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
         selectedIcon: Icon(Icons.receipt_long),
         label: Text('Orders'),
       ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.payments_outlined),
-        selectedIcon: Icon(Icons.payments),
-        label: Text('Payments'),
-      ),
+      if (isMaster)
+        const NavigationRailDestination(
+          icon: Icon(Icons.payments_outlined),
+          selectedIcon: Icon(Icons.payments),
+          label: Text('Payments'),
+        ),
       const NavigationRailDestination(
         icon: Icon(Icons.dashboard_outlined),
         selectedIcon: Icon(Icons.dashboard),

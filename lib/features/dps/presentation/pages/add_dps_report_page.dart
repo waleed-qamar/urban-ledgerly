@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:ledgerly/features/employee/presentation/provider/operator_providers.dart';
@@ -214,7 +215,12 @@ class _EnergyFormCard extends ConsumerWidget {
                   child: TextFormField(
                     initialValue: log.gasWeight.toString(),
                     decoration: const InputDecoration(labelText: 'Gas Weight'),
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    ],
                     onChanged: (val) {
                       final parsed = double.tryParse(val) ?? 0.0;
                       ref
@@ -231,7 +237,12 @@ class _EnergyFormCard extends ConsumerWidget {
                   child: TextFormField(
                     initialValue: log.woodWeight.toString(),
                     decoration: const InputDecoration(labelText: 'Wood Weight'),
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    ],
                     onChanged: (val) {
                       final parsed = double.tryParse(val) ?? 0.0;
                       ref
@@ -345,7 +356,12 @@ class _ProductionFormCard extends ConsumerWidget {
                       child: TextFormField(
                         initialValue: log.quantity.toString(),
                         decoration: const InputDecoration(labelText: 'Qty'),
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                        ],
                         onChanged: (val) {
                           final parsed = double.tryParse(val) ?? 0.0;
                           ref
@@ -470,7 +486,12 @@ class _ConsumptionFormCard extends ConsumerWidget {
                       child: TextFormField(
                         initialValue: log.quantity.toString(),
                         decoration: const InputDecoration(labelText: 'Qty'),
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                        ],
                         onChanged: (val) {
                           final parsed = double.tryParse(val) ?? 0.0;
                           ref
@@ -722,7 +743,14 @@ class _DamageFormCard extends ConsumerWidget {
                           child: TextFormField(
                             initialValue: log.quantity.toString(),
                             decoration: const InputDecoration(labelText: 'Qty'),
-                            keyboardType: TextInputType.number,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9.]'),
+                              ),
+                            ],
                             onChanged: (val) {
                               final parsed = double.tryParse(val) ?? 0.0;
                               ref

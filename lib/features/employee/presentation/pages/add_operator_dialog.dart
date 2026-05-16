@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/features/employee/domain/entities/operator_entity.dart';
 
@@ -116,12 +117,24 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                   labelText: 'Phone',
                   border: OutlineInputBorder(),
                 ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
                 validator: (val) =>
                     val == null || val.isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _cnicController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]-')),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'CNIC (Optional)',
                   border: OutlineInputBorder(),

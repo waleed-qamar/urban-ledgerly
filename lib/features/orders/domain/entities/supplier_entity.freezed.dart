@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SupplierEntity {
 
- int? get id; String get name; String get address; String? get strnNo; String? get ntn; String get deliveryTerms; String? get contactInfo;
+ int? get id; String get name; String get address; String? get strnNo; String? get ntn; String? get contactInfo;
 /// Create a copy of SupplierEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SupplierEntityCopyWith<SupplierEntity> get copyWith => _$SupplierEntityCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SupplierEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.strnNo, strnNo) || other.strnNo == strnNo)&&(identical(other.ntn, ntn) || other.ntn == ntn)&&(identical(other.deliveryTerms, deliveryTerms) || other.deliveryTerms == deliveryTerms)&&(identical(other.contactInfo, contactInfo) || other.contactInfo == contactInfo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SupplierEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.strnNo, strnNo) || other.strnNo == strnNo)&&(identical(other.ntn, ntn) || other.ntn == ntn)&&(identical(other.contactInfo, contactInfo) || other.contactInfo == contactInfo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,address,strnNo,ntn,deliveryTerms,contactInfo);
+int get hashCode => Object.hash(runtimeType,id,name,address,strnNo,ntn,contactInfo);
 
 @override
 String toString() {
-  return 'SupplierEntity(id: $id, name: $name, address: $address, strnNo: $strnNo, ntn: $ntn, deliveryTerms: $deliveryTerms, contactInfo: $contactInfo)';
+  return 'SupplierEntity(id: $id, name: $name, address: $address, strnNo: $strnNo, ntn: $ntn, contactInfo: $contactInfo)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SupplierEntityCopyWith<$Res>  {
   factory $SupplierEntityCopyWith(SupplierEntity value, $Res Function(SupplierEntity) _then) = _$SupplierEntityCopyWithImpl;
 @useResult
 $Res call({
- int? id, String name, String address, String? strnNo, String? ntn, String deliveryTerms, String? contactInfo
+ int? id, String name, String address, String? strnNo, String? ntn, String? contactInfo
 });
 
 
@@ -65,15 +65,14 @@ class _$SupplierEntityCopyWithImpl<$Res>
 
 /// Create a copy of SupplierEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? address = null,Object? strnNo = freezed,Object? ntn = freezed,Object? deliveryTerms = null,Object? contactInfo = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? address = null,Object? strnNo = freezed,Object? ntn = freezed,Object? contactInfo = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String,strnNo: freezed == strnNo ? _self.strnNo : strnNo // ignore: cast_nullable_to_non_nullable
 as String?,ntn: freezed == ntn ? _self.ntn : ntn // ignore: cast_nullable_to_non_nullable
-as String?,deliveryTerms: null == deliveryTerms ? _self.deliveryTerms : deliveryTerms // ignore: cast_nullable_to_non_nullable
-as String,contactInfo: freezed == contactInfo ? _self.contactInfo : contactInfo // ignore: cast_nullable_to_non_nullable
+as String?,contactInfo: freezed == contactInfo ? _self.contactInfo : contactInfo // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -159,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  String name,  String address,  String? strnNo,  String? ntn,  String deliveryTerms,  String? contactInfo)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  String name,  String address,  String? strnNo,  String? ntn,  String? contactInfo)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SupplierEntity() when $default != null:
-return $default(_that.id,_that.name,_that.address,_that.strnNo,_that.ntn,_that.deliveryTerms,_that.contactInfo);case _:
+return $default(_that.id,_that.name,_that.address,_that.strnNo,_that.ntn,_that.contactInfo);case _:
   return orElse();
 
 }
@@ -180,10 +179,10 @@ return $default(_that.id,_that.name,_that.address,_that.strnNo,_that.ntn,_that.d
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  String name,  String address,  String? strnNo,  String? ntn,  String deliveryTerms,  String? contactInfo)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  String name,  String address,  String? strnNo,  String? ntn,  String? contactInfo)  $default,) {final _that = this;
 switch (_that) {
 case _SupplierEntity():
-return $default(_that.id,_that.name,_that.address,_that.strnNo,_that.ntn,_that.deliveryTerms,_that.contactInfo);case _:
+return $default(_that.id,_that.name,_that.address,_that.strnNo,_that.ntn,_that.contactInfo);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +199,10 @@ return $default(_that.id,_that.name,_that.address,_that.strnNo,_that.ntn,_that.d
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  String name,  String address,  String? strnNo,  String? ntn,  String deliveryTerms,  String? contactInfo)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  String name,  String address,  String? strnNo,  String? ntn,  String? contactInfo)?  $default,) {final _that = this;
 switch (_that) {
 case _SupplierEntity() when $default != null:
-return $default(_that.id,_that.name,_that.address,_that.strnNo,_that.ntn,_that.deliveryTerms,_that.contactInfo);case _:
+return $default(_that.id,_that.name,_that.address,_that.strnNo,_that.ntn,_that.contactInfo);case _:
   return null;
 
 }
@@ -215,7 +214,7 @@ return $default(_that.id,_that.name,_that.address,_that.strnNo,_that.ntn,_that.d
 @JsonSerializable()
 
 class _SupplierEntity implements SupplierEntity {
-  const _SupplierEntity({this.id, required this.name, required this.address, this.strnNo, this.ntn, required this.deliveryTerms, this.contactInfo});
+  const _SupplierEntity({this.id, required this.name, required this.address, this.strnNo, this.ntn, this.contactInfo});
   factory _SupplierEntity.fromJson(Map<String, dynamic> json) => _$SupplierEntityFromJson(json);
 
 @override final  int? id;
@@ -223,7 +222,6 @@ class _SupplierEntity implements SupplierEntity {
 @override final  String address;
 @override final  String? strnNo;
 @override final  String? ntn;
-@override final  String deliveryTerms;
 @override final  String? contactInfo;
 
 /// Create a copy of SupplierEntity
@@ -239,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SupplierEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.strnNo, strnNo) || other.strnNo == strnNo)&&(identical(other.ntn, ntn) || other.ntn == ntn)&&(identical(other.deliveryTerms, deliveryTerms) || other.deliveryTerms == deliveryTerms)&&(identical(other.contactInfo, contactInfo) || other.contactInfo == contactInfo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SupplierEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.strnNo, strnNo) || other.strnNo == strnNo)&&(identical(other.ntn, ntn) || other.ntn == ntn)&&(identical(other.contactInfo, contactInfo) || other.contactInfo == contactInfo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,address,strnNo,ntn,deliveryTerms,contactInfo);
+int get hashCode => Object.hash(runtimeType,id,name,address,strnNo,ntn,contactInfo);
 
 @override
 String toString() {
-  return 'SupplierEntity(id: $id, name: $name, address: $address, strnNo: $strnNo, ntn: $ntn, deliveryTerms: $deliveryTerms, contactInfo: $contactInfo)';
+  return 'SupplierEntity(id: $id, name: $name, address: $address, strnNo: $strnNo, ntn: $ntn, contactInfo: $contactInfo)';
 }
 
 
@@ -259,7 +257,7 @@ abstract mixin class _$SupplierEntityCopyWith<$Res> implements $SupplierEntityCo
   factory _$SupplierEntityCopyWith(_SupplierEntity value, $Res Function(_SupplierEntity) _then) = __$SupplierEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, String name, String address, String? strnNo, String? ntn, String deliveryTerms, String? contactInfo
+ int? id, String name, String address, String? strnNo, String? ntn, String? contactInfo
 });
 
 
@@ -276,15 +274,14 @@ class __$SupplierEntityCopyWithImpl<$Res>
 
 /// Create a copy of SupplierEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? address = null,Object? strnNo = freezed,Object? ntn = freezed,Object? deliveryTerms = null,Object? contactInfo = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? address = null,Object? strnNo = freezed,Object? ntn = freezed,Object? contactInfo = freezed,}) {
   return _then(_SupplierEntity(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String,strnNo: freezed == strnNo ? _self.strnNo : strnNo // ignore: cast_nullable_to_non_nullable
 as String?,ntn: freezed == ntn ? _self.ntn : ntn // ignore: cast_nullable_to_non_nullable
-as String?,deliveryTerms: null == deliveryTerms ? _self.deliveryTerms : deliveryTerms // ignore: cast_nullable_to_non_nullable
-as String,contactInfo: freezed == contactInfo ? _self.contactInfo : contactInfo // ignore: cast_nullable_to_non_nullable
+as String?,contactInfo: freezed == contactInfo ? _self.contactInfo : contactInfo // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

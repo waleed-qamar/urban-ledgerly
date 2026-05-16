@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -96,13 +97,14 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 vendorsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (error, _) => Text('Failed to load vendors: $error'),
                   data: (vendors) {
                     if (vendors.isEmpty) {
                       return const Text('No vendors found.');
                     }
-            
+
                     return DropdownButtonFormField<int>(
                       initialValue: _selectedVendorId,
                       decoration: const InputDecoration(labelText: 'Vendor *'),
@@ -145,13 +147,16 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                
+
                 DropdownButtonFormField<String>(
                   initialValue: _paymentMethod,
                   decoration: const InputDecoration(labelText: 'Payment Mode'),
                   items: const [
                     DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                    DropdownMenuItem(value: 'bank', child: Text('Bank Transfer')),
+                    DropdownMenuItem(
+                      value: 'bank',
+                      child: Text('Bank Transfer'),
+                    ),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -162,48 +167,61 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                     }
                   },
                 ),
-                
+
                 if (_paymentMethod == 'bank') ...[
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Text('Transfer Type:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Transfer Type:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(width: 16),
                       Radio<String>(
                         value: 'online',
                         groupValue: _bankTransferMode,
-                        onChanged: (val) => setState(() => _bankTransferMode = val!),
+                        onChanged: (val) =>
+                            setState(() => _bankTransferMode = val!),
                       ),
                       const Text('Online Transfer'),
                       const SizedBox(width: 16),
                       Radio<String>(
                         value: 'cheque',
                         groupValue: _bankTransferMode,
-                        onChanged: (val) => setState(() => _bankTransferMode = val!),
+                        onChanged: (val) =>
+                            setState(() => _bankTransferMode = val!),
                       ),
                       const Text('Cheque'),
                     ],
                   ),
                 ],
                 const SizedBox(height: 12),
-            
+
                 // Account Selection
                 accountsAsync.when(
                   loading: () => const CircularProgressIndicator(),
                   error: (err, _) => Text('Error loading accounts: $err'),
                   data: (accounts) {
-                    final filteredAccounts = accounts.where((acc) => acc.accountType == _paymentMethod).toList();
-                    
+                    final filteredAccounts = accounts
+                        .where((acc) => acc.accountType == _paymentMethod)
+                        .toList();
+
                     if (filteredAccounts.isEmpty) {
-                      return Text('No $_paymentMethod accounts found.', style: const TextStyle(color: Colors.red));
+                      return Text(
+                        'No $_paymentMethod accounts found.',
+                        style: const TextStyle(color: Colors.red),
+                      );
                     }
-            
-                    if (filteredAccounts.length == 1 && _selectedAccountId == null) {
+
+                    if (filteredAccounts.length == 1 &&
+                        _selectedAccountId == null) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        setState(() => _selectedAccountId = filteredAccounts.first.id);
+                        setState(
+                          () => _selectedAccountId = filteredAccounts.first.id,
+                        );
                       });
                     }
-            
+
                     return DropdownButtonFormField<int?>(
                       value: _selectedAccountId,
                       decoration: InputDecoration(
@@ -211,28 +229,38 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                         border: const OutlineInputBorder(),
                       ),
                       items: [
-                        const DropdownMenuItem<int?>(value: null, child: Text('Select an account')),
+                        const DropdownMenuItem<int?>(
+                          value: null,
+                          child: Text('Select an account'),
+                        ),
                         ...filteredAccounts.map(
                           (acc) => DropdownMenuItem<int?>(
                             value: acc.id,
-                            child: Text('${acc.accountTitle} ${acc.bankName != null ? "(${acc.bankName})" : ""}'),
+                            child: Text(
+                              '${acc.accountTitle} ${acc.bankName != null ? "(${acc.bankName})" : ""}',
+                            ),
                           ),
                         ),
                       ],
                       onChanged: _isSubmitting
                           ? null
-                          : (value) => setState(() => _selectedAccountId = value),
-                      validator: (value) => value == null ? 'Please select an account' : null,
+                          : (value) =>
+                                setState(() => _selectedAccountId = value),
+                      validator: (value) =>
+                          value == null ? 'Please select an account' : null,
                     );
-                  }
+                  },
                 ),
                 const SizedBox(height: 12),
-            
+
                 TextFormField(
                   controller: _amountController,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]-')),
+                  ],
                   onChanged: (_) => setState(() {}),
                   decoration: const InputDecoration(
                     labelText: 'Amount *',
@@ -262,7 +290,11 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                 TextFormField(
                   controller: _accountNoController,
                   decoration: InputDecoration(
-                    labelText: _bankTransferMode == 'cheque' && _paymentMethod == 'bank' ? 'Cheque No' : 'Account/Ref No (Optional)',
+                    labelText:
+                        _bankTransferMode == 'cheque' &&
+                            _paymentMethod == 'bank'
+                        ? 'Cheque No'
+                        : 'Account/Ref No (Optional)',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -306,16 +338,20 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                   if (!_formKey.currentState!.validate()) {
                     return;
                   }
-            
+
                   final amount = double.parse(_amountController.text.trim());
                   if (_selectedVendorId == null || _selectedAccountId == null) {
                     return;
                   }
-            
+
                   setState(() => _isSubmitting = true);
                   try {
-                    final finalPaymentMethod = _paymentMethod == 'bank' && _bankTransferMode == 'cheque' ? 'cheque' : _paymentMethod;
-            
+                    final finalPaymentMethod =
+                        _paymentMethod == 'bank' &&
+                            _bankTransferMode == 'cheque'
+                        ? 'cheque'
+                        : _paymentMethod;
+
                     await ref
                         .read(receiptRepositoryProvider)
                         .createDisbursement(
@@ -334,7 +370,7 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                               : _remarksController.text.trim(),
                           paidDate: _paidDate,
                         );
-            
+
                     if (!mounted) return;
                     ref.invalidate(getAllEntriesProvider);
                     ref.invalidate(getEntriesByTypeProvider);

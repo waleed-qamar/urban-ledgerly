@@ -11,7 +11,6 @@ abstract class SupplierEntity with _$SupplierEntity {
     required String address,
     String? strnNo,
     String? ntn,
-    required String deliveryTerms,
     String? contactInfo,
   }) = _SupplierEntity;
 

@@ -13,7 +13,6 @@ _SupplierEntity _$SupplierEntityFromJson(Map<String, dynamic> json) =>
       address: json['address'] as String,
       strnNo: json['strnNo'] as String?,
       ntn: json['ntn'] as String?,
-      deliveryTerms: json['deliveryTerms'] as String,
       contactInfo: json['contactInfo'] as String?,
     );
 
@@ -24,6 +23,5 @@ Map<String, dynamic> _$SupplierEntityToJson(_SupplierEntity instance) =>
       'address': instance.address,
       'strnNo': instance.strnNo,
       'ntn': instance.ntn,
-      'deliveryTerms': instance.deliveryTerms,
       'contactInfo': instance.contactInfo,
     };

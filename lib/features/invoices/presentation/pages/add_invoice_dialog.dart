@@ -98,7 +98,9 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                 ),
                 error: (e, _) => SizedBox(
                   height: 240,
-                  child: Center(child: Text('Error generating invoice number: $e')),
+                  child: Center(
+                    child: Text('Error generating invoice number: $e'),
+                  ),
                 ),
                 data: (nextInvoiceNo) {
                   final productById = {for (var p in products) p.id: p};
@@ -184,8 +186,8 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
           Text(supplier != null ? supplier.address : ''),
           if (supplier != null && supplier.contactInfo != null)
             Text('Contact: ${supplier.contactInfo}'),
-          if (supplier != null && supplier.deliveryTerms.isNotEmpty)
-            Text('Delivery Terms: ${order.deliveryTerm}'),
+          // if (supplier != null && supplier.deliveryTerms.isNotEmpty)
+          //   Text('Delivery Terms: ${order.deliveryTerm}'),
           const SizedBox(height: 12),
           const Text(
             'Buyer Details',
@@ -368,7 +370,9 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
       }
 
       if (fullyInvoiced) {
-        await ref.read(orderRepositoryProvider).updateOrder(widget.order.copyWith(status: 'completed'));
+        await ref
+            .read(orderRepositoryProvider)
+            .updateOrder(widget.order.copyWith(status: 'completed'));
       }
 
       ref.invalidate(getAllInvoicesProvider);

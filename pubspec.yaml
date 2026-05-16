@@ -49,6 +49,7 @@ dependencies:
   printing: ^5.10.0
 
 dev_dependencies:
+  flutter_launcher_icons: "^0.14.4"
   flutter_test:
     sdk: flutter
 
@@ -65,6 +66,16 @@ dev_dependencies:
   freezed: ^3.2.3
   json_serializable: any
 
+
+flutter_launcher_icons:
+  web:
+    generate: true
+    image_path: "assets/logo.png"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
+
+
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -77,8 +88,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - assets/logo.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
