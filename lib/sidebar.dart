@@ -1,6 +1,7 @@
 // features/expense/presentation/views/sidebar.dart
 import 'package:flutter/material.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
+import 'package:ledgerly/dashboard.dart';
 import 'package:ledgerly/features/employee/presentation/pages/operator_dashboard.dart';
 import 'package:ledgerly/features/orders/presentation/pages/order_dashboard.dart';
 import 'package:ledgerly/features/procurement/presentation/pages/procurement_dashboard.dart';
@@ -41,6 +42,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
 
     // Build lists dynamically
     final List<Widget> pages = [
+      Dashboard(),
       if (isMaster) const AccountDashboard(),
       const LedgerPage(),
       const OrderDashboard(),
@@ -56,6 +58,11 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
     ];
 
     final List<NavigationRailDestination> destinations = [
+      const NavigationRailDestination(
+        icon: Icon(Icons.dashboard_outlined),
+        selectedIcon: Icon(Icons.dashboard),
+        label: Text('Dashboard'),
+      ),
       if (isMaster)
         const NavigationRailDestination(
           icon: Icon(Icons.account_balance_outlined),

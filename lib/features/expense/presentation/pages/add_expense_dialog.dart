@@ -10,7 +10,9 @@ import '../../domain/entities/expense.dart';
 import '../providers/expense_providers.dart';
 
 class AddExpenseDialog extends ConsumerStatefulWidget {
-  const AddExpenseDialog({super.key});
+  final Expense? expense;
+
+  const AddExpenseDialog({super.key, this.expense});
 
   @override
   ConsumerState<AddExpenseDialog> createState() => _AddExpenseDialogState();
@@ -29,7 +31,13 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   @override
   void initState() {
     super.initState();
-    _selectedDate = DateTime.now();
+    _selectedDate = widget.expense?.date ?? DateTime.now();
+
+    if (widget.expense != null) {
+      _selectedHeadId = widget.expense!.expenseHeadId;
+      _remarksController.text = widget.expense!.remarks;
+      _amountController.text = widget.expense!.amount.toString();
+    }
   }
 
   Future<void> _pickDate() async {
@@ -48,29 +56,51 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate() ||
-        _selectedHeadId == null ||
-        _selectedAccountId == null)
-      return;
+    if (!_formKey.currentState!.validate() || _selectedHeadId == null) return;
 
     setState(() => _isLoading = true);
 
-    final newExpense = Expense(
-      id: 0,
-      expenseHeadId: _selectedHeadId!,
-      amount: double.parse(_amountController.text.trim()),
-      remarks: _remarksController.text.trim(),
-      date: _selectedDate,
-    );
+    final amount = double.parse(_amountController.text.trim());
 
     try {
-      await ref
-          .read(expenseRepositoryProvider)
-          .addExpense(newExpense, accountId: _selectedAccountId);
-      // Invalidate the provider so it fetches the fresh 1.5-day list from the DB
-      ref.invalidate(recentExpensesProvider);
-      ref.invalidate(monthlyInsightsProvider);
-      ref.invalidate(getAllAccountsProvider); // Invalidates account balances
+      if (widget.expense == null) {
+        if (_selectedAccountId == null) {
+          // Account is required for new expense
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        final newExpense = Expense(
+          id: 0,
+          expenseHeadId: _selectedHeadId!,
+          amount: amount,
+          remarks: _remarksController.text.trim(),
+          date: _selectedDate,
+        );
+
+        await ref
+            .read(expenseRepositoryProvider)
+            .addExpense(newExpense, accountId: _selectedAccountId);
+
+        ref.invalidate(recentExpensesProvider);
+        ref.invalidate(monthlyInsightsProvider);
+        ref.invalidate(getAllAccountsProvider);
+      } else {
+        final updated = Expense(
+          id: widget.expense!.id,
+          expenseHeadId: _selectedHeadId!,
+          amount: amount,
+          remarks: _remarksController.text.trim(),
+          date: _selectedDate,
+        );
+
+        await ref.read(expenseRepositoryProvider).updateExpense(updated);
+
+        ref.invalidate(recentExpensesProvider);
+        ref.invalidate(monthlyInsightsProvider);
+        ref.invalidate(filteredLedgerProvider);
+      }
+
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -89,8 +119,14 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
     final headsAsync = ref.watch(expenseHeadsProvider);
     final accountsAsync = ref.watch(getAllAccountsProvider);
 
+    final isEditing = widget.expense != null;
+    final canSubmit =
+        !_isLoading &&
+        _selectedHeadId != null &&
+        (isEditing || _selectedAccountId != null);
+
     return AlertDialog(
-      title: const Text('Record Expense'),
+      title: Text(isEditing ? 'Edit Expense' : 'Record Expense'),
       content: SizedBox(
         width: 400,
         child: Form(
@@ -163,49 +199,50 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                   },
                 ),
                 const SizedBox(height: 16),
-                accountsAsync.when(
-                  loading: () => const CircularProgressIndicator(),
-                  error: (e, _) => Text('Error loading accounts: $e'),
-                  data: (accounts) {
-                    // Usually cash, but let user choose any account
-                    if (accounts.isEmpty) {
-                      return const Text(
-                        'Please create an account first.',
-                        style: TextStyle(color: Colors.red),
-                      );
-                    }
+                if (!isEditing)
+                  accountsAsync.when(
+                    loading: () => const CircularProgressIndicator(),
+                    error: (e, _) => Text('Error loading accounts: $e'),
+                    data: (accounts) {
+                      // Usually cash, but let user choose any account
+                      if (accounts.isEmpty) {
+                        return const Text(
+                          'Please create an account first.',
+                          style: TextStyle(color: Colors.red),
+                        );
+                      }
 
-                    if (accounts.length == 1 && _selectedAccountId == null) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        setState(() {
-                          _selectedAccountId = accounts.first.id;
+                      if (accounts.length == 1 && _selectedAccountId == null) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          setState(() {
+                            _selectedAccountId = accounts.first.id;
+                          });
                         });
-                      });
-                    }
+                      }
 
-                    return DropdownButtonFormField<int>(
-                      initialValue: _selectedAccountId,
-                      decoration: const InputDecoration(
-                        labelText: 'Paid From Account *',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: accounts
-                          .map(
-                            (a) => DropdownMenuItem(
-                              value: a.id,
-                              child: Text(
-                                '${a.accountTitle} (${a.accountType})',
+                      return DropdownButtonFormField<int>(
+                        initialValue: _selectedAccountId,
+                        decoration: const InputDecoration(
+                          labelText: 'Paid From Account *',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: accounts
+                            .map(
+                              (a) => DropdownMenuItem(
+                                value: a.id,
+                                child: Text(
+                                  '${a.accountTitle} (${a.accountType})',
+                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) =>
-                          setState(() => _selectedAccountId = val),
-                      validator: (val) =>
-                          val == null ? 'Please select an account' : null,
-                    );
-                  },
-                ),
+                            )
+                            .toList(),
+                        onChanged: (val) =>
+                            setState(() => _selectedAccountId = val),
+                        validator: (val) =>
+                            val == null ? 'Please select an account' : null,
+                      );
+                    },
+                  ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _remarksController,
@@ -231,12 +268,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
           ),
-          onPressed:
-              _isLoading ||
-                  _selectedHeadId == null ||
-                  _selectedAccountId == null
-              ? null
-              : _submit,
+          onPressed: canSubmit ? _submit : null,
           child: _isLoading
               ? const SizedBox(
                   width: 20,
@@ -246,7 +278,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                     strokeWidth: 2,
                   ),
                 )
-              : const Text('Save'),
+              : Text(isEditing ? 'Update' : 'Save'),
         ),
       ],
     );

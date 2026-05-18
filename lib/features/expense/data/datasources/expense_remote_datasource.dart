@@ -149,4 +149,11 @@ class ExpenseRemoteDatasource {
       },
     );
   }
+
+  Future<void> updateExpense(Expense expense) async {
+    await _client
+        .from('expenses')
+        .update(expense.toJson())
+        .eq('id', expense.id);
+  }
 }

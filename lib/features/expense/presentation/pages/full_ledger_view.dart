@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:excel/excel.dart' hide Border;
 import 'package:ledgerly/features/expense/presentation/widgets/build_ladger_item.dart';
 import 'dart:typed_data';
+import 'add_expense_dialog.dart';
 
 import '../providers/expense_providers.dart';
 import '../../domain/entities/expense.dart';
@@ -252,19 +253,29 @@ class FullLedgerView extends ConsumerWidget {
                               20.0,
                               8.0,
                             ),
-                            child: buildLedgerItem(
-                              Icons.receipt_long,
-                              title,
-                              exp.remarks,
-                              NumberFormat.currency(
-                                symbol: 'PKR ',
-                              ).format(exp.amount),
-                              DateFormat.yMMMd().format(
-                                exp.date,
-                              ), // Added time here for extra detail in full ledger!
-                              headType,
-                              AppColors.iconBackground,
-                              Colors.teal,
+                            child: GestureDetector(
+                              onDoubleTap: () async {
+                                await showDialog<void>(
+                                  context: context,
+                                  builder: (ctx) =>
+                                      AddExpenseDialog(expense: exp),
+                                );
+                                ref.invalidate(filteredLedgerProvider);
+                              },
+                              child: buildLedgerItem(
+                                Icons.receipt_long,
+                                title,
+                                exp.remarks,
+                                NumberFormat.currency(
+                                  symbol: 'PKR ',
+                                ).format(exp.amount),
+                                DateFormat.yMMMd().format(
+                                  exp.date,
+                                ), // Added time here for extra detail in full ledger!
+                                headType,
+                                AppColors.iconBackground,
+                                Colors.teal,
+                              ),
                             ),
                           );
                         },

@@ -54,6 +54,11 @@ ExpenseRepository expenseRepository(Ref ref) {
 }
 
 @riverpod
+Future<void> updateExpense(Ref ref, Expense expense) async {
+  await ref.watch(expenseRepositoryProvider).updateExpense(expense);
+}
+
+@riverpod
 Future<List<Expense>> recentExpenses(Ref ref) async {
   final allExpenses = await ref
       .watch(expenseRepositoryProvider)

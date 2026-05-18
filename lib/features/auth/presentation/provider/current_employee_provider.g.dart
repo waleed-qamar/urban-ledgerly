@@ -46,4 +46,4 @@ final class CurrentEmployeeProvider
   }
 }
 
-String _$currentEmployeeHash() => r'ba7d2ec3feb69e9c806baf6362aa651a2c13b233';
+String _$currentEmployeeHash() => r'5bfb61c57f17d1c532e6c64e1142e8f02065f346';

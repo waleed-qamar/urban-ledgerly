@@ -11,6 +11,7 @@ abstract class ExpenseRepository {
   Future<List<Expense>> getExpensesByHead(int headId);
   Future<List<Expense>> getExpensesByDateRange(DateTime start, DateTime end);
   Future<void> addExpense(Expense expense, {int? accountId});
+  Future<void> updateExpense(Expense expense);
 
   Future<List<Expense>> getFilteredExpenses({
     int? headId,

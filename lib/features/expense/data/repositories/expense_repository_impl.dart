@@ -38,6 +38,10 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   }
 
   @override
+  Future<void> updateExpense(Expense expense) =>
+      _datasource.updateExpense(expense);
+
+  @override
   Future<List<Expense>> getExpensesByDateRange(DateTime start, DateTime end) =>
       _datasource.fetchExpensesByDateRange(start, end);
 
