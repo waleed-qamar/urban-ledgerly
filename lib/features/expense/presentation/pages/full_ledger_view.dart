@@ -37,6 +37,7 @@ class FullLedgerView extends ConsumerWidget {
       TextCellValue('Amount'),
       TextCellValue('Remarks'),
       TextCellValue('Created At'),
+      TextCellValue('Created At Time'),
     ]);
 
     // Data Rows
@@ -56,6 +57,7 @@ class FullLedgerView extends ConsumerWidget {
         TextCellValue(exp.amount.toString()),
         TextCellValue(exp.remarks),
         TextCellValue(DateFormat('yyyy-MM-dd').format(exp.createdAt!)),
+        TextCellValue(DateFormat('hh:mm a').format(exp.createdAt!)),
       ]);
     }
 
