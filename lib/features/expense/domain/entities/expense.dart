@@ -6,10 +6,12 @@ part 'expense.g.dart';
 abstract class Expense with _$Expense {
   factory Expense({
     required int id,
-    @JsonKey(name: 'expenseHeadId') required int expenseHeadId,
+    required int expenseHeadId,
     required double amount,
     required String remarks,
     required DateTime date,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) = _Expense;
 
   factory Expense.fromJson(Map<String, dynamic> json) =>

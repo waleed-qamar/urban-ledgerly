@@ -1,27 +1,29 @@
 CREATE OR REPLACE FUNCTION create_expense(
-    p_id BIGINT,
     p_expense_head_id BIGINT,
     p_amount NUMERIC,
     p_remarks TEXT,
     p_date TIMESTAMP,
+    p_created_at TIMESTAMP DEFAULT NULL,
     p_account_id INT DEFAULT NULL
 ) RETURNS BIGINT
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    v_expense_id BIGINT;
 BEGIN
     INSERT INTO expenses (
-        id,
-        "expenseHeadId",
+            expense_head_id,
         amount,
         remarks,
-        date
+        date,
+        created_at
     ) VALUES (
-        p_id,
         p_expense_head_id,
         p_amount,
         p_remarks,
-        p_date
-    );
+        p_date,
+        COALESCE(p_created_at, NOW())
+    ) RETURNING id INTO v_expense_id;
 
     IF p_account_id IS NOT NULL THEN
         INSERT INTO account_transactions (
@@ -37,13 +39,13 @@ BEGIN
             p_amount,
             'debit',
             'expense',
-            p_id,
+            v_expense_id,
             p_remarks,
             p_date
         );
     END IF;
 
-    RETURN p_id;
+    RETURN v_expense_id;
 END;
 $$;
 

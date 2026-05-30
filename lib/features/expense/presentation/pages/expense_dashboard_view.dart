@@ -488,6 +488,9 @@ class ExpenseDashboardView extends ConsumerWidget {
                                         ).format(exp.amount),
                                         DateFormat.yMMMd().format(exp.date),
                                         headType, // Showing Head Type in badge
+                                        DateFormat.yMMMd().format(
+                                          exp.createdAt!,
+                                        ),
                                         AppColors.iconBackground,
                                         Colors.teal,
                                       );

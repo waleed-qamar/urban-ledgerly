@@ -296,7 +296,7 @@ CREATE TABLE IF NOT EXISTS expense_heads (
 
 CREATE TABLE IF NOT EXISTS expenses (
     id BIGSERIAL PRIMARY KEY,
-    "expenseHeadId" INT NOT NULL REFERENCES expense_heads(id),
+        expense_head_id INT NOT NULL REFERENCES expense_heads(id),
     amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
     remarks TEXT,
     date TIMESTAMP NOT NULL,
@@ -815,29 +815,31 @@ $$;
 
 -- 13.4 Create Expense with Optional Account Transaction
 CREATE OR REPLACE FUNCTION create_expense(
-    p_id BIGINT,
     p_expense_head_id BIGINT,
     p_amount NUMERIC,
     p_remarks TEXT,
     p_date TIMESTAMP,
+    p_created_at TIMESTAMP DEFAULT NULL,
     p_account_id INT DEFAULT NULL
 ) RETURNS BIGINT
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    v_expense_id BIGINT;
 BEGIN
     INSERT INTO expenses (
-        id,
-        "expenseHeadId",
+        expense_head_id,
         amount,
         remarks,
-        date
+        date,
+        created_at
     ) VALUES (
-        p_id,
         p_expense_head_id,
         p_amount,
         p_remarks,
-        p_date
-    );
+        p_date,
+        COALESCE(p_created_at, NOW())
+    ) RETURNING id INTO v_expense_id;
 
     IF p_account_id IS NOT NULL THEN
         INSERT INTO account_transactions (
@@ -853,13 +855,13 @@ BEGIN
             p_amount,
             'debit',
             'expense',
-            p_id,
+            v_expense_id,
             p_remarks,
             p_date
         );
     END IF;
 
-    RETURN p_id;
+    RETURN v_expense_id;
 END;
 $$;
 
@@ -1105,7 +1107,7 @@ CREATE INDEX IF NOT EXISTS idx_disbursements_supplier_id ON disbursements(suppli
 CREATE INDEX IF NOT EXISTS idx_ledger_party ON ledger(party_type, party_id);
 CREATE INDEX IF NOT EXISTS idx_ledger_date ON ledger(entry_date);
 CREATE INDEX IF NOT EXISTS idx_account_txn_account_id ON account_transactions(account_id);
-CREATE INDEX IF NOT EXISTS idx_expenses_head_id ON expenses("expenseHeadId");
+CREATE INDEX IF NOT EXISTS idx_expenses_head_id ON expenses(expense_head_id);
 CREATE INDEX IF NOT EXISTS idx_procurements_vendor_id ON procurements(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_procurements_material_id ON procurements(raw_material_id);
 CREATE INDEX IF NOT EXISTS idx_dps_reports_date ON dps_reports(report_date);

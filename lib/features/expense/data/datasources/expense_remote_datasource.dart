@@ -8,6 +8,38 @@ class ExpenseRemoteDatasource {
 
   ExpenseRemoteDatasource(this._client);
 
+  List<Map<String, dynamic>> _normalizeExpenseRows(List<dynamic> rows) {
+    return rows.map<Map<String, dynamic>>((r) {
+      final m = Map<String, dynamic>.from(r as Map);
+      if (m['amount'] == null) m['amount'] = 0;
+      if (m['id'] == null) m['id'] = 0;
+      if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
+        m['expenseHeadId'] = m['expense_head_id'];
+      }
+      return m;
+    }).toList();
+  }
+
+  Future<List<Expense>> _fetchPagedExpenses(
+    Future<List<dynamic>> Function(int from, int to) fetchPage,
+  ) async {
+    const pageSize = 1000;
+    var from = 0;
+    final allRows = <dynamic>[];
+
+    while (true) {
+      final rows = await fetchPage(from, from + pageSize - 1);
+      allRows.addAll(rows);
+
+      if (rows.length < pageSize) break;
+      from += pageSize;
+    }
+
+    return _normalizeExpenseRows(
+      allRows,
+    ).map((json) => Expense.fromJson(json)).toList();
+  }
+
   Future<List<ExpenseHead>> fectchExpenseHead() async {
     final response = await _client.from('expense_heads').select();
 
@@ -15,69 +47,80 @@ class ExpenseRemoteDatasource {
   }
 
   Future<List<Expense>> fectchExpenses() async {
-    final response = await _client.from('expenses').select();
-
-    final rows = (response as List).map<Map<String, dynamic>>((r) {
-      final m = Map<String, dynamic>.from(r as Map);
-      if (m['amount'] == null) m['amount'] = 0;
-      if (m['id'] == null) m['id'] = 0;
-      if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
-        m['expenseHeadId'] = m['expense_head_id'];
-      }
-      return m;
-    }).toList();
-
-    return rows.map((json) => Expense.fromJson(json)).toList();
+    return _fetchPagedExpenses(
+      (from, to) async =>
+          await _client
+                  .from('expenses')
+                  .select()
+                  .order('date', ascending: false)
+                  .range(from, to)
+              as List<dynamic>,
+    );
   }
 
-  Future<List<Expense>> fectchExpensesByHead(int headId) async {
-    final response = await _client
-        .from('expenses')
-        .select()
-        .eq('expense_head_id', headId);
-    final rows = (response as List).map<Map<String, dynamic>>((r) {
-      final m = Map<String, dynamic>.from(r as Map);
-      if (m['amount'] == null) m['amount'] = 0;
-      if (m['id'] == null) m['id'] = 0;
-      if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
-        m['expenseHeadId'] = m['expense_head_id'];
-      }
-      return m;
-    }).toList();
+  // Future<List<Expense>> fectchExpenses() async {
+  //   const int pageSize = 1000;
+  //   int from = 0;
+  //   List<dynamic> allRows = [];
 
-    return rows.map((json) => Expense.fromJson(json)).toList();
+  //   while (true) {
+  //     final response = await _client
+  //         .from('expenses')
+  //         .select()
+  //         .range(from, from + pageSize - 1);
+
+  //     final rows = response as List;
+  //     allRows.addAll(rows);
+
+  //     if (rows.length < pageSize) break; // No more rows to fetch
+  //     from += pageSize;
+  //   }
+
+  //   return allRows.map<Expense>((r) {
+  //     final m = Map<String, dynamic>.from(r as Map);
+  //     if (m['amount'] == null) m['amount'] = 0;
+  //     if (m['id'] == null) m['id'] = 0;
+  //     if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
+  //       m['expenseHeadId'] = m['expense_head_id'];
+  //     }
+  //     return Expense.fromJson(m);
+  //   }).toList();
+  // }
+
+  Future<List<Expense>> fectchExpensesByHead(int headId) async {
+    return _fetchPagedExpenses(
+      (from, to) async =>
+          await _client
+                  .from('expenses')
+                  .select()
+                  .eq('expense_head_id', headId)
+                  .order('date', ascending: false)
+                  .range(from, to)
+              as List<dynamic>,
+    );
   }
 
   Future<List<Expense>> fetchExpensesByDateRange(
     DateTime from,
     DateTime to,
   ) async {
-    // 1. Explicitly convert 'from' to UTC
     final fromUtc = from.toUtc().toIso8601String();
-
-    // 2. Add 23 hours, 59 minutes, 59 seconds to cover the entire 'to' day, then convert to UTC
     final toUtc = to
         .add(const Duration(hours: 23, minutes: 59, seconds: 59))
         .toUtc()
         .toIso8601String();
 
-    final response = await _client
-        .from('expenses')
-        .select()
-        .gte('date', fromUtc)
-        .lte('date', toUtc)
-        .order('date', ascending: false);
-    final rows = (response as List).map<Map<String, dynamic>>((r) {
-      final m = Map<String, dynamic>.from(r as Map);
-      if (m['amount'] == null) m['amount'] = 0;
-      if (m['id'] == null) m['id'] = 0;
-      if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
-        m['expenseHeadId'] = m['expense_head_id'];
-      }
-      return m;
-    }).toList();
-
-    return rows.map((json) => Expense.fromJson(json)).toList();
+    return _fetchPagedExpenses(
+      (pageFrom, pageTo) async =>
+          await _client
+                  .from('expenses')
+                  .select()
+                  .gte('date', fromUtc)
+                  .lte('date', toUtc)
+                  .order('date', ascending: false)
+                  .range(pageFrom, pageTo)
+              as List<dynamic>,
+    );
   }
 
   Future<List<Expense>> fetchFilteredExpenses({
@@ -86,37 +129,28 @@ class ExpenseRemoteDatasource {
     DateTime? to,
   }) async {
     try {
-      // The explicit cast here prevents the silent infinite loading error
-      var query = _client.from('expenses').select();
+      return _fetchPagedExpenses((fromPage, toPage) async {
+        var query = _client.from('expenses').select();
 
-      if (headId != null) {
-        query = query.eq('expenseHeadId', headId);
-      }
-
-      if (from != null && to != null) {
-        final fromUtc = from.toUtc().toIso8601String();
-        final toUtc = to
-            .add(const Duration(hours: 23, minutes: 59, seconds: 59))
-            .toUtc()
-            .toIso8601String();
-        query = query.gte('date', fromUtc).lte('date', toUtc);
-      }
-
-      final response = await query.order('date', ascending: false);
-      final rows = (response as List).map<Map<String, dynamic>>((r) {
-        final m = Map<String, dynamic>.from(r as Map);
-        if (m['amount'] == null) m['amount'] = 0;
-        if (m['id'] == null) m['id'] = 0;
-        if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
-          m['expenseHeadId'] = m['expense_head_id'];
+        if (headId != null) {
+          query = query.eq('expense_head_id', headId);
         }
-        return m;
-      }).toList();
 
-      return rows.map((json) => Expense.fromJson(json)).toList();
+        if (from != null && to != null) {
+          final fromUtc = from.toUtc().toIso8601String();
+          final toUtc = to
+              .add(const Duration(hours: 23, minutes: 59, seconds: 59))
+              .toUtc()
+              .toIso8601String();
+          query = query.gte('date', fromUtc).lte('date', toUtc);
+        }
+
+        return await query
+                .order('date', ascending: false)
+                .range(fromPage, toPage)
+            as List<dynamic>;
+      });
     } catch (e) {
-      // If it fails, print the error to console and pass it to Riverpod
-      // print("Supabase Query Error: $e");
       rethrow;
     }
   }
@@ -145,15 +179,21 @@ class ExpenseRemoteDatasource {
         'p_amount': expense.amount,
         'p_remarks': expense.remarks,
         'p_date': expense.date.toIso8601String(),
+        'p_created_at': expense.createdAt?.toIso8601String(),
         'p_account_id': accountId,
       },
     );
   }
 
   Future<void> updateExpense(Expense expense) async {
-    await _client
-        .from('expenses')
-        .update(expense.toJson())
-        .eq('id', expense.id);
+    final payload = expense.toJson()
+      ..remove('id')
+      ..remove('created_at')
+      ..remove('updated_at');
+
+    // Set updated_at to now so DB records last modification time
+    payload['updated_at'] = DateTime.now().toIso8601String();
+
+    await _client.from('expenses').update(payload).eq('id', expense.id);
   }
 }

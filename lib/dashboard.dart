@@ -42,7 +42,7 @@ class Dashboard extends StatelessWidget {
                             child: Card(
                               elevation: 5,
                               clipBehavior: Clip.antiAlias,
-                              color: Colors.black,
+                              color: Colors.green,
                               child: Image.asset(
                                 'assets/logos/logo2.png',
                                 fit: BoxFit.fitWidth,
@@ -56,7 +56,7 @@ class Dashboard extends StatelessWidget {
                             child: Card(
                               elevation: 5,
                               clipBehavior: Clip.antiAlias,
-                              color: Colors.black,
+                              color: Colors.lime,
                               child: Image.asset(
                                 'assets/logos/logo3.png',
                                 fit: BoxFit.fitWidth,

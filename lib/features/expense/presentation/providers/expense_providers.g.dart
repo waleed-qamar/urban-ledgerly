@@ -258,6 +258,75 @@ final class ExpenseRepositoryProvider
 
 String _$expenseRepositoryHash() => r'591a31d3386e8f36a6dabe36f9ee7bc2d186c590';
 
+@ProviderFor(updateExpense)
+const updateExpenseProvider = UpdateExpenseFamily._();
+
+final class UpdateExpenseProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const UpdateExpenseProvider._({
+    required UpdateExpenseFamily super.from,
+    required Expense super.argument,
+  }) : super(
+         retry: null,
+         name: r'updateExpenseProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateExpenseHash();
+
+  @override
+  String toString() {
+    return r'updateExpenseProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as Expense;
+    return updateExpense(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UpdateExpenseProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$updateExpenseHash() => r'b8bab15e2f5c5b936c1ead98f19dc442f5f614fe';
+
+final class UpdateExpenseFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, Expense> {
+  const UpdateExpenseFamily._()
+    : super(
+        retry: null,
+        name: r'updateExpenseProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  UpdateExpenseProvider call(Expense expense) =>
+      UpdateExpenseProvider._(argument: expense, from: this);
+
+  @override
+  String toString() => r'updateExpenseProvider';
+}
+
 @ProviderFor(recentExpenses)
 const recentExpensesProvider = RecentExpensesProvider._();
 

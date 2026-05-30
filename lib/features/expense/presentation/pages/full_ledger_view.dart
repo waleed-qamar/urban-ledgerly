@@ -36,6 +36,7 @@ class FullLedgerView extends ConsumerWidget {
       TextCellValue('Head'),
       TextCellValue('Amount'),
       TextCellValue('Remarks'),
+      TextCellValue('Created At'),
     ]);
 
     // Data Rows
@@ -54,6 +55,7 @@ class FullLedgerView extends ConsumerWidget {
         TextCellValue(headName),
         TextCellValue(exp.amount.toString()),
         TextCellValue(exp.remarks),
+        TextCellValue(DateFormat('yyyy-MM-dd').format(exp.createdAt!)),
       ]);
     }
 
@@ -273,6 +275,7 @@ class FullLedgerView extends ConsumerWidget {
                                   exp.date,
                                 ), // Added time here for extra detail in full ledger!
                                 headType,
+                                DateFormat.yMMMd().format(exp.createdAt!),
                                 AppColors.iconBackground,
                                 Colors.teal,
                               ),

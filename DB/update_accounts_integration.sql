@@ -387,6 +387,7 @@ CREATE OR REPLACE FUNCTION create_expense(
     p_amount NUMERIC,
     p_remarks TEXT,
     p_date TIMESTAMP,
+    p_created_at TIMESTAMP DEFAULT NULL,
     p_account_id INT DEFAULT NULL
 ) RETURNS BIGINT
 LANGUAGE plpgsql
@@ -398,12 +399,14 @@ BEGIN
         expense_head_id,
         amount,
         remarks,
-        date
+        date,
+        created_at
     ) VALUES (
         p_expense_head_id,
         p_amount,
         p_remarks,
-        p_date
+        p_date,
+        COALESCE(p_created_at, NOW())
     ) RETURNING id INTO v_expense_id;
 
     IF p_account_id IS NOT NULL THEN

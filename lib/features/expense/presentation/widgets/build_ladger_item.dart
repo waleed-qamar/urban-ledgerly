@@ -8,6 +8,7 @@ Widget buildLedgerItem(
   String amount,
   String date,
   String headType,
+  String createdAt,
   Color iconBgColor,
   Color iconColor,
 ) {
@@ -57,6 +58,26 @@ Widget buildLedgerItem(
                     ),
                   ),
                 ),
+                const SizedBox(width: 18),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.badgeBackground,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    createdAt,
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textGrey,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 4),
@@ -78,7 +99,10 @@ Widget buildLedgerItem(
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 4),
-          Text(date, style: const TextStyle(color: AppColors.textGrey, fontSize: 12)),
+          Text(
+            date,
+            style: const TextStyle(color: AppColors.textGrey, fontSize: 12),
+          ),
         ],
       ),
     ],
