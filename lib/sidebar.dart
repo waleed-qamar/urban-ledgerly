@@ -13,8 +13,9 @@ import 'features/account_ledger/presentation/pages/account_dashboard.dart';
 import 'features/client/presentation/pages/client_dashboard_view.dart';
 import 'features/expense/presentation/pages/expense_dashboard_view.dart';
 import 'features/ledger/presentation/pages/ledger_page.dart';
-import 'features/vender/presentation/pages/vendor_dashboard_view.dart';
+import 'package:ledgerly/features/vender/presentation/pages/vendor_dashboard_view.dart';
 import 'package:ledgerly/features/dps/presentation/pages/dps_dashboard.dart';
+import 'package:ledgerly/features/overview/overview_dashboard.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/features/auth/presentation/provider/current_employee_provider.dart';
@@ -37,12 +38,12 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final employeeAsync = ref.watch(currentEmployeeProvider);
-    final isMaster = employeeAsync.value?.role == 'master';
+    final isMaster = ref.watch(isMasterProvider);
 
     // Build lists dynamically
     final List<Widget> pages = [
       Dashboard(),
+      if (isMaster) const OverviewDashboard(),
       if (isMaster) const AccountDashboard(),
       const LedgerPage(),
       const OrderDashboard(),
@@ -63,6 +64,12 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
         selectedIcon: Icon(Icons.dashboard),
         label: Text('Dashboard'),
       ),
+      if (isMaster)
+        const NavigationRailDestination(
+          icon: Icon(Icons.analytics_outlined),
+          selectedIcon: Icon(Icons.analytics),
+          label: Text('Overview'),
+        ),
       if (isMaster)
         const NavigationRailDestination(
           icon: Icon(Icons.account_balance_outlined),

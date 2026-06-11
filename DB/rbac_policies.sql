@@ -59,9 +59,9 @@ BEGIN
         EXECUTE format('DROP POLICY IF EXISTS "%I_insert_policy" ON %I;', t_name, t_name);
         EXECUTE format('CREATE POLICY "%I_insert_policy" ON %I FOR INSERT TO authenticated WITH CHECK (true);', t_name, t_name);
 
-        -- UPDATE Policy: Only master
+        -- UPDATE Policy: Master and Accountant (any registered employee)
         EXECUTE format('DROP POLICY IF EXISTS "%I_update_policy" ON %I;', t_name, t_name);
-        EXECUTE format('CREATE POLICY "%I_update_policy" ON %I FOR UPDATE TO authenticated USING (get_current_user_role() = ''master'') WITH CHECK (get_current_user_role() = ''master'');', t_name, t_name);
+        EXECUTE format('CREATE POLICY "%I_update_policy" ON %I FOR UPDATE TO authenticated USING (get_current_user_role() IN (''master'', ''accountant'')) WITH CHECK (get_current_user_role() IN (''master'', ''accountant''));', t_name, t_name);
 
         -- DELETE Policy: Only master
         EXECUTE format('DROP POLICY IF EXISTS "%I_delete_policy" ON %I;', t_name, t_name);

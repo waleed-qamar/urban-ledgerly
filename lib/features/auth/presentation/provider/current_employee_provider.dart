@@ -45,3 +45,10 @@ Future<EmployeeEntity?> currentEmployee(Ref ref) async {
     return null;
   }
 }
+
+@riverpod
+bool isMaster(Ref ref) {
+  final employee = ref.watch(currentEmployeeProvider).value;
+  return employee?.role == 'master';
+}
+
