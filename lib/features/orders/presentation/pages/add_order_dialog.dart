@@ -10,6 +10,7 @@ import 'package:ledgerly/features/orders/domain/entities/supplier_entity.dart';
 import 'package:ledgerly/features/orders/presentation/providers/order_providers.dart';
 import 'package:ledgerly/features/orders/presentation/providers/supplier_providers.dart';
 import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
+import 'package:ledgerly/features/products/domain/entities/product_set_entity.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
 
 class AddOrderDialog extends ConsumerStatefulWidget {
@@ -64,6 +65,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
     final suppliersAsync = ref.watch(getAllSuppliersProvider);
     final productsAsync = ref.watch(getAllProductsProvider);
     final ordersAsync = ref.watch(getAllOrdersProvider);
+    final setsAsync = ref.watch(getAllProductSetsProvider);
 
     return Dialog(
       backgroundColor: AppColors.textWhite,
@@ -123,6 +125,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                         clients,
                         suppliers,
                         products,
+                        setsAsync,
                         ordersAsync,
                       );
                     },
@@ -141,6 +144,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
     List<ClientEntity> clients,
     List<SupplierEntity> suppliers,
     List<ProductEntity> products,
+    AsyncValue<List<ProductSetEntity>> setsAsync,
     AsyncValue<List<OrderEntity>> ordersAsync,
   ) {
     final subtotal = _calculateSubtotal();
@@ -381,55 +385,9 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                               });
                             },
                     ),
-
-                    // Validation message
-                    // if (_deliveryTerm == null)
-                    //   const Padding(
-                    //     padding: EdgeInsets.only(left: 12),
-                    //     child: Text(
-                    //       'Please select a Delivery Term',
-                    //       style: TextStyle(color: Colors.red, fontSize: 12),
-                    //     ),
-                    //   ),
                   ],
                 ),
-                // child: TextFormField(
-                //   controller: _deliveryTermsController,
-                //   enabled: !_isSubmitting,
-                //   decoration: const InputDecoration(
-                //     labelText: 'Delivery Terms',
-                //     border: OutlineInputBorder(),
-                //   ),
-                //   validator: (value) => value == null || value.trim().isEmpty
-                //       ? 'Enter a Delivery Term'
-                //       : null,
-                // ),
               ),
-              // Expanded(
-              //   child: DropdownButtonFormField<String>(
-              //     initialValue: _status,
-              //     decoration: const InputDecoration(
-              //       labelText: 'Status',
-              //       border: OutlineInputBorder(),
-              //     ),
-              //     items: const [
-              //       DropdownMenuItem(value: 'pending', child: Text('Pending')),
-              //       DropdownMenuItem(
-              //         value: 'completed',
-              //         child: Text('Completed'),
-              //       ),
-              //     ],
-              //     onChanged: _isSubmitting
-              //         ? null
-              //         : (value) {
-              //             if (value != null) {
-              //               setState(() {
-              //                 _status = value;
-              //               });
-              //             }
-              //           },
-              //   ),
-              // ),
             ],
           ),
           const SizedBox(height: 20),
@@ -446,12 +404,23 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                     : () {
                         setState(() {
                           _lines.add(
-                            _DraftOrderLine(quantity: 1, unitPrice: 0),
+                            _DraftProductLine(quantity: 1, unitPrice: 0),
                           );
                         });
                       },
                 icon: const Icon(Icons.add_circle_outline),
-                label: const Text('Add Row'),
+                label: const Text('Add Product'),
+              ),
+              TextButton.icon(
+                onPressed: _isSubmitting
+                    ? null
+                    : () {
+                        setState(() {
+                          _lines.add(_DraftSetLine(quantity: 1, unitPrice: 0));
+                        });
+                      },
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('Add Set'),
               ),
             ],
           ),
@@ -467,6 +436,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                   return _OrderLineEditor(
                     line: _lines[index],
                     products: products,
+                    setsAsync: setsAsync,
                     enabled: !_isSubmitting,
                     onChanged: () => setState(() {}),
                     onDelete: _lines.length == 1
@@ -605,19 +575,28 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
     final items = <OrderItemEntity>[];
     final department = _departmentController.text.trim();
     final _po = _poController.text.trim();
-    final deliveryTerms = _deliveryTermsController.text.trim();
 
     for (final line in _lines) {
-      final productId = line.productId;
-      if (productId == null) {
-        _showError('Each row must have a selected product.');
-        return;
-      }
+      if (line.isSet) {
+        // For set lines ensure a set is selected.
+        if (line.setId == null) {
+          _showError('Each row must have a selected set.');
+          return;
+        }
+      } else {
+        final productId = line.productId;
+        if (productId == null) {
+          _showError('Each row must have a selected product.');
+          return;
+        }
 
-      final product = productById[productId];
-      if (product == null) {
-        _showError('One selected product no longer exists. Refresh and retry.');
-        return;
+        final product = productById[productId];
+        if (product == null) {
+          _showError(
+            'One selected product no longer exists. Refresh and retry.',
+          );
+          return;
+        }
       }
 
       if (line.quantity <= 0) {
@@ -634,7 +613,9 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
 
       items.add(
         OrderItemEntity(
-          productId: productId,
+          productId: line.productId,
+          setId: line.setId,
+          isSet: line.isSet,
           quantity: line.quantity,
           price: discountedUnitPrice,
         ),
@@ -801,6 +782,7 @@ class _OrderLineEditor extends StatelessWidget {
   const _OrderLineEditor({
     required this.line,
     required this.products,
+    required this.setsAsync,
     required this.enabled,
     required this.onChanged,
     required this.onDelete,
@@ -808,6 +790,7 @@ class _OrderLineEditor extends StatelessWidget {
 
   final _DraftOrderLine line;
   final List<ProductEntity> products;
+  final AsyncValue<List<ProductSetEntity>> setsAsync;
   final bool enabled;
   final VoidCallback onChanged;
   final VoidCallback? onDelete;
@@ -824,28 +807,79 @@ class _OrderLineEditor extends StatelessWidget {
         children: [
           Expanded(
             flex: 4,
-            child: DropdownButtonFormField<int>(
-              initialValue: line.productId,
-              isExpanded: true,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Product',
-              ),
-              items: products
-                  .map(
-                    (p) => DropdownMenuItem<int>(
-                      value: p.id,
-                      child: Text(p.name, overflow: TextOverflow.ellipsis),
-                    ),
-                  )
-                  .toList(),
-              validator: (value) => value == null ? 'Select product' : null,
-              onChanged: enabled
-                  ? (value) {
-                      line.productId = value;
-                      onChanged();
-                    }
-                  : null,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Text(
+                //   line.isSet ? 'Set Line' : 'Product Line',
+                //   style: const TextStyle(
+                //     fontSize: 12,
+                //     fontWeight: FontWeight.w700,
+                //     color: AppColors.textGrey,
+                //   ),
+                // ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<int>(
+                  value: line.isSet ? line.setId : line.productId,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: line.isSet ? 'Select Set' : 'Select Product',
+                  ),
+                  items: line.isSet
+                      ? setsAsync.when(
+                          data: (sets) => sets
+                              .map(
+                                (s) => DropdownMenuItem<int>(
+                                  value: s.setId,
+                                  child: Text(
+                                    s.name,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          loading: () => [
+                            const DropdownMenuItem<int>(
+                              value: -1,
+                              child: Text('Loading'),
+                            ),
+                          ],
+                          error: (_, __) => [
+                            const DropdownMenuItem<int>(
+                              value: -1,
+                              child: Text('Error'),
+                            ),
+                          ],
+                        )
+                      : products
+                            .map(
+                              (p) => DropdownMenuItem<int>(
+                                value: p.id,
+                                child: Text(
+                                  p.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                  validator: (value) =>
+                      value == null || value == -1 ? 'Select item' : null,
+                  onChanged: enabled
+                      ? (value) {
+                          if (value == null) return;
+                          if (line.isSet) {
+                            line.setId = value;
+                            line.productId = null;
+                          } else {
+                            line.productId = value;
+                            line.setId = null;
+                          }
+                          onChanged();
+                        }
+                      : null,
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 10),
@@ -919,9 +953,25 @@ class _OrderLineEditor extends StatelessWidget {
 }
 
 class _DraftOrderLine {
-  _DraftOrderLine({required this.quantity, required this.unitPrice});
+  _DraftOrderLine({
+    required this.quantity,
+    required this.unitPrice,
+    this.isSet = false,
+  });
 
+  bool isSet;
   int? productId;
+  int? setId;
   int quantity;
   double unitPrice;
+}
+
+class _DraftProductLine extends _DraftOrderLine {
+  _DraftProductLine({required super.quantity, required super.unitPrice})
+    : super(isSet: false);
+}
+
+class _DraftSetLine extends _DraftOrderLine {
+  _DraftSetLine({required super.quantity, required super.unitPrice})
+    : super(isSet: true);
 }

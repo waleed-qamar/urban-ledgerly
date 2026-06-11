@@ -16,6 +16,10 @@ import '../../domain/entities/expense_head.dart';
 class FullLedgerView extends ConsumerWidget {
   const FullLedgerView({super.key});
 
+  DateTime _toPakistanTime(DateTime dateTime) {
+    return dateTime.isUtc ? dateTime.add(const Duration(hours: 5)) : dateTime;
+  }
+
   Future<void> _exportToExcel(
     List<Expense> expenses,
     String indicatorText,
@@ -48,16 +52,24 @@ class FullLedgerView extends ConsumerWidget {
               .firstOrNull
               ?.name ??
           'Unknown Category';
+      final expenseDate = _toPakistanTime(exp.date);
+      final createdAt = exp.createdAt != null
+          ? _toPakistanTime(exp.createdAt!)
+          : null;
 
       sheetObject.appendRow([
         TextCellValue(exp.id.toString()),
-        TextCellValue(DateFormat('yyyy-MM-dd').format(exp.date)),
-        TextCellValue(DateFormat('hh:mm a').format(exp.date)),
+        TextCellValue(DateFormat('yyyy-MM-dd').format(expenseDate)),
+        TextCellValue(DateFormat('hh:mm a').format(expenseDate)),
         TextCellValue(headName),
         TextCellValue(exp.amount.toString()),
         TextCellValue(exp.remarks),
-        TextCellValue(DateFormat('yyyy-MM-dd').format(exp.createdAt!)),
-        TextCellValue(DateFormat('hh:mm a').format(exp.createdAt!)),
+        TextCellValue(
+          createdAt != null ? DateFormat('yyyy-MM-dd').format(createdAt) : '',
+        ),
+        TextCellValue(
+          createdAt != null ? DateFormat('hh:mm a').format(createdAt) : '',
+        ),
       ]);
     }
 
@@ -246,6 +258,10 @@ class FullLedgerView extends ConsumerWidget {
                           final head = headsList
                               .where((h) => h.id == exp.expenseHeadId)
                               .firstOrNull;
+                          final expenseDate = _toPakistanTime(exp.date);
+                          final createdAt = exp.createdAt != null
+                              ? _toPakistanTime(exp.createdAt!)
+                              : null;
 
                           final title = head?.name ?? 'Unknown Category';
                           final headType = head?.headType.value ?? 'Unknown';
@@ -273,11 +289,11 @@ class FullLedgerView extends ConsumerWidget {
                                 NumberFormat.currency(
                                   symbol: 'PKR ',
                                 ).format(exp.amount),
-                                DateFormat.yMMMd().format(
-                                  exp.date,
-                                ), // Added time here for extra detail in full ledger!
+                                DateFormat.yMMMd().format(expenseDate),
                                 headType,
-                                DateFormat.yMMMd().format(exp.createdAt!),
+                                createdAt != null
+                                    ? DateFormat.yMMMd().format(createdAt)
+                                    : '',
                                 AppColors.iconBackground,
                                 Colors.teal,
                               ),

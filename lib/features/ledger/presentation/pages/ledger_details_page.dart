@@ -499,7 +499,15 @@ class _RemarksCell extends StatelessWidget {
 
   Future<void> _showDetails(BuildContext context) async {
     final source = entry.transactionSource;
-    final refId = int.tryParse(entry.referenceId ?? '');
+    final referenceId = entry.referenceId ?? '';
+    int? refId;
+
+    if (referenceId.startsWith('invoice:')) {
+      refId = int.tryParse(referenceId.substring('invoice:'.length));
+    } else {
+      refId = int.tryParse(referenceId);
+    }
+
     if (refId == null) return;
 
     try {
@@ -512,7 +520,12 @@ class _RemarksCell extends StatelessWidget {
       if (source == 'invoice') {
         final invoice = await ref.read(getInvoiceByIdProvider(refId).future);
         final products = await ref.read(getAllProductsProvider.future);
+        final sets = await ref.read(getAllProductSetsProvider.future);
         final productNames = {for (var p in products) p.id: p.name};
+        final setNames = {
+          for (final set in sets)
+            if (set.setId != null) set.setId!: set.name,
+        };
 
         if (!context.mounted) return;
         Navigator.pop(context); // close loader
@@ -527,6 +540,7 @@ class _RemarksCell extends StatelessWidget {
                 ? partyName
                 : 'Unknown Supplier',
             productNames: productNames,
+            setNames: setNames,
           ),
         );
       } else if (source == 'receipt') {

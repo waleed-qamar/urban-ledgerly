@@ -56,37 +56,43 @@ class OperatorDashboard extends ConsumerWidget {
 
             const SizedBox(height: 48),
 
-            // Summary Cards
-            // employeeAsyncValue.when(
-            //   data: (employees) {
-            //     return Row(
-            //       children: [
-            //         Expanded(
-            //           child: _buildSummaryCard(
-            //             title: 'TOTAL EMPLOYEES',
-            //             value: employees.length.toString(),
-            //             subtitle: '+0 this quarter',
-            //             icon: Icons.person,
-            //           ),
-            //         ),
-            //       ],
-            //     );
-            //   },
-            //   loading: () => const Center(child: CircularProgressIndicator()),
-            //   error: (err, _) => Center(child: Text('Error: $err')),
-            // ),
-
-            // const SizedBox(height: 48),
-
             // Employee List
             Expanded(
               child: employeeAsyncValue.when(
                 data: (employees) {
                   if (employees.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'No employees found.',
-                        style: TextStyle(color: AppColors.textGrey),
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'No employees found.',
+                            style: TextStyle(color: AppColors.textGrey),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.textWhite,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 18,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => const AddEmployeeDialog(),
+                              );
+                            },
+                            icon: const Icon(Icons.person_add_alt_1),
+                            label: const Text('New Employee'),
+                          ),
+                        ],
                       ),
                     );
                   }

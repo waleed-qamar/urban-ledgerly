@@ -4,9 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:ledgerly/features/invoices/utils/pdf_generator.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/inventory/presentation/providers/inventory_providers.dart';
+import '../../../ledger/domain/entities/ledger_entity.dart';
+import '../../../ledger/presentation/providers/ledger_providers.dart';
 import '../../../client/domain/entities/client_entity.dart';
 import '../../../client/presentation/providers/client_providers.dart';
 import '../../../products/presentation/providers/product_providers.dart';
+import '../../../products/domain/entities/product_set_entity.dart';
 import '../../../orders/presentation/providers/supplier_providers.dart';
 import '../../domain/entities/invoice_entity.dart';
 import '../providers/invoice_providers.dart';
@@ -96,6 +99,7 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
     final clientsAsync = ref.watch(getAllClientsProvider);
     final suppliersAsync = ref.watch(getAllSuppliersProvider);
     final productsAsync = ref.watch(getAllProductsProvider);
+    final setsAsync = ref.watch(getAllProductSetsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -152,6 +156,12 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
                         final invoice = sorted[index];
                         final client = clientById[invoice.clientId];
                         final supplier = supplierById[invoice.supplierId];
+                        final setNames = <int, String>{
+                          for (final set
+                              in setsAsync.asData?.value ??
+                                  const <ProductSetEntity>[])
+                            if (set.setId != null) set.setId!: set.name,
+                        };
 
                         return _InvoiceCard(
                           invoice: invoice,
@@ -161,6 +171,12 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
                               PdfGenerator.generateAndPrintInvoice(
                                 invoice: invoice,
                                 products: productById,
+                                sets: {
+                                  for (final set
+                                      in setsAsync.asData?.value ??
+                                          const <ProductSetEntity>[])
+                                    if (set.setId != null) set.setId!: set,
+                                },
                                 client: client,
                                 supplier: supplier,
                               );
@@ -189,6 +205,7 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
                                 productNames: {
                                   for (var p in products) p.id: p.name,
                                 },
+                                setNames: setNames,
                               ),
                             );
                           },
@@ -258,14 +275,72 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
       // If marking as dispatched, create stock OUT transactions
       if (newStatus == 'dispatched' && invoice.id != null) {
         final inventoryRepository = ref.read(inventoryRepositoryProvider);
+        // Load product sets once to expand set-lines into individual products.
+        final productRepository = ref.read(productRepositoryProvider);
+        final sets = await productRepository.getProductSets();
+        final setById = {for (var s in sets) s.setId: s};
+
         for (final item in invoice.items) {
-          await inventoryRepository.recordOut(
-            item.productId,
-            'PRODUCT',
-            item.quantity.toDouble(),
-            notes: 'Invoice ${invoice.invoiceNumber} dispatched',
-            referenceType: 'INVOICE',
-            referenceId: invoice.id,
+          if (item.isSet) {
+            final set = setById[item.setId];
+            if (set == null) continue;
+            for (final setItem in set.products) {
+              await inventoryRepository.recordOut(
+                setItem.productId,
+                'PRODUCT',
+                item.quantity.toDouble(),
+                notes:
+                    'Invoice ${invoice.invoiceNumber} dispatched (set ${set.name})',
+                referenceType: 'INVOICE',
+                referenceId: invoice.id,
+              );
+            }
+          } else {
+            await inventoryRepository.recordOut(
+              item.productId!,
+              'PRODUCT',
+              item.quantity.toDouble(),
+              notes: 'Invoice ${invoice.invoiceNumber} dispatched',
+              referenceType: 'INVOICE',
+              referenceId: invoice.id,
+            );
+          }
+        }
+
+        // Book the client receivable when the invoice is actually dispatched.
+        // This keeps the ledger aligned with the invoice lifecycle and avoids
+        // charging the customer before dispatch.
+        final existingClientLedgerEntries = await ref.read(
+          getEntriesByPartyProvider(
+            partyType: PartyType.client,
+            partyId: invoice.clientId,
+          ).future,
+        );
+
+        final alreadyBooked = existingClientLedgerEntries.any((entry) {
+          return entry.transactionSource == 'invoice' &&
+              entry.referenceId == 'invoice:${invoice.id}';
+        });
+
+        if (!alreadyBooked) {
+          await ref.read(
+            addEntryProvider(
+              LedgerEntity(
+                id: 0,
+                partyType: PartyType.client,
+                partyId: invoice.clientId,
+                invoiceNumber: invoice.invoiceNumber,
+                entryType: EntryType.debit,
+                amount: invoice.grandTotal,
+                paymentMethod: null,
+                entryDate: DateTime.now(),
+                transactionSource: 'invoice',
+                referenceId: 'invoice:${invoice.id}',
+                remarks:
+                    'auto entry against dispatched invoice ${invoice.invoiceNumber}',
+                createdAt: DateTime.now(),
+              ),
+            ).future,
           );
         }
       }
@@ -571,125 +646,3 @@ class _InvoiceCard extends StatelessWidget {
     );
   }
 }
-
-// class _InfoChip extends StatelessWidget {
-//   final String label;
-//   final String value;
-//   final IconData icon;
-
-//   const _InfoChip({
-//     required this.label,
-//     required this.value,
-//     required this.icon,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-//       decoration: BoxDecoration(
-//         color: Colors.grey.shade50,
-//         borderRadius: BorderRadius.circular(10),
-//         border: Border.all(color: AppColors.dividerColor.withValues(alpha: 0.5)),
-//       ),
-//       child: Row(
-//         mainAxisSize: MainAxisSize.min,
-//         children: [
-//           Icon(icon, size: 16, color: AppColors.textGrey),
-//           const SizedBox(width: 6),
-//           Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               Text(
-//                 label,
-//                 style: TextStyle(
-//                   fontSize: 11,
-//                   color: Colors.grey.shade500,
-//                   fontWeight: FontWeight.w500,
-//                 ),
-//               ),
-//               Text(
-//                 value,
-//                 style: const TextStyle(
-//                   fontSize: 13,
-//                   fontWeight: FontWeight.w700,
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// class _TableHeader extends StatelessWidget {
-//   final String label;
-//   const _TableHeader(this.label);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-//       child: Text(
-//         label,
-//         style: const TextStyle(
-//           fontWeight: FontWeight.w700,
-//           color: AppColors.textBlack87,
-//           fontSize: 12,
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class _TableCell extends StatelessWidget {
-//   final String value;
-//   const _TableCell(this.value);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-//       child: Text(
-//         value,
-//         style: const TextStyle(fontSize: 13),
-//         overflow: TextOverflow.ellipsis,
-//       ),
-//     );
-//   }
-// }
-
-// class _TotalRow extends StatelessWidget {
-//   final String label;
-//   final String value;
-//   final bool bold;
-
-//   const _TotalRow(this.label, this.value, {this.bold = false});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Row(
-//       children: [
-//         Expanded(
-//           child: Text(
-//             label,
-//             style: TextStyle(
-//               fontWeight: bold ? FontWeight.bold : FontWeight.w500,
-//               fontSize: bold ? 14 : 13,
-//               color: bold ? AppColors.textBlack : AppColors.textGrey,
-//             ),
-//           ),
-//         ),
-//         Text(
-//           value,
-//           style: TextStyle(
-//             fontWeight: bold ? FontWeight.bold : FontWeight.w600,
-//             fontSize: bold ? 14 : 13,
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }

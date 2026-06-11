@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
+import 'package:ledgerly/features/products/presentation/pages/add_productset_dialog.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_detail_page.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
 import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
@@ -14,6 +15,7 @@ class ProductDashboard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productsAsyncValue = ref.watch(getAllProductsProvider);
+    final setAsyncValue = ref.watch(getAllProductSetsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -57,6 +59,28 @@ class ProductDashboard extends ConsumerWidget {
                       icon: const Icon(Icons.add),
                       label: const Text('Add Product'),
                     ),
+                    const SizedBox(width: 16),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.textWhite,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 18,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const AddProductsetDialog(),
+                        );
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add Set'),
+                    ),
                   ],
                 ),
               ],
@@ -88,17 +112,6 @@ class ProductDashboard extends ConsumerWidget {
                         icon: Icons.shopping_cart,
                       ),
                     ),
-                    // const SizedBox(width: 24),
-                    // Expanded(
-                    //   child: _buildSummaryCard(
-                    //     title: 'Total Weight',
-                    //     value: products
-                    //         .fold<double>(0, (sum, prod) => sum + (prod.weight))
-                    //         .toStringAsFixed(2),
-                    //     subtitleLabel: 'KG',
-                    //     icon: Icons.scale,
-                    //   ),
-                    // ),
                   ],
                 );
               },
@@ -134,67 +147,140 @@ class ProductDashboard extends ConsumerWidget {
 
             // Products List
             Expanded(
-              child: productsAsyncValue.when(
-                data: (products) {
-                  if (products.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'No products found.',
-                        style: TextStyle(color: AppColors.textGrey),
-                      ),
-                    );
-                  }
-                  return ListView.separated(
-                    itemCount: products.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      final prod = products[index];
-                      return _ProductListItem(
-                        product: prod,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ProductDetailPage(product: prod),
+              child: DefaultTabController(
+                length: 2,
+                child: Column(
+                  children: [
+                    const TabBar(
+                      tabs: [
+                        Tab(text: 'Products'),
+                        Tab(text: 'Sets'),
+                      ],
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          // Products Page
+                          productsAsyncValue.when(
+                            data: (products) {
+                              if (products.isEmpty) {
+                                return const Center(
+                                  child: Text(
+                                    'No products found.',
+                                    style: TextStyle(color: AppColors.textGrey),
+                                  ),
+                                );
+                              }
+
+                              return ListView.separated(
+                                itemCount: products.length,
+                                separatorBuilder: (_, _) =>
+                                    const SizedBox(height: 16),
+                                itemBuilder: (context, index) {
+                                  final prod = products[index];
+
+                                  return _ProductListItem(
+                                    product: prod,
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              ProductDetailPage(product: prod),
+                                        ),
+                                      );
+                                    },
+                                    onAddStock: () {
+                                      _recordTransaction(
+                                        context,
+                                        ref,
+                                        prod.id,
+                                        transactionType: 'IN',
+                                      );
+                                    },
+                                    onRemoveStock: () {
+                                      _recordTransaction(
+                                        context,
+                                        ref,
+                                        prod.id,
+                                        transactionType: 'OUT',
+                                      );
+                                    },
+                                    onEdit: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (_) => AddProductDialog(
+                                          productToEdit: prod,
+                                        ),
+                                      );
+                                    },
+                                    onDelete: () {
+                                      _showDeleteConfirmation(
+                                        context,
+                                        ref,
+                                        prod,
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
                             ),
-                          );
-                        },
-                        onAddStock: () {
-                          _recordTransaction(
-                            context,
-                            ref,
-                            prod.id,
-                            transactionType: 'IN',
-                          );
-                        },
-                        onRemoveStock: () {
-                          _recordTransaction(
-                            context,
-                            ref,
-                            prod.id,
-                            transactionType: 'OUT',
-                          );
-                        },
-                        onEdit: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) =>
-                                AddProductDialog(productToEdit: prod),
-                          );
-                        },
-                        onDelete: () {
-                          _showDeleteConfirmation(context, ref, prod);
-                        },
-                      );
-                    },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) => Center(
-                  child: Text(
-                    'Error loading products: $err',
-                    style: TextStyle(color: AppColors.errorText),
-                  ),
+                            error: (err, _) => Center(
+                              child: Text(
+                                'Error loading products: $err',
+                                style: const TextStyle(
+                                  color: AppColors.errorText,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // Sets Page
+                          setAsyncValue.when(
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            error: (err, _) => Center(
+                              child: Text(
+                                'Error loading products: $err',
+                                style: const TextStyle(
+                                  color: AppColors.errorText,
+                                ),
+                              ),
+                            ),
+                            data: (sets) {
+                              if (sets.isEmpty) {
+                                return const Center(
+                                  child: Text(
+                                    'No product sets found.',
+                                    style: TextStyle(color: AppColors.textGrey),
+                                  ),
+                                );
+                              }
+
+                              return ListView.separated(
+                                itemCount: sets.length,
+                                separatorBuilder: (_, _) =>
+                                    const SizedBox(height: 16),
+                                itemBuilder: (context, index) {
+                                  final set = sets[index];
+
+                                  return ListTile(
+                                    title: Text(set.name),
+                                    subtitle: Text(
+                                      '${set.products.length} products',
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -504,7 +590,7 @@ class _ProductListItem extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    error: (_, __) => const Text(
+                    error: (_, _) => const Text(
                       '-',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gif/gif.dart';
 
 class Dashboard extends StatelessWidget {
   const Dashboard({super.key});
@@ -26,10 +27,11 @@ class Dashboard extends StatelessWidget {
                       child: Card(
                         elevation: 5,
                         clipBehavior: Clip.antiAlias,
-                        child: Image.asset(
-                          'assets/logos/logo1.jpeg',
-                          fit: BoxFit.fitWidth,
+                        child: Gif(
+                          image: const AssetImage('assets/logos/urban.gif'),
+                          autostart: Autostart.once,
                           width: double.infinity,
+                          height: double.infinity,
                         ),
                       ),
                     ),

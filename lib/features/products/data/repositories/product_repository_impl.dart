@@ -1,4 +1,5 @@
 import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
+import 'package:ledgerly/features/products/domain/entities/product_set_entity.dart';
 import 'package:ledgerly/features/products/domain/repositories/product_repository.dart';
 
 import '../datasource/product_remote_datasource.dart';
@@ -21,4 +22,12 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<void> updateProduct(ProductEntity product) =>
       _dataSource.updateProduct(product);
+
+  @override
+  Future<void> addProductSet(ProductSetEntity productSet) =>
+      _dataSource.addProductSet(productSet);
+
+  @override
+  Future<List<ProductSetEntity>> getProductSets() =>
+      _dataSource.getProductSets();
 }

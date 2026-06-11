@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/sidebar.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'features/auth/presentation/pages/login_view.dart';
@@ -20,7 +21,10 @@ void main() async {
 
   runApp(
     // ProviderScope is absolutely required at the root for Riverpod to work
-    const ProviderScope(child: LedgerlyApp()),
+    ResponsiveSizer(
+      builder: (context, orientation, screenType) =>
+          const ProviderScope(child: LedgerlyApp()),
+    ),
   );
 }
 

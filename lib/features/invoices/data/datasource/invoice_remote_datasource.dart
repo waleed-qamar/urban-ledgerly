@@ -6,11 +6,26 @@ class InvoiceRemoteDatasource {
 
   static const String _invoiceSelect =
       'id, order_id, client_id, supplier_id, invoice_number, status, po, issue_date, sub_total, shipping_cost, tax_percent, tax_amount, grand_total, representative, created_at, '
-      'items:invoice_items(id, invoice_id, order_item_id, product_id, quantity, unit_price, total_price)';
+      'items:invoice_items(id, invoice_id, order_item_id, product_id, set_id, is_set, quantity, unit_price, total_price)';
 
   InvoiceRemoteDatasource(this._client);
 
   Future<void> createInvoice(InvoiceEntity invoice) async {
+    // Defensive check: if an invoice with the same invoice_number already
+    // exists we treat this call as idempotent and return early. This avoids
+    // duplicate invoice creation when the client retries after a partial
+    // failure (for example when a subsequent ledger insert fails).
+    final existing = await _client
+        .from('invoices')
+        .select('id')
+        .eq('invoice_number', invoice.invoiceNumber)
+        .maybeSingle();
+
+    if (existing != null && existing['id'] != null) {
+      // Invoice already exists; nothing to do.
+      return;
+    }
+
     // Insert invoice
     final invoiceRes = await _client
         .from('invoices')
@@ -42,6 +57,8 @@ class InvoiceRemoteDatasource {
               'invoice_id': invoiceId,
               'order_item_id': item.orderItemId,
               'product_id': item.productId,
+              'set_id': item.setId,
+              'is_set': item.isSet,
               'quantity': item.quantity,
               'unit_price': item.unitPrice,
               'total_price': item.totalPrice,
@@ -68,20 +85,6 @@ class InvoiceRemoteDatasource {
             .eq('id', item.orderItemId);
       }
     }
-
-    // Insert Debit ledger entry as requested by user
-    await _client.from('ledger').insert({
-      'party_type': 'client',
-      'party_id': invoice.clientId,
-      'invoice_number': invoice.invoiceNumber,
-      'entry_type': 'debit',
-      'amount': invoice.grandTotal,
-      'entry_date': invoice.issueDate.toIso8601String(),
-      'transaction_source': 'invoice',
-      'reference_id': invoiceId.toString(),
-      'remarks': 'auto entry against invoice ${invoice.invoiceNumber}',
-      'created_at': DateTime.now().toIso8601String(),
-    });
   }
 
   Future<void> updateInvoiceStatus(int id, String status) async {
@@ -92,9 +95,7 @@ class InvoiceRemoteDatasource {
   /// Reads all invoice_number values, parses the numeric suffix of INV-N,
   /// and returns the next available number.
   Future<String> getNextInvoiceNumber() async {
-    final rows = await _client
-        .from('invoices')
-        .select('invoice_number');
+    final rows = await _client.from('invoices').select('invoice_number');
 
     int maxNum = 0;
     for (final row in (rows as List)) {
@@ -195,6 +196,9 @@ class InvoiceRemoteDatasource {
         (normalized['unitPrice'] ?? normalized['unit_price'] ?? 0).toDouble();
     normalized['totalPrice'] =
         (normalized['totalPrice'] ?? normalized['total_price'] ?? 0).toDouble();
+    normalized['setId'] = normalized['setId'] ?? normalized['set_id'];
+    normalized['isSet'] =
+        (normalized['isSet'] ?? normalized['is_set'] ?? false) as bool;
 
     return normalized;
   }

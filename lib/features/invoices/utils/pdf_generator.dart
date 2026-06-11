@@ -4,6 +4,7 @@ import 'package:file_saver/file_saver.dart';
 import 'dart:typed_data';
 import '../../client/domain/entities/client_entity.dart';
 import '../../products/domain/entities/product_entity.dart';
+import '../../products/domain/entities/product_set_entity.dart';
 import '../../orders/domain/entities/supplier_entity.dart';
 import '../domain/entities/invoice_entity.dart';
 
@@ -11,6 +12,7 @@ class PdfGenerator {
   static Future<void> generateAndPrintInvoice({
     required InvoiceEntity invoice,
     required Map<int, ProductEntity> products,
+    required Map<int, ProductSetEntity> sets,
     required ClientEntity client,
     required SupplierEntity supplier,
   }) async {
@@ -134,9 +136,10 @@ class PdfGenerator {
                     ],
                   ),
                   ...invoice.items.map((item) {
-                    final pName =
-                        products[item.productId]?.name ??
-                        'Item #${item.productId}';
+                    final pName = item.isSet
+                        ? (sets[item.setId]?.name ?? 'Set #${item.setId}')
+                        : (products[item.productId]?.name ??
+                              'Product #${item.productId}');
                     return pw.TableRow(
                       children: [
                         pw.Padding(

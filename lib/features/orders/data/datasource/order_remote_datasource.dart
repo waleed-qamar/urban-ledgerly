@@ -6,7 +6,7 @@ class OrderRemoteDatasource {
   final SupabaseClient _client;
   static const String _orderSelect =
       'id, supplierId:supplier_id, clientId:client_id, status, department, po, createdAt:created_at, delivery_term, '
-      'items:order_items(id, productId:product_id, quantity, price, invoicedQuantity:invoiced_quantity)';
+      'items:order_items(id, productId:product_id, setId:set_id, isSet:is_set, quantity, price, invoicedQuantity:invoiced_quantity)';
 
   OrderRemoteDatasource(this._client);
 
@@ -33,6 +33,8 @@ class OrderRemoteDatasource {
       return {
         'order_id': orderId,
         'product_id': e.productId,
+        'set_id': e.setId,
+        'is_set': e.isSet,
         'quantity': e.quantity,
         'price': e.price,
         'invoiced_quantity': 0,
@@ -47,19 +49,37 @@ class OrderRemoteDatasource {
       (sum, item) => sum + (item.quantity * item.price),
     );
 
-    await _client.from('ledger').insert({
-      'party_type': 'vendor',
-      'party_id': order.supplierId,
-      'entry_type': 'credit',
-      'amount': totalAmount,
-      'entry_date':
-          order.createdAt?.toIso8601String() ??
-          DateTime.now().toIso8601String(),
-      'transaction_source': 'order',
-      'reference_id': orderId.toString(),
-      'remarks': 'Auto recorded credit on procurement generation',
-      'created_at': DateTime.now().toIso8601String(),
-    });
+    // Try to add a ledger entry for this order. In some deployments a DB
+    // trigger may already insert the same ledger row (unique constraint on
+    // reference_id for order entries). Swallow duplicate-key errors so the
+    // overall order creation still succeeds when the DB already recorded the
+    // ledger entry.
+    try {
+      await _client.from('ledger').insert({
+        'party_type': 'vendor',
+        'party_id': order.supplierId,
+        'entry_type': 'credit',
+        'amount': totalAmount,
+        'entry_date':
+            order.createdAt?.toIso8601String() ??
+            DateTime.now().toIso8601String(),
+        'transaction_source': 'order',
+        'reference_id': orderId.toString(),
+        'remarks': 'Auto recorded credit on procurement generation',
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      final err = e.toString();
+      // Postgres duplicate key error code is 23505; message contains
+      // 'duplicate key value violates unique constraint'. If we detect that
+      // it's a duplicate-key error for the ledger unique constraint, ignore
+      // it. Otherwise rethrow so callers see real failures.
+      if (err.contains('duplicate key') || err.contains('23505')) {
+        // ignore duplicate ledger entry
+      } else {
+        rethrow;
+      }
+    }
 
     // (Phase 2)
     // 4. Insert inventory RESERVE transactions
@@ -98,6 +118,8 @@ class OrderRemoteDatasource {
             (item) => {
               'order_id': orderData.id,
               'product_id': item.productId,
+              'set_id': item.setId,
+              'is_set': item.isSet,
               'quantity': item.quantity,
               'price': item.price,
               'invoiced_quantity': item.invoicedQuantity ?? 0,
@@ -121,7 +143,12 @@ class OrderRemoteDatasource {
       final existing = existingItems[index];
       final updated = updatedItems[index];
 
-      if (existing.productId != updated.productId) return false;
+      if (existing.isSet != updated.isSet) return false;
+      if (existing.isSet) {
+        if (existing.setId != updated.setId) return false;
+      } else {
+        if (existing.productId != updated.productId) return false;
+      }
       if (existing.quantity != updated.quantity) return false;
       if (existing.price != updated.price) return false;
       // Ignore invoicedQuantity differences because invoiced counts are

@@ -8,6 +8,7 @@ class InvoiceViewDialog extends StatelessWidget {
   final String clientName;
   final String supplierName;
   final Map<int, String> productNames;
+  final Map<int, String> setNames;
 
   const InvoiceViewDialog({
     super.key,
@@ -15,6 +16,7 @@ class InvoiceViewDialog extends StatelessWidget {
     required this.clientName,
     required this.supplierName,
     this.productNames = const {},
+    this.setNames = const {},
   });
 
   static String _fmt(double v) =>
@@ -46,9 +48,7 @@ class InvoiceViewDialog extends StatelessWidget {
                       children: [
                         Text(
                           invoice.invoiceNumber,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
+                          style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 4),
@@ -167,7 +167,13 @@ class InvoiceViewDialog extends StatelessWidget {
                       ...invoice.items.map(
                         (item) => TableRow(
                           children: [
-                            _TableCell(productNames[item.productId] ?? 'Product #${item.productId}'),
+                            _TableCell(
+                              item.isSet
+                                  ? (setNames[item.setId] ??
+                                        'Set #${item.setId}')
+                                  : (productNames[item.productId] ??
+                                        'Product #${item.productId}'),
+                            ),
                             _TableCell(item.quantity.toStringAsFixed(0)),
                             _TableCell('PKR ${_fmt(item.unitPrice)}'),
                             _TableCell('PKR ${_fmt(item.totalPrice)}'),
@@ -240,7 +246,9 @@ class _InfoChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.dividerColor.withValues(alpha: 0.5)),
+        border: Border.all(
+          color: AppColors.dividerColor.withValues(alpha: 0.5),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -295,8 +303,7 @@ class _TableHeader extends StatelessWidget {
 
 class _TableCell extends StatelessWidget {
   final String value;
-  final bool bold;
-  const _TableCell(this.value, {this.bold = false});
+  const _TableCell(this.value);
 
   @override
   Widget build(BuildContext context) {
@@ -305,7 +312,7 @@ class _TableCell extends StatelessWidget {
       child: Text(
         value,
         style: TextStyle(
-          fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+          fontWeight: FontWeight.w500,
           color: AppColors.textBlack,
         ),
       ),

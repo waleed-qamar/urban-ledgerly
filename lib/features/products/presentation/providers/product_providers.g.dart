@@ -145,6 +145,47 @@ final class GetAllProductsProvider
 
 String _$getAllProductsHash() => r'0859175af7b0aae5d8fb58247f5238cc9c4e20bb';
 
+@ProviderFor(getAllProductSets)
+const getAllProductSetsProvider = GetAllProductSetsProvider._();
+
+final class GetAllProductSetsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<ProductSetEntity>>,
+          List<ProductSetEntity>,
+          FutureOr<List<ProductSetEntity>>
+        >
+    with
+        $FutureModifier<List<ProductSetEntity>>,
+        $FutureProvider<List<ProductSetEntity>> {
+  const GetAllProductSetsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'getAllProductSetsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$getAllProductSetsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ProductSetEntity>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ProductSetEntity>> create(Ref ref) {
+    return getAllProductSets(ref);
+  }
+}
+
+String _$getAllProductSetsHash() => r'6fecbabd6d52102dfa015ca98ac5511e31a6fe6b';
+
 @ProviderFor(addProduct)
 const addProductProvider = AddProductFamily._();
 
@@ -212,6 +253,75 @@ final class AddProductFamily extends $Family
 
   @override
   String toString() => r'addProductProvider';
+}
+
+@ProviderFor(addProductSet)
+const addProductSetProvider = AddProductSetFamily._();
+
+final class AddProductSetProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const AddProductSetProvider._({
+    required AddProductSetFamily super.from,
+    required ProductSetEntity super.argument,
+  }) : super(
+         retry: null,
+         name: r'addProductSetProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$addProductSetHash();
+
+  @override
+  String toString() {
+    return r'addProductSetProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as ProductSetEntity;
+    return addProductSet(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AddProductSetProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$addProductSetHash() => r'a044ccac5471f22d1e3eccce0e8e90689e65c457';
+
+final class AddProductSetFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, ProductSetEntity> {
+  const AddProductSetFamily._()
+    : super(
+        retry: null,
+        name: r'addProductSetProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  AddProductSetProvider call(ProductSetEntity productSet) =>
+      AddProductSetProvider._(argument: productSet, from: this);
+
+  @override
+  String toString() => r'addProductSetProvider';
 }
 
 @ProviderFor(deleteProduct)

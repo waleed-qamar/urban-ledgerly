@@ -7,7 +7,9 @@ part 'order_item_entity.g.dart';
 abstract class OrderItemEntity with _$OrderItemEntity {
   const factory OrderItemEntity({
     int? id,
-    required int productId,
+    int? productId,
+    int? setId,
+    @Default(false) bool isSet,
     required int quantity,
     required double price,
     int? invoicedQuantity,

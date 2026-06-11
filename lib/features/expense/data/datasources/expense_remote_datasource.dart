@@ -58,35 +58,6 @@ class ExpenseRemoteDatasource {
     );
   }
 
-  // Future<List<Expense>> fectchExpenses() async {
-  //   const int pageSize = 1000;
-  //   int from = 0;
-  //   List<dynamic> allRows = [];
-
-  //   while (true) {
-  //     final response = await _client
-  //         .from('expenses')
-  //         .select()
-  //         .range(from, from + pageSize - 1);
-
-  //     final rows = response as List;
-  //     allRows.addAll(rows);
-
-  //     if (rows.length < pageSize) break; // No more rows to fetch
-  //     from += pageSize;
-  //   }
-
-  //   return allRows.map<Expense>((r) {
-  //     final m = Map<String, dynamic>.from(r as Map);
-  //     if (m['amount'] == null) m['amount'] = 0;
-  //     if (m['id'] == null) m['id'] = 0;
-  //     if (m['expenseHeadId'] == null && m['expense_head_id'] != null) {
-  //       m['expenseHeadId'] = m['expense_head_id'];
-  //     }
-  //     return Expense.fromJson(m);
-  //   }).toList();
-  // }
-
   Future<List<Expense>> fectchExpensesByHead(int headId) async {
     return _fetchPagedExpenses(
       (from, to) async =>

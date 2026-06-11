@@ -8,6 +8,7 @@ import 'package:ledgerly/features/orders/domain/entities/order_item_entity.dart'
 import 'package:ledgerly/features/orders/domain/entities/supplier_entity.dart';
 import 'package:ledgerly/features/orders/presentation/providers/order_providers.dart';
 import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
+import 'package:ledgerly/features/products/domain/entities/product_set_entity.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
 
 // Available order statuses
@@ -78,6 +79,7 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
   Widget build(BuildContext context) {
     final fallbackClientAsync = ref.watch(getAllClientsProvider);
     final productsAsync = ref.watch(getAllProductsProvider);
+    final setsAsync = ref.watch(getAllProductSetsProvider);
 
     final resolvedClient =
         widget.client ??
@@ -132,7 +134,11 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
                     onStatusChanged: _onStatusChanged,
                   ),
                   const SizedBox(height: 14),
-                  _OrderItemsCard(order: _order, productsAsync: productsAsync),
+                  _OrderItemsCard(
+                    order: _order,
+                    productsAsync: productsAsync,
+                    setsAsync: setsAsync,
+                  ),
                   const SizedBox(height: 14),
                   _ClientCard(client: resolvedClient),
                   const SizedBox(height: 14),
@@ -161,6 +167,7 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
                         child: _OrderItemsCard(
                           order: _order,
                           productsAsync: productsAsync,
+                          setsAsync: setsAsync,
                         ),
                       ),
                     ],
@@ -218,6 +225,8 @@ class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
         .map(
           (item) => _EditableOrderLine(
             productId: item.productId,
+            setId: item.setId,
+            isSet: item.isSet,
             quantity: item.quantity,
             unitPrice: item.price,
           ),
@@ -243,10 +252,18 @@ class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
 
     final items = <OrderItemEntity>[];
     for (final line in _lines) {
-      if (line.productId == null) {
-        _showError('Each row must have a selected product.');
-        return;
+      if (line.isSet) {
+        if (line.setId == null) {
+          _showError('Each row must have a selected set.');
+          return;
+        }
+      } else {
+        if (line.productId == null) {
+          _showError('Each row must have a selected product.');
+          return;
+        }
       }
+
       if (line.quantity <= 0) {
         _showError('Quantity should be at least 1 in every row.');
         return;
@@ -258,7 +275,9 @@ class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
 
       items.add(
         OrderItemEntity(
-          productId: line.productId!,
+          productId: line.productId,
+          setId: line.setId,
+          isSet: line.isSet,
           quantity: line.quantity,
           price: line.unitPrice,
         ),
@@ -308,6 +327,7 @@ class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
   @override
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(getAllProductsProvider);
+    final setsAsync = ref.watch(getAllProductSetsProvider);
 
     return Dialog(
       backgroundColor: AppColors.textWhite,
@@ -457,6 +477,7 @@ class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
                           return _EditableOrderLineRow(
                             line: line,
                             products: products,
+                            setsAsync: setsAsync,
                             enabled: !_isSaving,
                             onChanged: () => setState(() {}),
                             onDelete: _lines.length == 1
@@ -526,11 +547,15 @@ class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
 class _EditableOrderLine {
   _EditableOrderLine({
     this.productId,
+    this.setId,
+    this.isSet = false,
     required this.quantity,
     required this.unitPrice,
   });
 
   int? productId;
+  int? setId;
+  bool isSet;
   int quantity;
   double unitPrice;
 }
@@ -539,6 +564,7 @@ class _EditableOrderLineRow extends StatelessWidget {
   const _EditableOrderLineRow({
     required this.line,
     required this.products,
+    required this.setsAsync,
     required this.enabled,
     required this.onChanged,
     required this.onDelete,
@@ -546,6 +572,7 @@ class _EditableOrderLineRow extends StatelessWidget {
 
   final _EditableOrderLine line;
   final List<ProductEntity> products;
+  final AsyncValue<List<ProductSetEntity>> setsAsync;
   final bool enabled;
   final VoidCallback onChanged;
   final VoidCallback? onDelete;
@@ -562,28 +589,90 @@ class _EditableOrderLineRow extends StatelessWidget {
         children: [
           Expanded(
             flex: 4,
-            child: DropdownButtonFormField<int>(
-              initialValue: line.productId,
-              isExpanded: true,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Product',
-              ),
-              items: products
-                  .map(
-                    (p) => DropdownMenuItem<int>(
-                      value: p.id,
-                      child: Text(p.name, overflow: TextOverflow.ellipsis),
-                    ),
-                  )
-                  .toList(),
-              validator: (value) => value == null ? 'Select product' : null,
-              onChanged: enabled
-                  ? (value) {
-                      line.productId = value;
-                      onChanged();
-                    }
-                  : null,
+            child: Column(
+              children: [
+                DropdownButtonFormField<String>(
+                  value: line.isSet ? 'set' : 'product',
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Type',
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'product', child: Text('Product')),
+                    DropdownMenuItem(value: 'set', child: Text('Set')),
+                  ],
+                  onChanged: enabled
+                      ? (val) {
+                          if (val == null) return;
+                          line.isSet = val == 'set';
+                          line.productId = null;
+                          line.setId = null;
+                          onChanged();
+                        }
+                      : null,
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<int>(
+                  value: line.isSet ? line.setId : line.productId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Product / Set',
+                  ),
+                  items: line.isSet
+                      ? setsAsync.when(
+                          data: (sets) => sets
+                              .map(
+                                (s) => DropdownMenuItem<int>(
+                                  value: s.setId,
+                                  child: Text(
+                                    s.name,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          loading: () => [
+                            const DropdownMenuItem<int>(
+                              value: -1,
+                              child: Text('Loading'),
+                            ),
+                          ],
+                          error: (_, __) => [
+                            const DropdownMenuItem<int>(
+                              value: -1,
+                              child: Text('Error'),
+                            ),
+                          ],
+                        )
+                      : products
+                            .map(
+                              (p) => DropdownMenuItem<int>(
+                                value: p.id,
+                                child: Text(
+                                  p.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                  validator: (value) =>
+                      value == null || value == -1 ? 'Select item' : null,
+                  onChanged: enabled
+                      ? (value) {
+                          if (value == null) return;
+                          if (line.isSet) {
+                            line.setId = value;
+                            line.productId = null;
+                          } else {
+                            line.productId = value;
+                            line.setId = null;
+                          }
+                          onChanged();
+                        }
+                      : null,
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 10),
@@ -682,10 +771,15 @@ class _OrderHeader extends StatelessWidget {
 }
 
 class _OrderItemsCard extends StatelessWidget {
-  const _OrderItemsCard({required this.order, required this.productsAsync});
+  const _OrderItemsCard({
+    required this.order,
+    required this.productsAsync,
+    required this.setsAsync,
+  });
 
   final OrderEntity order;
   final AsyncValue<List<ProductEntity>> productsAsync;
+  final AsyncValue<List<ProductSetEntity>> setsAsync;
 
   @override
   Widget build(BuildContext context) {
@@ -693,6 +787,11 @@ class _OrderItemsCard extends StatelessWidget {
     final products = productsAsync.asData?.value ?? const <ProductEntity>[];
     for (final p in products) {
       productNameById[p.id] = p.name;
+    }
+    final setNameById = <int, String>{};
+    final sets = setsAsync.asData?.value ?? const <ProductSetEntity>[];
+    for (final s in sets) {
+      if (s.setId != null) setNameById[s.setId!] = s.name;
     }
 
     return Card(
@@ -733,9 +832,10 @@ class _OrderItemsCard extends StatelessWidget {
                 ),
                 itemBuilder: (context, index) {
                   final item = order.items[index];
-                  final productLabel =
-                      productNameById[item.productId] ??
-                      'Product #${item.productId}';
+                  final productLabel = item.isSet
+                      ? (setNameById[item.setId] ?? 'Set #${item.setId}')
+                      : (productNameById[item.productId] ??
+                            'Product #${item.productId}');
                   final lineTotal = item.price * item.quantity;
 
                   return Padding(

@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../client/presentation/providers/client_providers.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 import '../../../products/presentation/providers/product_providers.dart';
+import '../../../products/domain/entities/product_set_entity.dart';
 import '../providers/invoice_providers.dart';
 import '../../../orders/presentation/providers/supplier_providers.dart';
 import '../../../orders/presentation/providers/order_providers.dart';
@@ -43,6 +44,8 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
       return _InvoiceLine(
         orderItemId: item.id ?? 0,
         productId: item.productId,
+        setId: item.setId,
+        isSet: item.isSet,
         quantity: effectiveRemaining, // Suggest remaining quantity by default
         remainingQty: effectiveRemaining,
         unitPrice: item.price,
@@ -104,11 +107,16 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                 ),
                 data: (nextInvoiceNo) {
                   final productById = {for (var p in products) p.id: p};
+                  final sets =
+                      ref.watch(getAllProductSetsProvider).asData?.value ??
+                      const <ProductSetEntity>[];
+                  final setById = {for (var s in sets) s.setId: s};
                   return _buildContent(
                     context,
                     nextInvoiceNo,
                     productById,
                     widget.order,
+                    setById,
                   );
                 },
               );
@@ -124,6 +132,7 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
     String invoiceNo,
     Map<int, dynamic> productById,
     OrderEntity order,
+    Map<int?, ProductSetEntity> setById,
   ) {
     // Resolve client & supplier for display
     final clients =
@@ -214,13 +223,18 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
               separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final line = _lines[index];
-                final product = productById[line.productId];
+                final product = line.isSet ? null : productById[line.productId];
 
                 return Row(
                   children: [
                     Expanded(
                       flex: 3,
-                      child: Text(product?.name ?? 'Unknown Product'),
+                      child: Text(
+                        line.isSet
+                            ? (setById[line.setId]?.name ??
+                                  'Set #${line.setId}')
+                            : (product?.name ?? 'Unknown Product'),
+                      ),
                     ),
                     Expanded(child: Text('Remain: ${line.remainingQty}')),
                     Expanded(
@@ -334,6 +348,8 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
             (l) => InvoiceItemEntity(
               orderItemId: l.orderItemId,
               productId: l.productId,
+              setId: l.setId,
+              isSet: l.isSet,
               quantity: l.quantity,
               unitPrice: l.unitPrice,
               totalPrice: l.quantity * l.unitPrice,
@@ -392,14 +408,18 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
 
 class _InvoiceLine {
   final int orderItemId;
-  final int productId;
+  final int? productId;
+  final int? setId;
+  final bool isSet;
   int quantity;
   final int remainingQty;
   final double unitPrice;
 
   _InvoiceLine({
     required this.orderItemId,
-    required this.productId,
+    this.productId,
+    this.setId,
+    this.isSet = false,
     required this.quantity,
     required this.remainingQty,
     required this.unitPrice,
