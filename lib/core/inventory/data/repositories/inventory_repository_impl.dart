@@ -22,6 +22,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     String? notes,
     String? referenceType,
     int? referenceId,
+    DateTime? transactionDate,
   }) =>
       _dataSource.recordIn(
         itemId,
@@ -30,6 +31,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
         notes: notes,
         referenceType: referenceType,
         referenceId: referenceId,
+        transactionDate: transactionDate,
       );
 
   @override
@@ -40,6 +42,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     String? notes,
     String? referenceType,
     int? referenceId,
+    DateTime? transactionDate,
   }) =>
       _dataSource.recordOut(
         itemId,
@@ -48,6 +51,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
         notes: notes,
         referenceType: referenceType,
         referenceId: referenceId,
+        transactionDate: transactionDate,
       );
 
   @override

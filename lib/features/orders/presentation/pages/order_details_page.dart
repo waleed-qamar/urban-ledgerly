@@ -224,11 +224,13 @@ class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
     _lines = widget.order.items
         .map(
           (item) => _EditableOrderLine(
+            id: item.id,
             productId: item.productId,
             setId: item.setId,
             isSet: item.isSet,
             quantity: item.quantity,
             unitPrice: item.price,
+            invoicedQuantity: item.invoicedQuantity,
           ),
         )
         .toList();
@@ -275,11 +277,13 @@ class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
 
       items.add(
         OrderItemEntity(
+          id: line.id,
           productId: line.productId,
           setId: line.setId,
           isSet: line.isSet,
           quantity: line.quantity,
           price: line.unitPrice,
+          invoicedQuantity: line.invoicedQuantity,
         ),
       );
     }
@@ -546,18 +550,22 @@ class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
 
 class _EditableOrderLine {
   _EditableOrderLine({
+    this.id,
     this.productId,
     this.setId,
     this.isSet = false,
     required this.quantity,
     required this.unitPrice,
+    this.invoicedQuantity,
   });
 
+  int? id;
   int? productId;
   int? setId;
   bool isSet;
   int quantity;
   double unitPrice;
+  int? invoicedQuantity;
 }
 
 class _EditableOrderLineRow extends StatelessWidget {
@@ -758,9 +766,7 @@ class _OrderHeader extends StatelessWidget {
             _StatusChipButton(order: order, onStatusChanged: onStatusChanged),
             const SizedBox(width: 8),
             Text(
-              order.createdAt == null
-                  ? 'Date unavailable'
-                  : 'Placed on ${order.createdAt!.day}/${order.createdAt!.month}/${order.createdAt!.year}',
+              'Placed on ${order.orderDate.day}/${order.orderDate.month}/${order.orderDate.year}',
               style: const TextStyle(color: AppColors.textGrey),
             ),
           ],

@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class OrderRemoteDatasource {
   final SupabaseClient _client;
   static const String _orderSelect =
-      'id, supplierId:supplier_id, clientId:client_id, status, department, po, createdAt:created_at, delivery_term, '
+      'id, supplierId:supplier_id, clientId:client_id, status, department, po, orderDate:order_date, createdAt:created_at, delivery_term, '
       'items:order_items(id, productId:product_id, setId:set_id, isSet:is_set, quantity, price, invoicedQuantity:invoiced_quantity)';
 
   OrderRemoteDatasource(this._client);
@@ -21,6 +21,7 @@ class OrderRemoteDatasource {
           'department': order.department,
           'po': order.po,
           'delivery_term': order.deliveryTerm,
+          'order_date': order.orderDate.toIso8601String(),
           'created_at': order.createdAt?.toIso8601String(),
         })
         .select('id')
@@ -109,25 +110,44 @@ class OrderRemoteDatasource {
       return;
     }
 
-    // Replace order items only when the line-item payload has changed.
-    await _client.from('order_items').delete().eq('order_id', orderData.id!);
+    // Granular update of order items instead of delete-all-and-insert
+    final updatedItemIds = orderData.items
+        .map((e) => e.id)
+        .whereType<int>()
+        .toSet();
 
-    if (orderData.items.isNotEmpty) {
-      final itemsPayload = orderData.items
-          .map(
-            (item) => {
-              'order_id': orderData.id,
+    final itemsToDelete = existingOrder.items
+        .where((e) => e.id != null && !updatedItemIds.contains(e.id))
+        .toList();
+
+    for (final item in itemsToDelete) {
+      await _client.from('order_items').delete().eq('id', item.id!);
+    }
+
+    for (final item in orderData.items) {
+      if (item.id != null) {
+        await _client
+            .from('order_items')
+            .update({
               'product_id': item.productId,
               'set_id': item.setId,
               'is_set': item.isSet,
               'quantity': item.quantity,
               'price': item.price,
               'invoiced_quantity': item.invoicedQuantity ?? 0,
-            },
-          )
-          .toList();
-
-      await _client.from('order_items').insert(itemsPayload);
+            })
+            .eq('id', item.id!);
+      } else {
+        await _client.from('order_items').insert({
+          'order_id': orderData.id,
+          'product_id': item.productId,
+          'set_id': item.setId,
+          'is_set': item.isSet,
+          'quantity': item.quantity,
+          'price': item.price,
+          'invoiced_quantity': item.invoicedQuantity ?? 0,
+        });
+      }
     }
   }
 
@@ -184,6 +204,13 @@ class OrderRemoteDatasource {
     final normalized = Map<String, dynamic>.from(row);
 
     // Keep parsing resilient while existing rows are migrated.
+    normalized['orderDate'] =
+        (normalized['orderDate'] ??
+                normalized['order_date'] ??
+                normalized['createdAt'] ??
+                normalized['created_at'] ??
+                DateTime.now().toIso8601String())
+            .toString();
     normalized['deliveryTerm'] =
         (normalized['deliveryTerm'] ?? normalized['delivery_term'] ?? '')
             .toString();

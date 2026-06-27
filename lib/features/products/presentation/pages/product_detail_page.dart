@@ -670,7 +670,7 @@ class _TransactionTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  formatter.format(transaction.createdAt),
+                  formatter.format(transaction.transactionDate),
                   style: const TextStyle(
                     color: AppColors.textGrey,
                     fontSize: 12,

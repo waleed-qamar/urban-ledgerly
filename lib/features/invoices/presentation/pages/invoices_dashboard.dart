@@ -233,42 +233,153 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
         : Icons.local_shipping_outlined;
     final color = isDispatched ? Colors.orange : Colors.green;
 
-    final confirmed = await showDialog<bool>(
+    DateTime selectedDate = DateTime.now();
+
+    final result = await showDialog<dynamic>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Row(
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(width: 8),
-            const Text('Update Status'),
-          ],
-        ),
-        content: Text(
-          'Change invoice ${invoice.invoiceNumber} status to '
-          '"${newStatus.toUpperCase()}"?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: color),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(label),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        if (newStatus == 'dispatched') {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                title: Row(
+                  children: [
+                    Icon(icon, color: color, size: 22),
+                    const SizedBox(width: 8),
+                    const Text('Update Status'),
+                  ],
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Change invoice ${invoice.invoiceNumber} status to '
+                      '"${newStatus.toUpperCase()}"?',
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Select Dispatch Date',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: AppColors.textGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            selectedDate = picked;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.dividerColor),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.year}',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Icon(
+                              Icons.calendar_today_outlined,
+                              size: 18,
+                              color: AppColors.primary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, null),
+                    child: const Text('Cancel'),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: color,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(ctx, selectedDate),
+                    child: Text(label),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            title: Row(
+              children: [
+                Icon(icon, color: color, size: 22),
+                const SizedBox(width: 8),
+                const Text('Update Status'),
+              ],
+            ),
+            content: Text(
+              'Change invoice ${invoice.invoiceNumber} status to '
+              '"${newStatus.toUpperCase()}"?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, null),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: color,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(label),
+              ),
+            ],
+          );
+        }
+      },
     );
 
-    if (confirmed != true || !context.mounted) return;
+    if (result == null || !context.mounted) return;
+
+    final dispatchDate = (result is DateTime) ? result : DateTime.now();
 
     try {
       await ref.read(
         updateInvoiceStatusProvider(
           id: invoice.id ?? 0,
           status: newStatus,
+          dispatchDate: newStatus == 'dispatched' ? dispatchDate : null,
         ).future,
       );
 
@@ -293,6 +404,7 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
                     'Invoice ${invoice.invoiceNumber} dispatched (set ${set.name})',
                 referenceType: 'INVOICE',
                 referenceId: invoice.id,
+                transactionDate: dispatchDate,
               );
             }
           } else {
@@ -303,6 +415,7 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
               notes: 'Invoice ${invoice.invoiceNumber} dispatched',
               referenceType: 'INVOICE',
               referenceId: invoice.id,
+              transactionDate: dispatchDate,
             );
           }
         }
@@ -333,7 +446,7 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
                 entryType: EntryType.debit,
                 amount: invoice.grandTotal,
                 paymentMethod: null,
-                entryDate: DateTime.now(),
+                entryDate: dispatchDate,
                 transactionSource: 'invoice',
                 referenceId: 'invoice:${invoice.id}',
                 remarks:

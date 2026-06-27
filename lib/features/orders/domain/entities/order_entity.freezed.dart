@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OrderEntity {
 
- int? get id; int get supplierId; int get clientId; List<OrderItemEntity> get items; String? get status; String? get department; String? get po; String get deliveryTerm; DateTime? get createdAt;
+ int? get id; int get supplierId; int get clientId; List<OrderItemEntity> get items; String? get status; String? get department; String? get po; String get deliveryTerm; DateTime get orderDate; DateTime? get createdAt;
 /// Create a copy of OrderEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $OrderEntityCopyWith<OrderEntity> get copyWith => _$OrderEntityCopyWithImpl<Orde
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.supplierId, supplierId) || other.supplierId == supplierId)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.status, status) || other.status == status)&&(identical(other.department, department) || other.department == department)&&(identical(other.po, po) || other.po == po)&&(identical(other.deliveryTerm, deliveryTerm) || other.deliveryTerm == deliveryTerm)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.supplierId, supplierId) || other.supplierId == supplierId)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.status, status) || other.status == status)&&(identical(other.department, department) || other.department == department)&&(identical(other.po, po) || other.po == po)&&(identical(other.deliveryTerm, deliveryTerm) || other.deliveryTerm == deliveryTerm)&&(identical(other.orderDate, orderDate) || other.orderDate == orderDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,supplierId,clientId,const DeepCollectionEquality().hash(items),status,department,po,deliveryTerm,createdAt);
+int get hashCode => Object.hash(runtimeType,id,supplierId,clientId,const DeepCollectionEquality().hash(items),status,department,po,deliveryTerm,orderDate,createdAt);
 
 @override
 String toString() {
-  return 'OrderEntity(id: $id, supplierId: $supplierId, clientId: $clientId, items: $items, status: $status, department: $department, po: $po, deliveryTerm: $deliveryTerm, createdAt: $createdAt)';
+  return 'OrderEntity(id: $id, supplierId: $supplierId, clientId: $clientId, items: $items, status: $status, department: $department, po: $po, deliveryTerm: $deliveryTerm, orderDate: $orderDate, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $OrderEntityCopyWith<$Res>  {
   factory $OrderEntityCopyWith(OrderEntity value, $Res Function(OrderEntity) _then) = _$OrderEntityCopyWithImpl;
 @useResult
 $Res call({
- int? id, int supplierId, int clientId, List<OrderItemEntity> items, String? status, String? department, String? po, String deliveryTerm, DateTime? createdAt
+ int? id, int supplierId, int clientId, List<OrderItemEntity> items, String? status, String? department, String? po, String deliveryTerm, DateTime orderDate, DateTime? createdAt
 });
 
 
@@ -65,7 +65,7 @@ class _$OrderEntityCopyWithImpl<$Res>
 
 /// Create a copy of OrderEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? supplierId = null,Object? clientId = null,Object? items = null,Object? status = freezed,Object? department = freezed,Object? po = freezed,Object? deliveryTerm = null,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? supplierId = null,Object? clientId = null,Object? items = null,Object? status = freezed,Object? department = freezed,Object? po = freezed,Object? deliveryTerm = null,Object? orderDate = null,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,supplierId: null == supplierId ? _self.supplierId : supplierId // ignore: cast_nullable_to_non_nullable
@@ -75,7 +75,8 @@ as List<OrderItemEntity>,status: freezed == status ? _self.status : status // ig
 as String?,department: freezed == department ? _self.department : department // ignore: cast_nullable_to_non_nullable
 as String?,po: freezed == po ? _self.po : po // ignore: cast_nullable_to_non_nullable
 as String?,deliveryTerm: null == deliveryTerm ? _self.deliveryTerm : deliveryTerm // ignore: cast_nullable_to_non_nullable
-as String,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,orderDate: null == orderDate ? _self.orderDate : orderDate // ignore: cast_nullable_to_non_nullable
+as DateTime,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }
@@ -161,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int supplierId,  int clientId,  List<OrderItemEntity> items,  String? status,  String? department,  String? po,  String deliveryTerm,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int supplierId,  int clientId,  List<OrderItemEntity> items,  String? status,  String? department,  String? po,  String deliveryTerm,  DateTime orderDate,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderEntity() when $default != null:
-return $default(_that.id,_that.supplierId,_that.clientId,_that.items,_that.status,_that.department,_that.po,_that.deliveryTerm,_that.createdAt);case _:
+return $default(_that.id,_that.supplierId,_that.clientId,_that.items,_that.status,_that.department,_that.po,_that.deliveryTerm,_that.orderDate,_that.createdAt);case _:
   return orElse();
 
 }
@@ -182,10 +183,10 @@ return $default(_that.id,_that.supplierId,_that.clientId,_that.items,_that.statu
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int supplierId,  int clientId,  List<OrderItemEntity> items,  String? status,  String? department,  String? po,  String deliveryTerm,  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int supplierId,  int clientId,  List<OrderItemEntity> items,  String? status,  String? department,  String? po,  String deliveryTerm,  DateTime orderDate,  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _OrderEntity():
-return $default(_that.id,_that.supplierId,_that.clientId,_that.items,_that.status,_that.department,_that.po,_that.deliveryTerm,_that.createdAt);case _:
+return $default(_that.id,_that.supplierId,_that.clientId,_that.items,_that.status,_that.department,_that.po,_that.deliveryTerm,_that.orderDate,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +203,10 @@ return $default(_that.id,_that.supplierId,_that.clientId,_that.items,_that.statu
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int supplierId,  int clientId,  List<OrderItemEntity> items,  String? status,  String? department,  String? po,  String deliveryTerm,  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int supplierId,  int clientId,  List<OrderItemEntity> items,  String? status,  String? department,  String? po,  String deliveryTerm,  DateTime orderDate,  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderEntity() when $default != null:
-return $default(_that.id,_that.supplierId,_that.clientId,_that.items,_that.status,_that.department,_that.po,_that.deliveryTerm,_that.createdAt);case _:
+return $default(_that.id,_that.supplierId,_that.clientId,_that.items,_that.status,_that.department,_that.po,_that.deliveryTerm,_that.orderDate,_that.createdAt);case _:
   return null;
 
 }
@@ -217,7 +218,7 @@ return $default(_that.id,_that.supplierId,_that.clientId,_that.items,_that.statu
 @JsonSerializable()
 
 class _OrderEntity implements OrderEntity {
-  const _OrderEntity({this.id, required this.supplierId, required this.clientId, required final  List<OrderItemEntity> items, this.status, this.department, this.po, required this.deliveryTerm, this.createdAt}): _items = items;
+  const _OrderEntity({this.id, required this.supplierId, required this.clientId, required final  List<OrderItemEntity> items, this.status, this.department, this.po, required this.deliveryTerm, required this.orderDate, this.createdAt}): _items = items;
   factory _OrderEntity.fromJson(Map<String, dynamic> json) => _$OrderEntityFromJson(json);
 
 @override final  int? id;
@@ -234,6 +235,7 @@ class _OrderEntity implements OrderEntity {
 @override final  String? department;
 @override final  String? po;
 @override final  String deliveryTerm;
+@override final  DateTime orderDate;
 @override final  DateTime? createdAt;
 
 /// Create a copy of OrderEntity
@@ -249,16 +251,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.supplierId, supplierId) || other.supplierId == supplierId)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.status, status) || other.status == status)&&(identical(other.department, department) || other.department == department)&&(identical(other.po, po) || other.po == po)&&(identical(other.deliveryTerm, deliveryTerm) || other.deliveryTerm == deliveryTerm)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.supplierId, supplierId) || other.supplierId == supplierId)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.status, status) || other.status == status)&&(identical(other.department, department) || other.department == department)&&(identical(other.po, po) || other.po == po)&&(identical(other.deliveryTerm, deliveryTerm) || other.deliveryTerm == deliveryTerm)&&(identical(other.orderDate, orderDate) || other.orderDate == orderDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,supplierId,clientId,const DeepCollectionEquality().hash(_items),status,department,po,deliveryTerm,createdAt);
+int get hashCode => Object.hash(runtimeType,id,supplierId,clientId,const DeepCollectionEquality().hash(_items),status,department,po,deliveryTerm,orderDate,createdAt);
 
 @override
 String toString() {
-  return 'OrderEntity(id: $id, supplierId: $supplierId, clientId: $clientId, items: $items, status: $status, department: $department, po: $po, deliveryTerm: $deliveryTerm, createdAt: $createdAt)';
+  return 'OrderEntity(id: $id, supplierId: $supplierId, clientId: $clientId, items: $items, status: $status, department: $department, po: $po, deliveryTerm: $deliveryTerm, orderDate: $orderDate, createdAt: $createdAt)';
 }
 
 
@@ -269,7 +271,7 @@ abstract mixin class _$OrderEntityCopyWith<$Res> implements $OrderEntityCopyWith
   factory _$OrderEntityCopyWith(_OrderEntity value, $Res Function(_OrderEntity) _then) = __$OrderEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, int supplierId, int clientId, List<OrderItemEntity> items, String? status, String? department, String? po, String deliveryTerm, DateTime? createdAt
+ int? id, int supplierId, int clientId, List<OrderItemEntity> items, String? status, String? department, String? po, String deliveryTerm, DateTime orderDate, DateTime? createdAt
 });
 
 
@@ -286,7 +288,7 @@ class __$OrderEntityCopyWithImpl<$Res>
 
 /// Create a copy of OrderEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? supplierId = null,Object? clientId = null,Object? items = null,Object? status = freezed,Object? department = freezed,Object? po = freezed,Object? deliveryTerm = null,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? supplierId = null,Object? clientId = null,Object? items = null,Object? status = freezed,Object? department = freezed,Object? po = freezed,Object? deliveryTerm = null,Object? orderDate = null,Object? createdAt = freezed,}) {
   return _then(_OrderEntity(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,supplierId: null == supplierId ? _self.supplierId : supplierId // ignore: cast_nullable_to_non_nullable
@@ -296,7 +298,8 @@ as List<OrderItemEntity>,status: freezed == status ? _self.status : status // ig
 as String?,department: freezed == department ? _self.department : department // ignore: cast_nullable_to_non_nullable
 as String?,po: freezed == po ? _self.po : po // ignore: cast_nullable_to_non_nullable
 as String?,deliveryTerm: null == deliveryTerm ? _self.deliveryTerm : deliveryTerm // ignore: cast_nullable_to_non_nullable
-as String,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,orderDate: null == orderDate ? _self.orderDate : orderDate // ignore: cast_nullable_to_non_nullable
+as DateTime,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }

@@ -23,8 +23,8 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   }
 
   @override
-  Future<void> updateInvoiceStatus(int id, String status) {
-    return _datasource.updateInvoiceStatus(id, status);
+  Future<void> updateInvoiceStatus(int id, String status, {DateTime? dispatchDate}) {
+    return _datasource.updateInvoiceStatus(id, status, dispatchDate: dispatchDate);
   }
 
   @override

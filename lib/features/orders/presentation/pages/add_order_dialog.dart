@@ -650,6 +650,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
       department: department,
       deliveryTerm: _deliveryTerm!,
       po: _po.isEmpty ? null : _po,
+      orderDate: _orderDate,
       createdAt: _orderDate,
     );
 

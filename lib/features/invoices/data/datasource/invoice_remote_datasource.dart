@@ -5,7 +5,7 @@ class InvoiceRemoteDatasource {
   final SupabaseClient _client;
 
   static const String _invoiceSelect =
-      'id, order_id, client_id, supplier_id, invoice_number, status, po, issue_date, sub_total, shipping_cost, tax_percent, tax_amount, grand_total, representative, created_at, '
+      'id, order_id, client_id, supplier_id, invoice_number, status, po, issue_date, sub_total, shipping_cost, tax_percent, tax_amount, grand_total, representative, created_at, dispatched_at, '
       'items:invoice_items(id, invoice_id, order_item_id, product_id, set_id, is_set, quantity, unit_price, total_price)';
 
   InvoiceRemoteDatasource(this._client);
@@ -87,8 +87,14 @@ class InvoiceRemoteDatasource {
     }
   }
 
-  Future<void> updateInvoiceStatus(int id, String status) async {
-    await _client.from('invoices').update({'status': status}).eq('id', id);
+  Future<void> updateInvoiceStatus(int id, String status, {DateTime? dispatchDate}) async {
+    final payload = <String, dynamic>{'status': status};
+    if (status == 'dispatched') {
+      payload['dispatched_at'] = (dispatchDate ?? DateTime.now()).toIso8601String();
+    } else {
+      payload['dispatched_at'] = null;
+    }
+    await _client.from('invoices').update(payload).eq('id', id);
   }
 
   /// Always does a fresh DB query — never relies on cached provider data.
@@ -172,6 +178,12 @@ class InvoiceRemoteDatasource {
     normalized['remainingAmount'] = 0.0;
     normalized['createdAt'] =
         normalized['createdAt'] ?? normalized['created_at'];
+
+    normalized['dispatchedAt'] =
+        normalized['dispatchedAt'] ??
+        normalized['dispatched_at'] ??
+        DateTime(1996, 1, 1).toIso8601String();
+
     normalized['items'] =
         (normalized['items'] as List<dynamic>?)
             ?.map(_normalizeInvoiceItemRow)

@@ -23,10 +23,14 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
   final _formKey = GlobalKey<FormState>();
   final _shippingController = TextEditingController(text: '0');
   final _representativeController = TextEditingController();
+  final TextEditingController _orderDateController = TextEditingController();
+
   bool _isSubmitting = false;
   bool _applyGst = true;
 
   late List<_InvoiceLine> _lines;
+
+  DateTime _orderDate = DateUtils.dateOnly(DateTime.now());
 
   @override
   void initState() {
@@ -182,6 +186,37 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
+              Expanded(
+                child: TextFormField(
+                  controller: _orderDateController,
+                  readOnly: true,
+                  enabled: !_isSubmitting,
+                  decoration: const InputDecoration(
+                    labelText: 'Invoice Date',
+                    border: OutlineInputBorder(),
+                    suffixIcon: Icon(Icons.calendar_today_outlined),
+                  ),
+                  onTap: _isSubmitting
+                      ? null
+                      : () async {
+                          final selectedDate = await showDatePicker(
+                            context: context,
+                            initialDate: _orderDate,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+
+                          if (selectedDate == null) {
+                            return;
+                          }
+
+                          setState(() {
+                            _orderDate = DateUtils.dateOnly(selectedDate);
+                            _orderDateController.text = _formatDate(_orderDate);
+                          });
+                        },
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -316,7 +351,9 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                   backgroundColor: AppColors.primaryDark,
                   foregroundColor: Colors.white,
                 ),
-                onPressed: _isSubmitting ? null : () => _submit(invoiceNo),
+                onPressed: _isSubmitting
+                    ? null
+                    : () => _submit(invoiceNo, _orderDate),
                 child: _isSubmitting
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text('Save Invoice'),
@@ -328,7 +365,7 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
     );
   }
 
-  Future<void> _submit(String invoiceNo) async {
+  Future<void> _submit(String invoiceNo, DateTime selectedDate) async {
     if (!_formKey.currentState!.validate()) return;
 
     // Filter out lines with 0 quantity being invoiced
@@ -365,13 +402,14 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
         status: 'unpaid',
         representative: _representativeController.text,
         po: widget.order.po,
-        issueDate: DateTime.now(),
+        issueDate: selectedDate,
         subTotal: _subTotal,
         shippingCost: _shippingCost,
         taxPercent: _applyGst ? 18.0 : 0.0,
         taxAmount: _taxAmount,
         grandTotal: _grandTotal,
         items: invoiceItems,
+        dispatchedAt: DateTime(1996, 01, 01),
       );
 
       await ref.read(createInvoiceProvider(invoice).future);
@@ -403,6 +441,10 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 }
 

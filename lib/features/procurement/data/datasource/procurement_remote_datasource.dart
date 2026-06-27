@@ -50,6 +50,8 @@ class ProcurementRemoteDatasource {
         'reference_id': createdId,
         'notes':
             'Auto added from procurement #$createdId (vendor ${created.vendorId})',
+        'transaction_date': _parseDate(procurement.procurementDate).toIso8601String(),
+        'created_at': _parseDate(procurement.procurementDate).toIso8601String(),
       });
 
       // 2) Auto vendor ledger entry: credit increases payable.
@@ -64,6 +66,9 @@ class ProcurementRemoteDatasource {
         'reference_id': createdId.toString(),
         'remarks':
             'Auto credit from procurement #$createdId for raw material ${created.rawMaterialId}',
+        'transaction_date': _parseDate(
+          procurement.procurementDate,
+        ).toIso8601String(),
         'created_at': DateTime.now().toIso8601String(),
       });
     } catch (_) {

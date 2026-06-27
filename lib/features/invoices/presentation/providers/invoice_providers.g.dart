@@ -297,7 +297,7 @@ final class UpdateInvoiceStatusProvider
     with $FutureModifier<void>, $FutureProvider<void> {
   const UpdateInvoiceStatusProvider._({
     required UpdateInvoiceStatusFamily super.from,
-    required ({int id, String status}) super.argument,
+    required ({int id, String status, DateTime? dispatchDate}) super.argument,
   }) : super(
          retry: null,
          name: r'updateInvoiceStatusProvider',
@@ -323,8 +323,14 @@ final class UpdateInvoiceStatusProvider
 
   @override
   FutureOr<void> create(Ref ref) {
-    final argument = this.argument as ({int id, String status});
-    return updateInvoiceStatus(ref, id: argument.id, status: argument.status);
+    final argument =
+        this.argument as ({int id, String status, DateTime? dispatchDate});
+    return updateInvoiceStatus(
+      ref,
+      id: argument.id,
+      status: argument.status,
+      dispatchDate: argument.dispatchDate,
+    );
   }
 
   @override
@@ -339,10 +345,14 @@ final class UpdateInvoiceStatusProvider
 }
 
 String _$updateInvoiceStatusHash() =>
-    r'61fa5ab11d371428672b44f152f4dcf9cb4f2299';
+    r'b338e4596cbd34d862c2245aee6d568b042312c2';
 
 final class UpdateInvoiceStatusFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<void>, ({int id, String status})> {
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<void>,
+          ({int id, String status, DateTime? dispatchDate})
+        > {
   const UpdateInvoiceStatusFamily._()
     : super(
         retry: null,
@@ -352,11 +362,14 @@ final class UpdateInvoiceStatusFamily extends $Family
         isAutoDispose: true,
       );
 
-  UpdateInvoiceStatusProvider call({required int id, required String status}) =>
-      UpdateInvoiceStatusProvider._(
-        argument: (id: id, status: status),
-        from: this,
-      );
+  UpdateInvoiceStatusProvider call({
+    required int id,
+    required String status,
+    DateTime? dispatchDate,
+  }) => UpdateInvoiceStatusProvider._(
+    argument: (id: id, status: status, dispatchDate: dispatchDate),
+    from: this,
+  );
 
   @override
   String toString() => r'updateInvoiceStatusProvider';

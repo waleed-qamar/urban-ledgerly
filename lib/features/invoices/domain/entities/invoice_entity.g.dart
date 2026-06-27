@@ -24,6 +24,7 @@ _InvoiceEntity _$InvoiceEntityFromJson(Map<String, dynamic> json) =>
       representative: json['representative'] as String,
       paidAmount: (json['paidAmount'] as num?)?.toDouble() ?? 0,
       remainingAmount: (json['remainingAmount'] as num?)?.toDouble() ?? 0,
+      dispatchedAt: DateTime.parse(json['dispatchedAt'] as String),
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
@@ -54,6 +55,7 @@ Map<String, dynamic> _$InvoiceEntityToJson(_InvoiceEntity instance) =>
       'representative': instance.representative,
       'paidAmount': instance.paidAmount,
       'remainingAmount': instance.remainingAmount,
+      'dispatchedAt': instance.dispatchedAt.toIso8601String(),
       'createdAt': instance.createdAt?.toIso8601String(),
       'items': instance.items,
     };

@@ -34,7 +34,9 @@ class InventoryRemoteDatasource {
     String? notes,
     String? referenceType,
     int? referenceId,
+    DateTime? transactionDate,
   }) async {
+    final dateStr = (transactionDate ?? DateTime.now()).toIso8601String();
     await _client.from('inventory_transactions').insert({
       'item_id': itemId,
       'item_type': itemType,
@@ -43,6 +45,8 @@ class InventoryRemoteDatasource {
       if (notes != null && notes.isNotEmpty) 'notes': notes,
       'reference_type': referenceType,
       'reference_id': referenceId,
+      'transaction_date': dateStr,
+      'created_at': dateStr,
     });
   }
 
@@ -53,7 +57,9 @@ class InventoryRemoteDatasource {
     String? notes,
     String? referenceType,
     int? referenceId,
+    DateTime? transactionDate,
   }) async {
+    final dateStr = (transactionDate ?? DateTime.now()).toIso8601String();
     await _client.from('inventory_transactions').insert({
       'item_id': itemId,
       'item_type': itemType,
@@ -62,6 +68,8 @@ class InventoryRemoteDatasource {
       if (notes != null && notes.isNotEmpty) 'notes': notes,
       'reference_type': referenceType,
       'reference_id': referenceId,
+      'transaction_date': dateStr,
+      'created_at': dateStr,
     });
   }
 

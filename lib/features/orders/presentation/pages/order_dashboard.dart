@@ -371,9 +371,7 @@ class _OrdersList extends ConsumerWidget {
                 SizedBox(
                   width: 145,
                   child: Text(
-                    order.createdAt == null
-                        ? 'Unknown date'
-                        : '${order.createdAt!.day}/${order.createdAt!.month}/${order.createdAt!.year}',
+                    '${order.orderDate.day}/${order.orderDate.month}/${order.orderDate.year}',
                     style: const TextStyle(color: AppColors.textGrey),
                   ),
                 ),

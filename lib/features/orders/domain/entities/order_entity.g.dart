@@ -17,6 +17,7 @@ _OrderEntity _$OrderEntityFromJson(Map<String, dynamic> json) => _OrderEntity(
   department: json['department'] as String?,
   po: json['po'] as String?,
   deliveryTerm: json['deliveryTerm'] as String,
+  orderDate: DateTime.parse(json['orderDate'] as String),
   createdAt: json['createdAt'] == null
       ? null
       : DateTime.parse(json['createdAt'] as String),
@@ -32,5 +33,6 @@ Map<String, dynamic> _$OrderEntityToJson(_OrderEntity instance) =>
       'department': instance.department,
       'po': instance.po,
       'deliveryTerm': instance.deliveryTerm,
+      'orderDate': instance.orderDate.toIso8601String(),
       'createdAt': instance.createdAt?.toIso8601String(),
     };

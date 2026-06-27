@@ -29,6 +29,7 @@ class InventoryTransactionEntity {
   final String? notes;
 
   final DateTime createdAt;
+  final DateTime transactionDate;
 
   const InventoryTransactionEntity({
     required this.id,
@@ -40,9 +41,16 @@ class InventoryTransactionEntity {
     this.referenceId,
     this.notes,
     required this.createdAt,
+    required this.transactionDate,
   });
 
   factory InventoryTransactionEntity.fromJson(Map<String, dynamic> json) {
+    final createdAt = DateTime.parse(json['created_at'] as String);
+    final transactionDateStr = json['transaction_date'] as String?;
+    final transactionDate = transactionDateStr != null
+        ? DateTime.parse(transactionDateStr)
+        : createdAt;
+
     return InventoryTransactionEntity(
       id: json['id'] as int,
       itemId: json['item_id'] as int,
@@ -52,7 +60,8 @@ class InventoryTransactionEntity {
       referenceType: json['reference_type'] as String?,
       referenceId: json['reference_id'] as int?,
       notes: json['notes'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: createdAt,
+      transactionDate: transactionDate,
     );
   }
 
@@ -67,6 +76,7 @@ class InventoryTransactionEntity {
       'reference_id': referenceId,
       'notes': notes,
       'created_at': createdAt.toIso8601String(),
+      'transaction_date': transactionDate.toIso8601String(),
     };
   }
 

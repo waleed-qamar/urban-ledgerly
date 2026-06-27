@@ -259,7 +259,7 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                     decimal: true,
                   ),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]-')),
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
                   ],
                   onChanged: (_) => setState(() {}),
                   decoration: const InputDecoration(

@@ -18,6 +18,7 @@ abstract class InventoryRepository {
     String? notes,
     String? referenceType,
     int? referenceId,
+    DateTime? transactionDate,
   });
 
   Future<void> recordOut(
@@ -27,6 +28,7 @@ abstract class InventoryRepository {
     String? notes,
     String? referenceType,
     int? referenceId,
+    DateTime? transactionDate,
   });
 
   Future<void> updateTransaction(

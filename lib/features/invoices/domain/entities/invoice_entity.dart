@@ -23,6 +23,7 @@ abstract class InvoiceEntity with _$InvoiceEntity {
     required String representative,
     @Default(0) double paidAmount,
     @Default(0) double remainingAmount,
+    required DateTime dispatchedAt,
     DateTime? createdAt,
     @Default([]) List<InvoiceItemEntity> items,
   }) = _InvoiceEntity;
