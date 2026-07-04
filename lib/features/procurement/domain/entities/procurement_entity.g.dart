@@ -9,23 +9,21 @@ part of 'procurement_entity.dart';
 _ProcurementEntity _$ProcurementEntityFromJson(Map<String, dynamic> json) =>
     _ProcurementEntity(
       id: (json['id'] as num?)?.toInt(),
-      rawMaterialId: (json['rawMaterialId'] as num).toInt(),
       vendorId: (json['vendorId'] as num).toInt(),
       procurementDate: json['procurementDate'] as String,
-      quantity: (json['quantity'] as num).toInt(),
-      price: (json['price'] as num).toDouble(),
       total: (json['total'] as num).toDouble(),
       notes: json['notes'] as String?,
+      items: (json['items'] as List<dynamic>)
+          .map((e) => ProcurementItemEntity.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$ProcurementEntityToJson(_ProcurementEntity instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'rawMaterialId': instance.rawMaterialId,
       'vendorId': instance.vendorId,
       'procurementDate': instance.procurementDate,
-      'quantity': instance.quantity,
-      'price': instance.price,
       'total': instance.total,
       'notes': instance.notes,
+      'items': instance.items,
     };

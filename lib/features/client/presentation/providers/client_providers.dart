@@ -1,4 +1,3 @@
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/providers/app_providers.dart';
@@ -17,6 +16,13 @@ class ClientFilterNotifier extends _$ClientFilterNotifier {
   ClientFilter build() => ClientFilter.all;
 
   void setFilter(ClientFilter filter) => state = filter;
+}
+
+@riverpod
+class ClientSearchQuery extends _$ClientSearchQuery {
+  @override
+  String build() => '';
+  void setSearchQuery(String query) => state = query;
 }
 
 @riverpod

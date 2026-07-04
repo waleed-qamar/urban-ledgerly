@@ -1,12 +1,17 @@
-import 'package:ledgerly/features/procurement/domain/entities/procurement_entity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../domain/entities/procurement_entity.dart';
 
 class ProcurementRemoteDatasource {
   final SupabaseClient _client;
+  static const String _procurementSelect = '*, items:procurement_items(*)';
+
   ProcurementRemoteDatasource(this._client);
 
   Future<List<ProcurementEntity>> getAllProcurements() async {
-    final response = await _client.from('procurements').select();
+    final response = await _client
+        .from('procurements')
+        .select(_procurementSelect);
 
     return (response as List)
         .map((row) => ProcurementEntity.fromJson(_normalizeRow(row)))
@@ -16,7 +21,7 @@ class ProcurementRemoteDatasource {
   Future<ProcurementEntity> getProcurementById(int id) async {
     final response = await _client
         .from('procurements')
-        .select()
+        .select(_procurementSelect)
         .eq('id', id)
         .single();
 
@@ -24,51 +29,62 @@ class ProcurementRemoteDatasource {
   }
 
   Future<void> createProcurement(ProcurementEntity procurement) async {
-    final payload = _toDbRow(procurement.toJson())..remove('id');
-
     final inserted = await _client
         .from('procurements')
-        .insert(payload)
+        .insert({
+          'vendorId': procurement.vendorId,
+          'procurementDate': procurement.procurementDate,
+          'total': procurement.total,
+          'notes': procurement.notes,
+        })
         .select()
         .single();
 
-    final created = ProcurementEntity.fromJson(_normalizeRow(inserted));
-    final createdId = created.id;
-
-    if (createdId == null) {
-      throw Exception('Unable to resolve created procurement id.');
-    }
+    final createdId = inserted['id'] as int;
 
     try {
-      // 1) Auto stock-in transaction for raw material inventory.
-      await _client.from('inventory_transactions').insert({
-        'item_id': created.rawMaterialId,
-        'item_type': 'RAW_MATERIAL',
-        'transaction_type': 'IN',
-        'quantity': created.quantity,
-        'reference_type': 'PROCUREMENT',
-        'reference_id': createdId,
-        'notes':
-            'Auto added from procurement #$createdId (vendor ${created.vendorId})',
-        'transaction_date': _parseDate(procurement.procurementDate).toIso8601String(),
-        'created_at': _parseDate(procurement.procurementDate).toIso8601String(),
-      });
+      // 1) Insert procurement items
+      final itemsToInsert = procurement.items.map((item) {
+        return {
+          'procurement_id': createdId,
+          'raw_material_id': item.rawMaterialId,
+          'quantity': item.quantity,
+          'price': item.price,
+          'total': item.total,
+        };
+      }).toList();
 
-      // 2) Auto vendor ledger entry: credit increases payable.
+      await _client.from('procurement_items').insert(itemsToInsert);
+
+      // 2) Auto stock-in transaction for raw material inventory.
+      for (final item in procurement.items) {
+        await _client.from('inventory_transactions').insert({
+          'item_id': item.rawMaterialId,
+          'item_type': 'RAW_MATERIAL',
+          'transaction_type': 'IN',
+          'quantity': item.quantity,
+          'reference_type': 'PROCUREMENT',
+          'reference_id': createdId,
+          'notes':
+              'Auto added from procurement #$createdId (vendor ${procurement.vendorId})',
+          'transaction_date': _parseDate(
+            procurement.procurementDate,
+          ).toIso8601String(),
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      }
+
+      // 3) Auto vendor ledger entry: credit increases payable.
       await _client.from('ledger').insert({
         'party_type': 'vendor',
-        'party_id': created.vendorId,
+        'party_id': procurement.vendorId,
         'invoice_number': 'PRC-$createdId',
         'entry_type': 'credit',
-        'amount': created.total,
-        'entry_date': _parseDate(created.procurementDate).toIso8601String(),
+        'amount': procurement.total,
+        'entry_date': _parseDate(procurement.procurementDate).toIso8601String(),
         'transaction_source': 'procurement',
         'reference_id': createdId.toString(),
-        'remarks':
-            'Auto credit from procurement #$createdId for raw material ${created.rawMaterialId}',
-        'transaction_date': _parseDate(
-          procurement.procurementDate,
-        ).toIso8601String(),
+        'remarks': 'Auto credit from procurement #$createdId',
         'created_at': DateTime.now().toIso8601String(),
       });
     } catch (_) {
@@ -79,13 +95,99 @@ class ProcurementRemoteDatasource {
   }
 
   Future<void> updateProcurement(ProcurementEntity procurement) async {
+    final procurementId = procurement.id!;
+
+    // 1) Update procurements table
     await _client
         .from('procurements')
-        .update(_toDbRow(procurement.toJson()))
-        .eq('id', procurement.id!);
+        .update({
+          'vendorId': procurement.vendorId,
+          'procurementDate': procurement.procurementDate,
+          'total': procurement.total,
+          'notes': procurement.notes,
+        })
+        .eq('id', procurementId);
+
+    // 2) Delete old items (which cascades/cleans up but let's delete them explicitly)
+    await _client
+        .from('procurement_items')
+        .delete()
+        .eq('procurement_id', procurementId);
+
+    // 3) Insert updated items
+    final itemsToInsert = procurement.items.map((item) {
+      return {
+        'procurement_id': procurementId,
+        'raw_material_id': item.rawMaterialId,
+        'quantity': item.quantity,
+        'price': item.price,
+        'total': item.total,
+      };
+    }).toList();
+
+    await _client.from('procurement_items').insert(itemsToInsert);
+
+    // 4) Update inventory transactions: delete old ones and insert updated ones
+    await _client
+        .from('inventory_transactions')
+        .delete()
+        .eq('reference_type', 'PROCUREMENT')
+        .eq('reference_id', procurementId);
+
+    for (final item in procurement.items) {
+      await _client.from('inventory_transactions').insert({
+        'item_id': item.rawMaterialId,
+        'item_type': 'RAW_MATERIAL',
+        'transaction_type': 'IN',
+        'quantity': item.quantity,
+        'reference_type': 'PROCUREMENT',
+        'reference_id': procurementId,
+        'notes':
+            'Auto added from procurement #$procurementId (vendor ${procurement.vendorId})',
+        'transaction_date': _parseDate(
+          procurement.procurementDate,
+        ).toIso8601String(),
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    }
+
+    // 5) Update vendor ledger entry: delete old one and insert updated one
+    await _client
+        .from('ledger')
+        .delete()
+        .eq('transaction_source', 'procurement')
+        .eq('reference_id', procurementId.toString());
+
+    await _client.from('ledger').insert({
+      'party_type': 'vendor',
+      'party_id': procurement.vendorId,
+      'invoice_number': 'PRC-$procurementId',
+      'entry_type': 'credit',
+      'amount': procurement.total,
+      'entry_date': _parseDate(procurement.procurementDate).toIso8601String(),
+      'transaction_source': 'procurement',
+      'reference_id': procurementId.toString(),
+      'remarks': 'Auto credit from procurement #$procurementId',
+      'created_at': DateTime.now().toIso8601String(),
+    });
   }
 
   Future<void> deleteProcurement(int id) async {
+    // 1) Delete inventory transactions
+    await _client
+        .from('inventory_transactions')
+        .delete()
+        .eq('reference_type', 'PROCUREMENT')
+        .eq('reference_id', id);
+
+    // 2) Delete ledger entry
+    await _client
+        .from('ledger')
+        .delete()
+        .eq('transaction_source', 'procurement')
+        .eq('reference_id', id.toString());
+
+    // 3) Delete procurement itself (cascades to procurement_items)
     await _client.from('procurements').delete().eq('id', id);
   }
 
@@ -97,33 +199,32 @@ class ProcurementRemoteDatasource {
   Map<String, dynamic> _normalizeRow(dynamic row) {
     final json = Map<String, dynamic>.from(row as Map);
 
-    final rawMaterialId = json['rawMaterialId'] ?? json['raw_material_id'];
     final vendorId = json['vendorId'] ?? json['vendor_id'];
+    final itemsRaw = json['items'] as List? ?? [];
+
+    final items = itemsRaw.map((itemRaw) {
+      final item = Map<String, dynamic>.from(itemRaw as Map);
+      final rawMaterialId = item['rawMaterialId'] ?? item['raw_material_id'];
+      final procurementId = item['procurementId'] ?? item['procurement_id'];
+      return {
+        'id': (item['id'] as num?)?.toInt(),
+        'procurementId': (procurementId as num?)?.toInt(),
+        'rawMaterialId': (rawMaterialId as num?)?.toInt() ?? 0,
+        'quantity': (item['quantity'] as num?)?.toInt() ?? 0,
+        'price': (item['price'] as num?)?.toDouble() ?? 0.0,
+        'total': (item['total'] as num?)?.toDouble() ?? 0.0,
+      };
+    }).toList();
 
     return {
       'id': (json['id'] as num?)?.toInt(),
-      'rawMaterialId': (rawMaterialId as num?)?.toInt() ?? 0,
       'vendorId': (vendorId as num?)?.toInt() ?? 0,
       'procurementDate':
           (json['procurementDate'] ?? json['procurement_date'] ?? '')
               .toString(),
-      'quantity': (json['quantity'] as num?)?.toInt() ?? 0,
-      'price': (json['price'] as num?)?.toDouble() ?? 0.0,
       'total': (json['total'] as num?)?.toDouble() ?? 0.0,
       'notes': json['notes']?.toString(),
-    };
-  }
-
-  Map<String, dynamic> _toDbRow(Map<String, dynamic> json) {
-    return {
-      'id': json['id'],
-      'rawMaterialId': json['rawMaterialId'],
-      'vendorId': json['vendorId'],
-      'procurementDate': json['procurementDate'],
-      'quantity': json['quantity'],
-      'price': json['price'],
-      'total': json['total'],
-      'notes': json['notes'],
+      'items': items,
     };
   }
 }

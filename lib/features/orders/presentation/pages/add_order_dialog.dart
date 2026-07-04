@@ -13,6 +13,8 @@ import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
 import 'package:ledgerly/features/products/domain/entities/product_set_entity.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
 
+import '../../../../core/widgets/searchable_dropdown.dart';
+
 class AddOrderDialog extends ConsumerStatefulWidget {
   const AddOrderDialog({super.key});
 
@@ -256,29 +258,28 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: DropdownButtonFormField<int>(
+                child: FormField<int>(
                   initialValue: _selectedClientId,
-                  decoration: const InputDecoration(
-                    labelText: 'Client',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: clients
-                      .map(
-                        (c) => DropdownMenuItem<int>(
-                          value: c.id,
-                          child: Text(c.clientName),
-                        ),
-                      )
-                      .toList(),
                   validator: (value) =>
                       value == null ? 'Select a Client' : null,
-                  onChanged: _isSubmitting
-                      ? null
-                      : (value) {
-                          setState(() {
-                            _selectedClientId = value;
-                          });
-                        },
+                  builder: (fieldState) {
+                    final selectedClient = clients
+                        .where((c) => c.id == _selectedClientId)
+                        .firstOrNull;
+
+                    return SearchableDropdown<ClientEntity>(
+                      items: clients,
+                      displayStringForOption: (c) => c.clientName,
+                      labelText: 'Client',
+                      errorText: fieldState.errorText,
+                      enabled: !_isSubmitting,
+                      initialText: selectedClient?.clientName,
+                      onSelected: (selected) {
+                        setState(() => _selectedClientId = selected.id);
+                        fieldState.didChange(selected.id);
+                      },
+                    );
+                  },
                 ),
               ),
             ],
@@ -820,65 +821,61 @@ class _OrderLineEditor extends StatelessWidget {
                 //   ),
                 // ),
                 const SizedBox(height: 6),
-                DropdownButtonFormField<int>(
-                  value: line.isSet ? line.setId : line.productId,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText: line.isSet ? 'Select Set' : 'Select Product',
-                  ),
-                  items: line.isSet
-                      ? setsAsync.when(
-                          data: (sets) => sets
-                              .map(
-                                (s) => DropdownMenuItem<int>(
-                                  value: s.setId,
-                                  child: Text(
-                                    s.name,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          loading: () => [
-                            const DropdownMenuItem<int>(
-                              value: -1,
-                              child: Text('Loading'),
-                            ),
-                          ],
-                          error: (_, __) => [
-                            const DropdownMenuItem<int>(
-                              value: -1,
-                              child: Text('Error'),
-                            ),
-                          ],
-                        )
-                      : products
-                            .map(
-                              (p) => DropdownMenuItem<int>(
-                                value: p.id,
-                                child: Text(
-                                  p.name,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                  validator: (value) =>
-                      value == null || value == -1 ? 'Select item' : null,
-                  onChanged: enabled
-                      ? (value) {
-                          if (value == null) return;
-                          if (line.isSet) {
-                            line.setId = value;
-                            line.productId = null;
-                          } else {
-                            line.productId = value;
-                            line.setId = null;
-                          }
+                const SizedBox(height: 6),
+                FormField<int>(
+                  initialValue: line.isSet ? line.setId : line.productId,
+                  validator: (value) => value == null ? 'Select item' : null,
+                  builder: (fieldState) {
+                    if (line.isSet) {
+                      return setsAsync.when(
+                        loading: () =>
+                            const LinearProgressIndicator(minHeight: 2),
+                        error: (err, _) => Text(
+                          'Failed to load sets: $err',
+                          style: const TextStyle(color: AppColors.errorText),
+                        ),
+                        data: (sets) {
+                          final selectedSet = sets
+                              .where((s) => s.setId == line.setId)
+                              .firstOrNull;
+
+                          return SearchableDropdown<ProductSetEntity>(
+                            items: sets,
+                            displayStringForOption: (s) => s.name,
+                            labelText: 'Select Set',
+                            errorText: fieldState.errorText,
+                            enabled: enabled,
+                            initialText: selectedSet?.name,
+                            onSelected: (selected) {
+                              line.setId = selected.setId;
+                              line.productId = null;
+                              fieldState.didChange(selected.setId);
+                              onChanged();
+                            },
+                          );
+                        },
+                      );
+                    } else {
+                      final selectedProduct = products
+                          .where((p) => p.id == line.productId)
+                          .firstOrNull;
+
+                      return SearchableDropdown<ProductEntity>(
+                        items: products,
+                        displayStringForOption: (p) => p.name,
+                        labelText: 'Select Product',
+                        errorText: fieldState.errorText,
+                        enabled: enabled,
+                        initialText: selectedProduct?.name,
+                        onSelected: (selected) {
+                          line.productId = selected.id;
+                          line.setId = null;
+                          fieldState.didChange(selected.id);
                           onChanged();
-                        }
-                      : null,
+                        },
+                      );
+                    }
+                  },
                 ),
               ],
             ),

@@ -3,17 +3,39 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
+import 'package:ledgerly/core/widgets/build_search_box.dart';
 
 import '../providers/raw_material_providers.dart';
 import 'add_raw_material_dialog.dart';
 import 'raw_material_detail_page.dart';
 
-class RawMaterialDashboard extends ConsumerWidget {
+class RawMaterialDashboard extends ConsumerStatefulWidget {
   const RawMaterialDashboard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RawMaterialDashboard> createState() =>
+      _RawMaterialDashboardState();
+}
+
+class _RawMaterialDashboardState extends ConsumerState<RawMaterialDashboard> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    _searchController = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final materialsAsyncValue = ref.watch(getAllRawMaterialsProvider);
+    final searchQuery = ref.watch(rawMaterialSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -62,6 +84,16 @@ class RawMaterialDashboard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 48),
+            BuildSearchBox(
+              searchController: _searchController,
+              searchQueryProvider: rawMaterialSearchQueryProvider,
+              onQueryChanged: (value) => ref
+                  .read(rawMaterialSearchQueryProvider.notifier)
+                  .setSearchQuery(value),
+              hintText: 'Search Raw Material by name...',
+            ),
+
+            const SizedBox(height: 32),
             // Summary Cards
             materialsAsyncValue.when(
               data: (materials) {
@@ -136,6 +168,13 @@ class RawMaterialDashboard extends ConsumerWidget {
             Expanded(
               child: materialsAsyncValue.when(
                 data: (materials) {
+                  var filteredRawMaterial = materials;
+                  if (searchQuery.trim().isNotEmpty) {
+                    final query = searchQuery.trim().toLowerCase();
+                    filteredRawMaterial = materials
+                        .where((m) => m.name.toLowerCase().contains(query))
+                        .toList();
+                  }
                   if (materials.isEmpty) {
                     return const Center(
                       child: Text(
@@ -145,11 +184,11 @@ class RawMaterialDashboard extends ConsumerWidget {
                     );
                   }
                   return ListView.separated(
-                    itemCount: materials.length,
+                    itemCount: filteredRawMaterial.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
-                      final mat = materials[index];
+                      final mat = filteredRawMaterial[index];
                       return _RawMaterialListItem(
                         material: mat,
                         onTap: () {

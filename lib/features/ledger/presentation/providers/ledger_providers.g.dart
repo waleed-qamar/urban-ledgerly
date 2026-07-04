@@ -9,6 +9,59 @@ part of 'ledger_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(LedgerSearchQuery)
+const ledgerSearchQueryProvider = LedgerSearchQueryProvider._();
+
+final class LedgerSearchQueryProvider
+    extends $NotifierProvider<LedgerSearchQuery, String> {
+  const LedgerSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ledgerSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$ledgerSearchQueryHash();
+
+  @$internal
+  @override
+  LedgerSearchQuery create() => LedgerSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$ledgerSearchQueryHash() => r'841e6124c94ae7f8fb13718d212096a2e61cbbf9';
+
+abstract class _$LedgerSearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(ledgerRemoteDatasource)
 const ledgerRemoteDatasourceProvider = LedgerRemoteDatasourceProvider._();
 

@@ -15,7 +15,17 @@ RawMaterialRemoteDatasource rawMaterialRemoteDatasource(Ref ref) {
 
 @riverpod
 RawMaterialRepository rawMaterialRepository(Ref ref) {
-  return RawMaterialRepositoryImpl(ref.watch(rawMaterialRemoteDatasourceProvider));
+  return RawMaterialRepositoryImpl(
+    ref.watch(rawMaterialRemoteDatasourceProvider),
+  );
+}
+
+@riverpod
+class RawMaterialSearchQuery extends _$RawMaterialSearchQuery {
+  @override
+  String build() => '';
+
+  void setSearchQuery(String query) => state = query;
 }
 
 @riverpod

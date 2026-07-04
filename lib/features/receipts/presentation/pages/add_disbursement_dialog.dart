@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ledgerly/features/vender/domain/entities/vendor_entity.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/searchable_dropdown.dart';
 import '../../../account_ledger/presentation/provider/account_ledger_providers.dart';
 import '../../../ledger/domain/entities/ledger_entity.dart';
 import '../../../ledger/presentation/providers/ledger_providers.dart';
@@ -105,24 +107,29 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                       return const Text('No vendors found.');
                     }
 
-                    return DropdownButtonFormField<int>(
+                    return FormField<int>(
                       initialValue: _selectedVendorId,
-                      decoration: const InputDecoration(labelText: 'Vendor *'),
-                      items: vendors.map((vendor) {
-                        final due = vendorBalances[vendor.id] ?? 0.0;
-                        return DropdownMenuItem(
-                          value: vendor.id,
-                          child: Text(
-                            '${vendor.vendorName} (Due: PKR ${due.toStringAsFixed(2)})',
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => _selectedVendorId = value);
-                      },
                       validator: (value) =>
-                          value == null ? 'Vendor is required' : null,
+                          value == null ? 'Please select a Vendor' : null,
+                      builder: (fieldState) {
+                        final selectedVendor = vendors
+                            .where((v) => v.id == _selectedVendorId)
+                            .firstOrNull;
+
+                        return SearchableDropdown<VendorEntity>(
+                          items: vendors,
+                          displayStringForOption: (v) => v.vendorName,
+                          labelText: 'Client *',
+                          prefixIcon: const Icon(Icons.person_outline),
+                          errorText: fieldState.errorText,
+                          enabled: !_isSubmitting,
+                          initialText: selectedVendor?.vendorName,
+                          onSelected: (selected) {
+                            setState(() => _selectedVendorId = selected.id);
+                            fieldState.didChange(selected.id);
+                          },
+                        );
+                      },
                     );
                   },
                 ),

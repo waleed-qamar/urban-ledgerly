@@ -63,6 +63,59 @@ abstract class _$VendorFilterNotifier extends $Notifier<VendorFilter> {
   }
 }
 
+@ProviderFor(VendorSearchQuery)
+const vendorSearchQueryProvider = VendorSearchQueryProvider._();
+
+final class VendorSearchQueryProvider
+    extends $NotifierProvider<VendorSearchQuery, String> {
+  const VendorSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'vendorSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$vendorSearchQueryHash();
+
+  @$internal
+  @override
+  VendorSearchQuery create() => VendorSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$vendorSearchQueryHash() => r'0ba90d1adda824b7334a071597d83b63fedeaadc';
+
+abstract class _$VendorSearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(vendorRemoteDatasource)
 const vendorRemoteDatasourceProvider = VendorRemoteDatasourceProvider._();
 

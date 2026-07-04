@@ -18,6 +18,13 @@ InvoiceRepository invoiceRepository(Ref ref) {
 }
 
 @riverpod
+class InvoiceSearchQuery extends _$InvoiceSearchQuery {
+  @override
+  String build() => '';
+  void setSearchQuery(String query) => state = query;
+}
+
+@riverpod
 Future<List<InvoiceEntity>> getAllInvoices(Ref ref) {
   return ref.watch(invoiceRepositoryProvider).getInvoices();
 }
@@ -33,8 +40,15 @@ Future<InvoiceEntity> getInvoiceById(Ref ref, int id) {
 }
 
 @riverpod
-Future<void> updateInvoiceStatus(Ref ref, {required int id, required String status, DateTime? dispatchDate}) {
-  return ref.watch(invoiceRepositoryProvider).updateInvoiceStatus(id, status, dispatchDate: dispatchDate);
+Future<void> updateInvoiceStatus(
+  Ref ref, {
+  required int id,
+  required String status,
+  DateTime? dispatchDate,
+}) {
+  return ref
+      .watch(invoiceRepositoryProvider)
+      .updateInvoiceStatus(id, status, dispatchDate: dispatchDate);
 }
 
 /// Always queries the DB fresh — never uses the cached invoices list.

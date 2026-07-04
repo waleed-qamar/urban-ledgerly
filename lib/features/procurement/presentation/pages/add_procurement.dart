@@ -2,15 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
-import 'package:ledgerly/core/theme/app_colors.dart';
-import 'package:ledgerly/features/procurement/domain/entities/procurement_entity.dart';
-import 'package:ledgerly/features/procurement/presentation/providers/procurement_providers.dart';
-import 'package:ledgerly/features/raw_material/presentation/providers/raw_material_providers.dart';
-import 'package:ledgerly/features/vender/presentation/providers/vendor_providers.dart';
+
+import '../../../../core/inventory/presentation/providers/inventory_providers.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/searchable_dropdown.dart';
+import '../../../raw_material/domain/entities/raw_material_entity.dart';
+import '../../../raw_material/presentation/providers/raw_material_providers.dart';
+import '../../../vender/domain/entities/vendor_entity.dart';
+import '../../../vender/presentation/providers/vendor_providers.dart';
+import '../../domain/entities/procurement_entity.dart';
+import '../../domain/entities/procurement_item_entity.dart';
+import '../providers/procurement_providers.dart';
+
+class _DraftProcurementLine {
+  int? rawMaterialId;
+  int quantity;
+  double price;
+
+  _DraftProcurementLine({
+    this.rawMaterialId,
+    required this.quantity,
+    required this.price,
+  });
+
+  double get total => quantity * price;
+}
 
 class AddProcurementDialog extends ConsumerStatefulWidget {
-  const AddProcurementDialog({super.key});
+  final ProcurementEntity? procurementToEdit;
+  const AddProcurementDialog({super.key, this.procurementToEdit});
 
   @override
   ConsumerState<AddProcurementDialog> createState() =>
@@ -19,37 +39,45 @@ class AddProcurementDialog extends ConsumerStatefulWidget {
 
 class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _quantityController = TextEditingController();
-  final _rateController = TextEditingController();
-  final _amountController = TextEditingController(text: '0.00');
   final _notesController = TextEditingController();
 
   DateTime _selectedDate = DateTime.now();
-  int? _selectedRawMaterialId;
   int? _selectedVendorId;
   bool _isSaving = false;
+
+  final List<_DraftProcurementLine> _lines = [
+    _DraftProcurementLine(quantity: 1, price: 0),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _quantityController.addListener(_recalculateAmount);
-    _rateController.addListener(_recalculateAmount);
+    if (widget.procurementToEdit != null) {
+      final p = widget.procurementToEdit!;
+      _selectedDate = DateTime.tryParse(p.procurementDate) ?? DateTime.now();
+      _selectedVendorId = p.vendorId;
+      _notesController.text = p.notes ?? '';
+      _lines.clear();
+      for (final item in p.items) {
+        _lines.add(
+          _DraftProcurementLine(
+            rawMaterialId: item.rawMaterialId,
+            quantity: item.quantity,
+            price: item.price,
+          ),
+        );
+      }
+    }
   }
 
   @override
   void dispose() {
-    _quantityController.dispose();
-    _rateController.dispose();
-    _amountController.dispose();
     _notesController.dispose();
     super.dispose();
   }
 
-  void _recalculateAmount() {
-    final quantity = int.tryParse(_quantityController.text.trim()) ?? 0;
-    final rate = double.tryParse(_rateController.text.trim()) ?? 0;
-    final total = quantity * rate;
-    _amountController.text = total.toStringAsFixed(2);
+  double _calculateTotal() {
+    return _lines.fold<double>(0, (sum, line) => sum + line.total);
   }
 
   Future<void> _pickDate() async {
@@ -69,59 +97,100 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
 
   Future<void> _submit() async {
     final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid ||
-        _selectedRawMaterialId == null ||
-        _selectedVendorId == null) {
+    if (!isValid || _selectedVendorId == null) {
+      _showError('Please verify all fields are filled.');
       return;
+    }
+
+    final items = <ProcurementItemEntity>[];
+    for (final line in _lines) {
+      if (line.rawMaterialId == null) {
+        _showError('Please select a raw material for all lines.');
+        return;
+      }
+      if (line.quantity <= 0) {
+        _showError('Quantity must be greater than 0.');
+        return;
+      }
+      if (line.price <= 0) {
+        _showError('Rate must be greater than 0.');
+        return;
+      }
+      items.add(
+        ProcurementItemEntity(
+          rawMaterialId: line.rawMaterialId!,
+          quantity: line.quantity,
+          price: line.price,
+          total: line.total,
+        ),
+      );
     }
 
     setState(() => _isSaving = true);
 
-    final quantity = int.parse(_quantityController.text.trim());
-    final rate = double.parse(_rateController.text.trim());
-    final total = quantity * rate;
-
+    final total = _calculateTotal();
     final procurement = ProcurementEntity(
-      rawMaterialId: _selectedRawMaterialId!,
+      id: widget.procurementToEdit?.id,
       vendorId: _selectedVendorId!,
       procurementDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
-      quantity: quantity,
-      price: rate,
       total: total,
       notes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
+      items: items,
     );
 
     try {
-      await ref
-          .read(procurementRepositoryProvider)
-          .createProcurement(procurement);
+      if (widget.procurementToEdit != null) {
+        await ref
+            .read(procurementRepositoryProvider)
+            .updateProcurement(procurement);
+      } else {
+        await ref
+            .read(procurementRepositoryProvider)
+            .createProcurement(procurement);
+      }
 
-      // Await the refresh to ensure data is fetched before closing
-      // This refreshes both procurement data and inventory transactions
-      await ref.refresh(getAllProcurementsProvider);
-      await ref.refresh(
-        inventoryTransactionsForItemProvider(
-          _selectedRawMaterialId!,
-          'RAW_MATERIAL',
-        ),
-      );
+      // Refresh providers
+      ref.invalidate(getAllProcurementsProvider);
+      for (final item in items) {
+        ref.invalidate(
+          inventoryTransactionsForItemProvider(
+            item.rawMaterialId,
+            'RAW_MATERIAL',
+          ),
+        );
+      }
+
+      if (widget.procurementToEdit != null) {
+        for (final oldItem in widget.procurementToEdit!.items) {
+          ref.invalidate(
+            inventoryTransactionsForItemProvider(
+              oldItem.rawMaterialId,
+              'RAW_MATERIAL',
+            ),
+          );
+        }
+      }
 
       if (mounted) {
         Navigator.of(context).pop(true);
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save procurement: $error')),
-        );
+        _showError('Failed to save procurement: $error');
       }
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
       }
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: AppColors.errorText),
+    );
   }
 
   @override
@@ -138,10 +207,12 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
       actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
       title: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
-              'Add Material Procurement',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              widget.procurementToEdit != null
+                  ? 'Edit Material Procurement'
+                  : 'Add Material Procurement',
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
           Container(
@@ -150,225 +221,228 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: procurementsAsync.when(
-              loading: () => const Text(
-                'Procurement# ...',
-                style: TextStyle(
-                  color: AppColors.textWhite,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              error: (_, _) => const Text(
-                'Procurement# N/A',
-                style: TextStyle(
-                  color: AppColors.textWhite,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              data: (procurements) {
-                final maxId = procurements
-                    .map((p) => p.id ?? 0)
-                    .fold<int>(0, (max, id) => id > max ? id : max);
-                final nextId = maxId + 1;
+            child: widget.procurementToEdit != null
+                ? Text(
+                    'Procurement# ${widget.procurementToEdit!.id}',
+                    style: const TextStyle(
+                      color: AppColors.textWhite,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )
+                : procurementsAsync.when(
+                    loading: () => const Text(
+                      'Procurement# ...',
+                      style: TextStyle(
+                        color: AppColors.textWhite,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    error: (_, _) => const Text(
+                      'Procurement# N/A',
+                      style: TextStyle(
+                        color: AppColors.textWhite,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    data: (procurements) {
+                      final maxId = procurements
+                          .map((p) => p.id ?? 0)
+                          .fold<int>(0, (max, id) => id > max ? id : max);
+                      final nextId = maxId + 1;
 
-                return Text(
-                  'Procurement# $nextId',
-                  style: const TextStyle(
-                    color: AppColors.textWhite,
-                    fontWeight: FontWeight.w600,
+                      return Text(
+                        'Procurement# $nextId',
+                        style: const TextStyle(
+                          color: AppColors.textWhite,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
       content: SizedBox(
-        width: 980,
+        width: 820,
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                OutlinedButton.icon(
-                  onPressed: _isSaving ? null : _pickDate,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: const BorderSide(color: AppColors.primary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  icon: const Icon(Icons.calendar_month_outlined),
-                  label: Text(DateFormat('yyyy-MM-dd').format(_selectedDate)),
-                ),
-                const SizedBox(height: 16),
-                const Text('Raw Material *'),
-                const SizedBox(height: 8),
-                rawMaterialsAsync.when(
-                  loading: () => const LinearProgressIndicator(minHeight: 2),
-                  error: (error, _) => Text(
-                    'Failed to load materials: $error',
-                    style: const TextStyle(color: AppColors.errorText),
-                  ),
-                  data: (materials) {
-                    return DropdownButtonFormField<int>(
-                      initialValue: _selectedRawMaterialId,
-                      decoration: const InputDecoration(
-                        hintText: 'Select Material',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: materials
-                          .map(
-                            (material) => DropdownMenuItem<int>(
-                              value: material.id,
-                              child: Text(material.name),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: _isSaving
-                          ? null
-                          : (value) {
-                              setState(() {
-                                _selectedRawMaterialId = value;
-                                final matches = materials
-                                    .where((m) => m.id == value)
-                                    .toList();
-                                final selected = matches.isNotEmpty
-                                    ? matches.first
-                                    : null;
-                                if (selected != null &&
-                                    _rateController.text.trim().isEmpty) {
-                                  _rateController.text = selected.price
-                                      .toStringAsFixed(2);
-                                }
-                              });
-                            },
-                      validator: (value) =>
-                          value == null ? 'Raw material is required' : null,
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                const Text('Vendor *'),
-                const SizedBox(height: 8),
-                vendorsAsync.when(
-                  loading: () => const LinearProgressIndicator(minHeight: 2),
-                  error: (error, _) => Text(
-                    'Failed to load vendors: $error',
-                    style: const TextStyle(color: AppColors.errorText),
-                  ),
-                  data: (vendors) {
-                    final activeVendors = vendors
-                        .where((v) => v.isActive)
-                        .toList();
-                    return DropdownButtonFormField<int>(
-                      initialValue: _selectedVendorId,
-                      decoration: const InputDecoration(
-                        hintText: 'Select Vendor',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: activeVendors
-                          .map(
-                            (vendor) => DropdownMenuItem<int>(
-                              value: vendor.id,
-                              child: Text(vendor.vendorName),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: _isSaving
-                          ? null
-                          : (value) {
-                              setState(() {
-                                _selectedVendorId = value;
-                              });
-                            },
-                      validator: (value) =>
-                          value == null ? 'Vendor is required' : null,
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _quantityController,
-                        enabled: !_isSaving,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
+                    OutlinedButton.icon(
+                      onPressed: _isSaving ? null : _pickDate,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                        ],
-                        decoration: const InputDecoration(
-                          labelText: 'Quantity *',
-                          hintText: 'Enter Quantity',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Quantity is required';
-                          }
-                          final parsed = int.tryParse(value.trim());
-                          if (parsed == null || parsed <= 0) {
-                            return 'Enter a valid quantity';
-                          }
-                          return null;
-                        },
+                      ),
+                      icon: const Icon(Icons.calendar_month_outlined),
+                      label: Text(
+                        DateFormat('yyyy-MM-dd').format(_selectedDate),
                       ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: TextFormField(
-                        controller: _rateController,
-                        enabled: !_isSaving,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
+                      child: vendorsAsync.when(
+                        loading: () =>
+                            const LinearProgressIndicator(minHeight: 2),
+                        error: (error, _) => Text(
+                          'Failed to load vendors: $error',
+                          style: const TextStyle(color: AppColors.errorText),
                         ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                        ],
-                        decoration: const InputDecoration(
-                          labelText: 'Rate *',
-                          hintText: 'Enter Rate',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Rate is required';
-                          }
-                          final parsed = double.tryParse(value.trim());
-                          if (parsed == null || parsed <= 0) {
-                            return 'Enter a valid rate';
-                          }
-                          return null;
+                        data: (vendors) {
+                          final activeVendors = vendors
+                              .where((v) => v.isActive)
+                              .toList();
+
+                          return FormField<int>(
+                            initialValue: _selectedVendorId,
+                            validator: (value) =>
+                                value == null ? 'Vendor is required' : null,
+                            builder: (fieldState) {
+                              final selectedVendor = activeVendors
+                                  .where((v) => v.id == _selectedVendorId)
+                                  .firstOrNull;
+
+                              return SearchableDropdown<VendorEntity>(
+                                items: activeVendors,
+                                displayStringForOption: (v) => v.vendorName,
+                                labelText: 'Vendor *',
+                                errorText: fieldState.errorText,
+                                enabled: !_isSaving,
+                                initialText: selectedVendor?.vendorName,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    _selectedVendorId = selected.id;
+                                  });
+                                  fieldState.didChange(selected.id);
+                                },
+                              );
+                            },
+                          );
                         },
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _amountController,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Amount',
-                    hintText: 'Auto Calculated',
-                    border: OutlineInputBorder(),
-                  ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Material Details',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: _isSaving
+                          ? null
+                          : () {
+                              setState(() {
+                                _lines.add(
+                                  _DraftProcurementLine(quantity: 1, price: 0),
+                                );
+                              });
+                            },
+                      icon: const Icon(Icons.add_circle_outline),
+                      label: const Text('Add Material'),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _notesController,
-                  enabled: !_isSaving,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Remarks',
-                    hintText: 'Remarks',
-                    border: OutlineInputBorder(),
+                const SizedBox(height: 8),
+                rawMaterialsAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, _) => Text(
+                    'Failed to load raw materials: $error',
+                    style: const TextStyle(color: AppColors.errorText),
                   ),
+                  data: (materials) {
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _lines.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        return _ProcurementLineEditor(
+                          line: _lines[index],
+                          materials: materials,
+                          enabled: !_isSaving,
+                          onChanged: () => setState(() {}),
+                          onDelete: _lines.length == 1
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _lines.removeAt(index);
+                                  });
+                                },
+                        );
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        controller: _notesController,
+                        enabled: !_isSaving,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          labelText: 'Remarks / Notes',
+                          hintText: 'Add remarks...',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.lightBackground,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.dividerColor.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text(
+                              'TOTAL AMOUNT',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Rs. ${NumberFormat('#,##0.00').format(_calculateTotal())}',
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textBlack,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -405,6 +479,173 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ProcurementLineEditor extends StatefulWidget {
+  final _DraftProcurementLine line;
+  final List<RawMaterialEntity> materials;
+  final bool enabled;
+  final VoidCallback onChanged;
+  final VoidCallback? onDelete;
+
+  const _ProcurementLineEditor({
+    required this.line,
+    required this.materials,
+    required this.enabled,
+    required this.onChanged,
+    required this.onDelete,
+  });
+
+  @override
+  State<_ProcurementLineEditor> createState() => _ProcurementLineEditorState();
+}
+
+class _ProcurementLineEditorState extends State<_ProcurementLineEditor> {
+  // Controller to pre-fill the field when a material is already selected
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    final preSelected = widget.line.rawMaterialId != null
+        ? widget.materials
+              .where((m) => m.id == widget.line.rawMaterialId)
+              .map((m) => m.name)
+              .firstOrNull
+        : null;
+    _searchController = TextEditingController(text: preSelected ?? '');
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.lightBackground,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 4,
+            child: FormField<int>(
+              initialValue: widget.line.rawMaterialId,
+              validator: (value) => value == null ? 'Select material' : null,
+              builder: (fieldState) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SearchableDropdown<RawMaterialEntity>(
+                      items: widget.materials,
+                      displayStringForOption: (m) => m.name,
+                      labelText: 'Select Material',
+                      errorText: fieldState.errorText,
+                      enabled: widget.enabled,
+                      onSelected: (selected) {
+                        widget.line.rawMaterialId = selected.id;
+                        widget.line.price = selected.price;
+                        fieldState.didChange(selected.id);
+                        widget.onChanged();
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 120,
+            child: TextFormField(
+              initialValue: widget.line.quantity > 0
+                  ? widget.line.quantity.toString()
+                  : '',
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: false,
+              ),
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Qty',
+              ),
+              enabled: widget.enabled,
+              validator: (value) {
+                final parsed = int.tryParse(value ?? '');
+                if (parsed == null || parsed <= 0) {
+                  return 'Invalid';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                widget.line.quantity = int.tryParse(value) ?? 0;
+                widget.onChanged();
+              },
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 140,
+            child: TextFormField(
+              key: ValueKey('price_${widget.line.rawMaterialId}'),
+              initialValue: widget.line.price > 0
+                  ? widget.line.price.toStringAsFixed(2)
+                  : '',
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Rate',
+                prefixText: 'Rs. ',
+              ),
+              enabled: widget.enabled,
+              validator: (value) {
+                final parsed = double.tryParse((value ?? '').trim());
+                if (parsed == null || parsed <= 0) {
+                  return 'Invalid';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                widget.line.price = double.tryParse(value) ?? 0;
+                widget.onChanged();
+              },
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 140,
+            child: TextFormField(
+              key: ValueKey(widget.line.total),
+              initialValue: widget.line.total > 0
+                  ? widget.line.total.toStringAsFixed(2)
+                  : '0.00',
+              readOnly: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Amount',
+                prefixText: 'Rs. ',
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          IconButton(
+            onPressed: widget.enabled ? widget.onDelete : null,
+            icon: const Icon(Icons.delete_outline, color: AppColors.errorText),
+          ),
+        ],
+      ),
     );
   }
 }

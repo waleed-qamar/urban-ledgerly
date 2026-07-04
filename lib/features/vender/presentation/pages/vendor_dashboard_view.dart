@@ -1,17 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ledgerly/core/widgets/build_search_box.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../providers/vendor_providers.dart';
 import 'add_vendor_dialog.dart';
 
-class VenderDashboardView extends ConsumerWidget {
+class VenderDashboardView extends ConsumerStatefulWidget {
   const VenderDashboardView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<VenderDashboardView> createState() =>
+      _VenderDashboardViewState();
+}
+
+class _VenderDashboardViewState extends ConsumerState<VenderDashboardView> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final vendorsAsync = ref.watch(getAllvendorsProvider);
     final filter = ref.watch(vendorFilterProvider);
+    final searchQuery = ref.watch(vendorSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -59,7 +81,16 @@ class VenderDashboardView extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 24),
+            BuildSearchBox(
+              searchController: _searchController,
+              searchQueryProvider: vendorSearchQueryProvider,
+              onQueryChanged: (value) => ref
+                  .read(vendorSearchQueryProvider.notifier)
+                  .setSearchQuery(value),
+              hintText: 'Search vendors by name, company, contact, or notes...',
+            ),
+            const SizedBox(height: 24),
 
             // Summary Cards
             // vendorsAsync.when(
@@ -175,10 +206,23 @@ class VenderDashboardView extends ConsumerWidget {
                     filteredList = venders.where((v) => !v.isActive).toList();
                   }
 
+                  if (searchQuery.isNotEmpty) {
+                    final query = searchQuery.toLowerCase();
+                    filteredList = filteredList
+                        .where(
+                          (v) =>
+                              v.vendorName.toLowerCase().contains(query) ||
+                              v.companyName.toLowerCase().contains(query) ||
+                              v.vendorNotes.toLowerCase().contains(query) ||
+                              v.contactNumber.toLowerCase().contains(query),
+                        )
+                        .toList();
+                  }
+
                   if (filteredList.isEmpty) {
                     return const Center(
                       child: Text(
-                        'No vendors found matching the filter.',
+                        'No vendors found matching the filter or search.',
                         style: TextStyle(color: AppColors.textGrey),
                       ),
                     );

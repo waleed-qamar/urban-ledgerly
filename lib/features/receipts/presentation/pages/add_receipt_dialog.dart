@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/searchable_dropdown.dart';
 import '../../../account_ledger/presentation/provider/account_ledger_providers.dart';
+import '../../../client/domain/entities/client_entity.dart';
 import '../../../client/presentation/providers/client_providers.dart';
 import '../../../ledger/domain/entities/ledger_entity.dart';
 import '../../../ledger/presentation/providers/ledger_providers.dart';
@@ -178,32 +180,30 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Client dropdown
-                      DropdownButtonFormField<int?>(
+                      // Client dropdown (searchable)
+                      FormField<int>(
                         initialValue: _selectedClientId,
-                        decoration: const InputDecoration(
-                          labelText: 'Client *',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.person_outline),
-                        ),
-                        items: [
-                          const DropdownMenuItem<int?>(
-                            value: null,
-                            child: Text('Select client'),
-                          ),
-                          ...clients.map(
-                            (client) => DropdownMenuItem<int?>(
-                              value: client.id,
-                              child: Text(client.clientName),
-                            ),
-                          ),
-                        ],
-                        onChanged: _isSubmitting
-                            ? null
-                            : (value) =>
-                                  setState(() => _selectedClientId = value),
                         validator: (value) =>
                             value == null ? 'Please select a client' : null,
+                        builder: (fieldState) {
+                          final selectedClient = clients
+                              .where((c) => c.id == _selectedClientId)
+                              .firstOrNull;
+
+                          return SearchableDropdown<ClientEntity>(
+                            items: clients,
+                            displayStringForOption: (c) => c.clientName,
+                            labelText: 'Client *',
+                            prefixIcon: const Icon(Icons.person_outline),
+                            errorText: fieldState.errorText,
+                            enabled: !_isSubmitting,
+                            initialText: selectedClient?.clientName,
+                            onSelected: (selected) {
+                              setState(() => _selectedClientId = selected.id);
+                              fieldState.didChange(selected.id);
+                            },
+                          );
+                        },
                       ),
                       const SizedBox(height: 12),
                       if (_selectedClientId != null)

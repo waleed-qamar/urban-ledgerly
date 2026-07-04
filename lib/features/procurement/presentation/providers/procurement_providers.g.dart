@@ -106,6 +106,60 @@ final class ProcurementRepositoryProvider
 String _$procurementRepositoryHash() =>
     r'9563bb7d60b3eb5dc148a03c0846dad13adb9c0d';
 
+@ProviderFor(ProcurementSearchQuery)
+const procurementSearchQueryProvider = ProcurementSearchQueryProvider._();
+
+final class ProcurementSearchQueryProvider
+    extends $NotifierProvider<ProcurementSearchQuery, String> {
+  const ProcurementSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'procurementSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$procurementSearchQueryHash();
+
+  @$internal
+  @override
+  ProcurementSearchQuery create() => ProcurementSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$procurementSearchQueryHash() =>
+    r'5463ca4aa2b0e39445dadaaf5dd6c59576a6f51d';
+
+abstract class _$ProcurementSearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(getAllProcurements)
 const getAllProcurementsProvider = GetAllProcurementsProvider._();
 

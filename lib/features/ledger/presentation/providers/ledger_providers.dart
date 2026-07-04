@@ -9,6 +9,13 @@ import '../../domain/repositories/ledger_repository.dart';
 part 'ledger_providers.g.dart';
 
 @riverpod
+class LedgerSearchQuery extends _$LedgerSearchQuery {
+  @override
+  String build() => '';
+  void setSearchQuery(String query) => state = query;
+}
+
+@riverpod
 LedgerRemoteDatasource ledgerRemoteDatasource(Ref ref) {
   return LedgerRemoteDatasource(ref.watch(supabaseClientProvider));
 }

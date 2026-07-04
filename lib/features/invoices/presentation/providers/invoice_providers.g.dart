@@ -104,6 +104,60 @@ final class InvoiceRepositoryProvider
 
 String _$invoiceRepositoryHash() => r'273315b6f1e8a4e1dbe86f7774d08a56b12ef960';
 
+@ProviderFor(InvoiceSearchQuery)
+const invoiceSearchQueryProvider = InvoiceSearchQueryProvider._();
+
+final class InvoiceSearchQueryProvider
+    extends $NotifierProvider<InvoiceSearchQuery, String> {
+  const InvoiceSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'invoiceSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$invoiceSearchQueryHash();
+
+  @$internal
+  @override
+  InvoiceSearchQuery create() => InvoiceSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$invoiceSearchQueryHash() =>
+    r'd21acfed516ec54912dbf15dbff93de44c4e5351';
+
+abstract class _$InvoiceSearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(getAllInvoices)
 const getAllInvoicesProvider = GetAllInvoicesProvider._();
 

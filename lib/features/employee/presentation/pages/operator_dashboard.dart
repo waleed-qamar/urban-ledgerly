@@ -1,15 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
+import 'package:ledgerly/core/widgets/build_search_box.dart';
 import 'package:ledgerly/features/employee/presentation/provider/operator_providers.dart';
 import 'add_operator_dialog.dart';
 
-class OperatorDashboard extends ConsumerWidget {
+class OperatorDashboard extends ConsumerStatefulWidget {
   const OperatorDashboard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OperatorDashboard> createState() => _OperatorDashboardState();
+}
+
+class _OperatorDashboardState extends ConsumerState<OperatorDashboard> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    _searchController = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final employeeAsyncValue = ref.watch(getAllOperatorsProvider);
+    final searchQuery = ref.watch(operatorSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -55,12 +76,31 @@ class OperatorDashboard extends ConsumerWidget {
             ),
 
             const SizedBox(height: 48),
+            BuildSearchBox(
+              searchController: _searchController,
+              searchQueryProvider: operatorSearchQueryProvider,
+              onQueryChanged: (value) => ref
+                  .read(operatorSearchQueryProvider.notifier)
+                  .setSearchQuery(value),
+              hintText: 'Search Employee by name or phone number ...',
+            ),
 
             // Employee List
             Expanded(
               child: employeeAsyncValue.when(
                 data: (employees) {
-                  if (employees.isEmpty) {
+                  var emp = employees;
+                  if (searchQuery.trim().isNotEmpty) {
+                    final query = searchQuery.trim().toLowerCase();
+                    emp = employees
+                        .where(
+                          (e) =>
+                              e.name.toLowerCase().contains(query) ||
+                              e.phone.toLowerCase().contains(query),
+                        )
+                        .toList();
+                  }
+                  if (emp.isEmpty) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -98,14 +138,14 @@ class OperatorDashboard extends ConsumerWidget {
                   }
 
                   return ListView.separated(
-                    itemCount: employees.length,
+                    itemCount: emp.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
-                      final emp = employees[index];
+                      final semp = emp[index];
 
-                      final initial = (emp.name).isNotEmpty
-                          ? emp.name[0].toUpperCase()
+                      final initial = (semp.name).isNotEmpty
+                          ? semp.name[0].toUpperCase()
                           : '?';
 
                       return Container(
@@ -156,7 +196,7 @@ class OperatorDashboard extends ConsumerWidget {
                             Expanded(
                               flex: 3,
                               child: Text(
-                                emp.name,
+                                semp.name,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -171,7 +211,7 @@ class OperatorDashboard extends ConsumerWidget {
                             Expanded(
                               flex: 3,
                               child: Text(
-                                emp.phone,
+                                semp.phone,
                                 style: const TextStyle(
                                   color: AppColors.textBlack87,
                                   fontSize: 14,
@@ -192,7 +232,7 @@ class OperatorDashboard extends ConsumerWidget {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: (emp.isActive)
+                                    color: (semp.isActive)
                                         ? const Color(0xFFE8F5E9)
                                         : AppColors.badgeBackground,
                                     borderRadius: BorderRadius.circular(20),
@@ -203,7 +243,7 @@ class OperatorDashboard extends ConsumerWidget {
                                       CircleAvatar(radius: 4),
                                       const SizedBox(width: 8),
                                       Text(
-                                        (emp.isActive) ? 'Active' : 'Inactive',
+                                        (semp.isActive) ? 'Active' : 'Inactive',
                                       ),
                                     ],
                                   ),

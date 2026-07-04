@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProcurementEntity {
 
- int? get id; int get rawMaterialId; int get vendorId; String get procurementDate; int get quantity; double get price; double get total; String? get notes;
+ int? get id; int get vendorId; String get procurementDate; double get total; String? get notes; List<ProcurementItemEntity> get items;
 /// Create a copy of ProcurementEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ProcurementEntityCopyWith<ProcurementEntity> get copyWith => _$ProcurementEntit
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProcurementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.rawMaterialId, rawMaterialId) || other.rawMaterialId == rawMaterialId)&&(identical(other.vendorId, vendorId) || other.vendorId == vendorId)&&(identical(other.procurementDate, procurementDate) || other.procurementDate == procurementDate)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.price, price) || other.price == price)&&(identical(other.total, total) || other.total == total)&&(identical(other.notes, notes) || other.notes == notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProcurementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.vendorId, vendorId) || other.vendorId == vendorId)&&(identical(other.procurementDate, procurementDate) || other.procurementDate == procurementDate)&&(identical(other.total, total) || other.total == total)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other.items, items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,rawMaterialId,vendorId,procurementDate,quantity,price,total,notes);
+int get hashCode => Object.hash(runtimeType,id,vendorId,procurementDate,total,notes,const DeepCollectionEquality().hash(items));
 
 @override
 String toString() {
-  return 'ProcurementEntity(id: $id, rawMaterialId: $rawMaterialId, vendorId: $vendorId, procurementDate: $procurementDate, quantity: $quantity, price: $price, total: $total, notes: $notes)';
+  return 'ProcurementEntity(id: $id, vendorId: $vendorId, procurementDate: $procurementDate, total: $total, notes: $notes, items: $items)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ProcurementEntityCopyWith<$Res>  {
   factory $ProcurementEntityCopyWith(ProcurementEntity value, $Res Function(ProcurementEntity) _then) = _$ProcurementEntityCopyWithImpl;
 @useResult
 $Res call({
- int? id, int rawMaterialId, int vendorId, String procurementDate, int quantity, double price, double total, String? notes
+ int? id, int vendorId, String procurementDate, double total, String? notes, List<ProcurementItemEntity> items
 });
 
 
@@ -65,17 +65,15 @@ class _$ProcurementEntityCopyWithImpl<$Res>
 
 /// Create a copy of ProcurementEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? rawMaterialId = null,Object? vendorId = null,Object? procurementDate = null,Object? quantity = null,Object? price = null,Object? total = null,Object? notes = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? vendorId = null,Object? procurementDate = null,Object? total = null,Object? notes = freezed,Object? items = null,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int?,rawMaterialId: null == rawMaterialId ? _self.rawMaterialId : rawMaterialId // ignore: cast_nullable_to_non_nullable
-as int,vendorId: null == vendorId ? _self.vendorId : vendorId // ignore: cast_nullable_to_non_nullable
+as int?,vendorId: null == vendorId ? _self.vendorId : vendorId // ignore: cast_nullable_to_non_nullable
 as int,procurementDate: null == procurementDate ? _self.procurementDate : procurementDate // ignore: cast_nullable_to_non_nullable
-as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as int,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
-as double,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
+as String,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
 as double,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
+as List<ProcurementItemEntity>,
   ));
 }
 
@@ -160,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int rawMaterialId,  int vendorId,  String procurementDate,  int quantity,  double price,  double total,  String? notes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int vendorId,  String procurementDate,  double total,  String? notes,  List<ProcurementItemEntity> items)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProcurementEntity() when $default != null:
-return $default(_that.id,_that.rawMaterialId,_that.vendorId,_that.procurementDate,_that.quantity,_that.price,_that.total,_that.notes);case _:
+return $default(_that.id,_that.vendorId,_that.procurementDate,_that.total,_that.notes,_that.items);case _:
   return orElse();
 
 }
@@ -181,10 +179,10 @@ return $default(_that.id,_that.rawMaterialId,_that.vendorId,_that.procurementDat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int rawMaterialId,  int vendorId,  String procurementDate,  int quantity,  double price,  double total,  String? notes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int vendorId,  String procurementDate,  double total,  String? notes,  List<ProcurementItemEntity> items)  $default,) {final _that = this;
 switch (_that) {
 case _ProcurementEntity():
-return $default(_that.id,_that.rawMaterialId,_that.vendorId,_that.procurementDate,_that.quantity,_that.price,_that.total,_that.notes);case _:
+return $default(_that.id,_that.vendorId,_that.procurementDate,_that.total,_that.notes,_that.items);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +199,10 @@ return $default(_that.id,_that.rawMaterialId,_that.vendorId,_that.procurementDat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int rawMaterialId,  int vendorId,  String procurementDate,  int quantity,  double price,  double total,  String? notes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int vendorId,  String procurementDate,  double total,  String? notes,  List<ProcurementItemEntity> items)?  $default,) {final _that = this;
 switch (_that) {
 case _ProcurementEntity() when $default != null:
-return $default(_that.id,_that.rawMaterialId,_that.vendorId,_that.procurementDate,_that.quantity,_that.price,_that.total,_that.notes);case _:
+return $default(_that.id,_that.vendorId,_that.procurementDate,_that.total,_that.notes,_that.items);case _:
   return null;
 
 }
@@ -216,17 +214,21 @@ return $default(_that.id,_that.rawMaterialId,_that.vendorId,_that.procurementDat
 @JsonSerializable()
 
 class _ProcurementEntity implements ProcurementEntity {
-  const _ProcurementEntity({this.id, required this.rawMaterialId, required this.vendorId, required this.procurementDate, required this.quantity, required this.price, required this.total, this.notes});
+  const _ProcurementEntity({this.id, required this.vendorId, required this.procurementDate, required this.total, this.notes, required final  List<ProcurementItemEntity> items}): _items = items;
   factory _ProcurementEntity.fromJson(Map<String, dynamic> json) => _$ProcurementEntityFromJson(json);
 
 @override final  int? id;
-@override final  int rawMaterialId;
 @override final  int vendorId;
 @override final  String procurementDate;
-@override final  int quantity;
-@override final  double price;
 @override final  double total;
 @override final  String? notes;
+ final  List<ProcurementItemEntity> _items;
+@override List<ProcurementItemEntity> get items {
+  if (_items is EqualUnmodifiableListView) return _items;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_items);
+}
+
 
 /// Create a copy of ProcurementEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -241,16 +243,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProcurementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.rawMaterialId, rawMaterialId) || other.rawMaterialId == rawMaterialId)&&(identical(other.vendorId, vendorId) || other.vendorId == vendorId)&&(identical(other.procurementDate, procurementDate) || other.procurementDate == procurementDate)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.price, price) || other.price == price)&&(identical(other.total, total) || other.total == total)&&(identical(other.notes, notes) || other.notes == notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProcurementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.vendorId, vendorId) || other.vendorId == vendorId)&&(identical(other.procurementDate, procurementDate) || other.procurementDate == procurementDate)&&(identical(other.total, total) || other.total == total)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other._items, _items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,rawMaterialId,vendorId,procurementDate,quantity,price,total,notes);
+int get hashCode => Object.hash(runtimeType,id,vendorId,procurementDate,total,notes,const DeepCollectionEquality().hash(_items));
 
 @override
 String toString() {
-  return 'ProcurementEntity(id: $id, rawMaterialId: $rawMaterialId, vendorId: $vendorId, procurementDate: $procurementDate, quantity: $quantity, price: $price, total: $total, notes: $notes)';
+  return 'ProcurementEntity(id: $id, vendorId: $vendorId, procurementDate: $procurementDate, total: $total, notes: $notes, items: $items)';
 }
 
 
@@ -261,7 +263,7 @@ abstract mixin class _$ProcurementEntityCopyWith<$Res> implements $ProcurementEn
   factory _$ProcurementEntityCopyWith(_ProcurementEntity value, $Res Function(_ProcurementEntity) _then) = __$ProcurementEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, int rawMaterialId, int vendorId, String procurementDate, int quantity, double price, double total, String? notes
+ int? id, int vendorId, String procurementDate, double total, String? notes, List<ProcurementItemEntity> items
 });
 
 
@@ -278,17 +280,15 @@ class __$ProcurementEntityCopyWithImpl<$Res>
 
 /// Create a copy of ProcurementEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? rawMaterialId = null,Object? vendorId = null,Object? procurementDate = null,Object? quantity = null,Object? price = null,Object? total = null,Object? notes = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? vendorId = null,Object? procurementDate = null,Object? total = null,Object? notes = freezed,Object? items = null,}) {
   return _then(_ProcurementEntity(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int?,rawMaterialId: null == rawMaterialId ? _self.rawMaterialId : rawMaterialId // ignore: cast_nullable_to_non_nullable
-as int,vendorId: null == vendorId ? _self.vendorId : vendorId // ignore: cast_nullable_to_non_nullable
+as int?,vendorId: null == vendorId ? _self.vendorId : vendorId // ignore: cast_nullable_to_non_nullable
 as int,procurementDate: null == procurementDate ? _self.procurementDate : procurementDate // ignore: cast_nullable_to_non_nullable
-as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as int,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
-as double,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
+as String,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
 as double,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
+as List<ProcurementItemEntity>,
   ));
 }
 

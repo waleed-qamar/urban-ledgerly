@@ -57,6 +57,60 @@ final class OperatorRemoteDatasourceProvider
 String _$operatorRemoteDatasourceHash() =>
     r'bbf4c3aea32ac5dd156f73f739c874c78b80b772';
 
+@ProviderFor(OperatorSearchQuery)
+const operatorSearchQueryProvider = OperatorSearchQueryProvider._();
+
+final class OperatorSearchQueryProvider
+    extends $NotifierProvider<OperatorSearchQuery, String> {
+  const OperatorSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'operatorSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$operatorSearchQueryHash();
+
+  @$internal
+  @override
+  OperatorSearchQuery create() => OperatorSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$operatorSearchQueryHash() =>
+    r'197693047aee442cd41d876f5a96b7723f9485e4';
+
+abstract class _$OperatorSearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(operatorRepository)
 const operatorRepositoryProvider = OperatorRepositoryProvider._();
 

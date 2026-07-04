@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
+import 'package:ledgerly/core/widgets/build_search_box.dart';
 import 'package:ledgerly/features/products/presentation/pages/add_productset_dialog.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_detail_page.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
@@ -9,13 +10,33 @@ import 'package:ledgerly/core/inventory/presentation/providers/inventory_provide
 
 import 'add_product_dialog.dart';
 
-class ProductDashboard extends ConsumerWidget {
+class ProductDashboard extends ConsumerStatefulWidget {
   const ProductDashboard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProductDashboard> createState() => _ProductDashboardState();
+}
+
+class _ProductDashboardState extends ConsumerState<ProductDashboard> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    _searchController = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final productsAsyncValue = ref.watch(getAllProductsProvider);
     final setAsyncValue = ref.watch(getAllProductSetsProvider);
+    final searchQuery = ref.watch(productSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -86,6 +107,17 @@ class ProductDashboard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 48),
+            BuildSearchBox(
+              searchController: _searchController,
+              searchQueryProvider: productSearchQueryProvider,
+              onQueryChanged: (value) => ref
+                  .read(productSearchQueryProvider.notifier)
+                  .setSearchQuery(value),
+              hintText: 'Search product by name, company, contact, or notes...',
+            ),
+
+            const SizedBox(height: 32),
+
             // Summary Cards
             productsAsyncValue.when(
               data: (products) {
@@ -163,6 +195,27 @@ class ProductDashboard extends ConsumerWidget {
                           // Products Page
                           productsAsyncValue.when(
                             data: (products) {
+                              // Apply search filter
+                              var filteredProducts = products;
+                              if (searchQuery.trim().isNotEmpty) {
+                                final query = searchQuery.trim().toLowerCase();
+                                filteredProducts = products.where((p) {
+                                  final name = p.name.toLowerCase();
+                                  final description = (p.description ?? '')
+                                      .toLowerCase();
+                                  return name.contains(query) ||
+                                      description.contains(query);
+                                }).toList();
+                              }
+
+                              if (filteredProducts.isEmpty) {
+                                return const Center(
+                                  child: Text(
+                                    'No products found.',
+                                    style: TextStyle(color: AppColors.textGrey),
+                                  ),
+                                );
+                              }
                               if (products.isEmpty) {
                                 return const Center(
                                   child: Text(
@@ -173,11 +226,12 @@ class ProductDashboard extends ConsumerWidget {
                               }
 
                               return ListView.separated(
-                                itemCount: products.length,
+                                itemCount: filteredProducts.length,
                                 separatorBuilder: (_, _) =>
                                     const SizedBox(height: 16),
                                 itemBuilder: (context, index) {
-                                  final prod = products[index];
+                                  final prod =
+                                      filteredProducts[index]; // use filtered list here
 
                                   return _ProductListItem(
                                     product: prod,
@@ -251,7 +305,18 @@ class ProductDashboard extends ConsumerWidget {
                               ),
                             ),
                             data: (sets) {
-                              if (sets.isEmpty) {
+                              var filteredSets = sets;
+                              if (searchQuery.trim().isNotEmpty) {
+                                final query = searchQuery.trim().toLowerCase();
+                                filteredSets = sets
+                                    .where(
+                                      (s) =>
+                                          s.name.toLowerCase().contains(query),
+                                    )
+                                    .toList();
+                              }
+
+                              if (filteredSets.isEmpty) {
                                 return const Center(
                                   child: Text(
                                     'No product sets found.',
@@ -259,19 +324,23 @@ class ProductDashboard extends ConsumerWidget {
                                   ),
                                 );
                               }
-
                               return ListView.separated(
-                                itemCount: sets.length,
+                                itemCount: filteredSets.length,
                                 separatorBuilder: (_, _) =>
                                     const SizedBox(height: 16),
                                 itemBuilder: (context, index) {
-                                  final set = sets[index];
-
-                                  return ListTile(
-                                    title: Text(set.name),
-                                    subtitle: Text(
-                                      '${set.products.length} products',
-                                    ),
+                                  final set = filteredSets[index];
+                                  return _ProductSetListItem(
+                                    set: set,
+                                    onTap: () {
+                                      // navigate to set detail page if you have one
+                                    },
+                                    onEdit: () {
+                                      // showDialog(...) if you have an edit-set dialog
+                                    },
+                                    onDelete: () {
+                                      // your delete-set confirmation logic
+                                    },
                                   );
                                 },
                               );
@@ -444,6 +513,102 @@ class ProductDashboard extends ConsumerWidget {
         );
       }
     }
+  }
+}
+
+class _ProductSetListItem extends StatelessWidget {
+  final dynamic set;
+  final VoidCallback onTap;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ProductSetListItem({
+    required this.set,
+    required this.onTap,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        decoration: BoxDecoration(
+          color: AppColors.textWhite,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.dividerColor.withValues(alpha: 0.5),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.textGrey.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.lightBackground,
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: const Center(
+                child: Icon(Icons.inventory_2, color: AppColors.textGrey),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    set.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: AppColors.textBlack,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${set.products.length} products',
+                    style: const TextStyle(
+                      color: AppColors.textGrey,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            PopupMenuButton<String>(
+              color: AppColors.textWhite,
+              onSelected: (val) {
+                if (val == 'edit') {
+                  onEdit();
+                } else if (val == 'delete') {
+                  onDelete();
+                }
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                const PopupMenuItem(value: 'delete', child: Text('Delete')),
+              ],
+              icon: const Icon(Icons.more_vert, color: AppColors.textGrey),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

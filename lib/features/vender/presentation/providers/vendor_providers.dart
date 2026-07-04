@@ -19,6 +19,14 @@ class VendorFilterNotifier extends _$VendorFilterNotifier {
 }
 
 @riverpod
+class VendorSearchQuery extends _$VendorSearchQuery {
+  @override
+  String build() => '';
+
+  void setSearchQuery(String query) => state = query;
+}
+
+@riverpod
 VendorRemoteDatasource vendorRemoteDatasource(Ref ref) {
   return VendorRemoteDatasource(ref.watch(supabaseClientProvider));
 }

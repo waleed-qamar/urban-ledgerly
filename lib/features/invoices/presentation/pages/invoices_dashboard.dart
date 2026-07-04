@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:ledgerly/features/invoices/utils/pdf_generator.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/inventory/presentation/providers/inventory_providers.dart';
+import '../../../../core/widgets/build_search_box.dart';
 import '../../../ledger/domain/entities/ledger_entity.dart';
 import '../../../ledger/presentation/providers/ledger_providers.dart';
 import '../../../client/domain/entities/client_entity.dart';
@@ -32,8 +33,21 @@ class InvoicesDashboard extends ConsumerStatefulWidget {
 
 class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
   _SortField _sortField = _SortField.invoiceNumber;
+  late final TextEditingController _searchController;
   bool _sortAscending = false;
   int? _filterClientId;
+
+  @override
+  void initState() {
+    _searchController = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   int _compareInvoiceNumbers(String a, String b) {
     int parseSuffix(String value) {
@@ -56,10 +70,26 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
   List<InvoiceEntity> _sorted(
     List<InvoiceEntity> invoices,
     Map<int, ClientEntity> clientById,
+    String searchQuery, // new param
   ) {
     List<InvoiceEntity> list = _filterClientId == null
         ? List.of(invoices)
         : invoices.where((i) => i.clientId == _filterClientId).toList();
+
+    // Apply search filter (new)
+    if (searchQuery.trim().isNotEmpty) {
+      final query = searchQuery.trim().toLowerCase();
+      list = list.where((invoice) {
+        final invoiceNumber = invoice.invoiceNumber.toLowerCase();
+        final clientName =
+            clientById[invoice.clientId]?.clientName.toLowerCase() ?? '';
+        final orderNumber = invoice.orderId.toString();
+
+        return invoiceNumber.contains(query) ||
+            clientName.contains(query) ||
+            orderNumber.contains(query);
+      }).toList();
+    }
 
     list.sort((a, b) {
       int cmp;
@@ -100,6 +130,7 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
     final suppliersAsync = ref.watch(getAllSuppliersProvider);
     final productsAsync = ref.watch(getAllProductsProvider);
     final setsAsync = ref.watch(getAllProductSetsProvider);
+    final searchQuery = ref.watch(invoiceSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -124,7 +155,7 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
           final supplierById = {for (var s in suppliers) s.id: s};
           final productById = {for (var p in products) p.id: p};
 
-          final sorted = _sorted(invoices, clientById);
+          final sorted = _sorted(invoices, clientById, searchQuery);
 
           return Padding(
             padding: const EdgeInsets.all(24),
@@ -139,6 +170,16 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
                   sortField: _sortField,
                   sortAscending: _sortAscending,
                   onToggleSort: _toggleSort,
+                ),
+                const SizedBox(height: 16),
+                BuildSearchBox(
+                  searchController: _searchController,
+                  searchQueryProvider: invoiceSearchQueryProvider,
+                  onQueryChanged: (value) => ref
+                      .read(invoiceSearchQueryProvider.notifier)
+                      .setSearchQuery(value),
+                  hintText:
+                      'Search by invoice number, client, or order number...',
                 ),
                 const SizedBox(height: 16),
 

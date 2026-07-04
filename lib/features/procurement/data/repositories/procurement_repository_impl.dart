@@ -1,6 +1,6 @@
-import 'package:ledgerly/features/procurement/data/datasource/procurement_remote_datasource.dart';
-import 'package:ledgerly/features/procurement/domain/entities/procurement_entity.dart';
-import 'package:ledgerly/features/procurement/domain/repositories/procurement_repository.dart';
+import '../../domain/entities/procurement_entity.dart';
+import '../../domain/repositories/procurement_repository.dart';
+import '../datasource/procurement_remote_datasource.dart';
 
 class ProcurementRepositoryImpl implements ProcurementRepository {
   final ProcurementRemoteDatasource _datasource;

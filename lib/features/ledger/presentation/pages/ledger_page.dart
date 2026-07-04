@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ledgerly/core/widgets/build_search_box.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../client/presentation/providers/client_providers.dart';
 import '../../../vender/presentation/providers/vendor_providers.dart';
@@ -20,12 +21,26 @@ class LedgerPage extends ConsumerStatefulWidget {
 }
 
 class _LedgerPageState extends ConsumerState<LedgerPage> {
+  late final TextEditingController _searchController;
   LedgerFilter _filter = LedgerFilter.all;
+
+  @override
+  void initState() {
+    _searchController = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final clientsAsync = ref.watch(getAllClientsProvider);
     final vendorsAsync = ref.watch(getAllvendorsProvider);
+    final searchQuery = ref.watch(ledgerSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -70,6 +85,15 @@ class _LedgerPageState extends ConsumerState<LedgerPage> {
             ),
             const SizedBox(height: 32),
 
+            BuildSearchBox(
+              searchController: _searchController,
+              searchQueryProvider: ledgerSearchQueryProvider,
+              onQueryChanged: (value) => ref
+                  .read(ledgerSearchQueryProvider.notifier)
+                  .setSearchQuery(value),
+              hintText: 'Search by client or vendor name...',
+            ),
+            const SizedBox(height: 24),
             // Summary Cards (Optional, like in Vendor view)
             // For now, focusing on the list as requested.
 
@@ -98,7 +122,13 @@ class _LedgerPageState extends ConsumerState<LedgerPage> {
             const SizedBox(height: 24),
 
             // Combined List
-            Expanded(child: _buildCombinedList(clientsAsync, vendorsAsync)),
+            Expanded(
+              child: _buildCombinedList(
+                clientsAsync,
+                vendorsAsync,
+                searchQuery,
+              ),
+            ),
           ],
         ),
       ),
@@ -134,6 +164,7 @@ class _LedgerPageState extends ConsumerState<LedgerPage> {
   Widget _buildCombinedList(
     AsyncValue<List<ClientEntity>> clientsAsync,
     AsyncValue<List<VendorEntity>> vendorsAsync,
+    String searchQuery, // new param
   ) {
     if (clientsAsync.isLoading || vendorsAsync.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -178,7 +209,17 @@ class _LedgerPageState extends ConsumerState<LedgerPage> {
       );
     }
 
-    if (items.isEmpty) {
+    // Search filter (new)
+    var filteredItems = items;
+    if (searchQuery.trim().isNotEmpty) {
+      final query = searchQuery.trim().toLowerCase();
+      filteredItems = items.where((item) {
+        return item.name.toLowerCase().contains(query) ||
+            item.subtitle.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    if (filteredItems.isEmpty) {
       return const Center(
         child: Text(
           'No parties found matching the filter.',
@@ -188,10 +229,10 @@ class _LedgerPageState extends ConsumerState<LedgerPage> {
     }
 
     return ListView.separated(
-      itemCount: items.length,
+      itemCount: filteredItems.length,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final item = items[index];
+        final item = filteredItems[index];
         return _PartyTile(item: item);
       },
     );

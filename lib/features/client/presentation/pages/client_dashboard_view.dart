@@ -1,17 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ledgerly/core/widgets/build_search_box.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../providers/client_providers.dart';
 import 'add_client_dialog.dart';
 
-class ClientDashboardView extends ConsumerWidget {
+class ClientDashboardView extends ConsumerStatefulWidget {
   const ClientDashboardView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ClientDashboardView> createState() =>
+      _ClientDashboardViewState();
+}
+
+class _ClientDashboardViewState extends ConsumerState<ClientDashboardView> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final clientsAsync = ref.watch(getAllClientsProvider);
     final filter = ref.watch(clientFilterProvider);
+    final searchQuery = ref.watch(clientSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
@@ -57,44 +79,53 @@ class ClientDashboardView extends ConsumerWidget {
             ),
             const SizedBox(height: 48),
 
-            // Summary Cards
-            clientsAsync.when(
-              data: (clients) {
-                return Row(
-                  children: [
-                    Expanded(
-                      child: _buildSummaryCard(
-                        title: 'TOTAL CLIENTS',
-                        value: clients.length.toString(),
-                        subtitle: '+0 this quarter', // Placeholder
-                        icon: Icons.business,
-                      ),
-                    ),
-                    // const SizedBox(width: 24),
-                    // Expanded(
-                    //   child: _buildSummaryCard(
-                    //     title: 'ACTIVE PROJECTS',
-                    //     value: '0', // Placeholder
-                    //     subtitle: 'Across 0 clients', // Placeholder
-                    //     icon: Icons.architecture,
-                    //   ),
-                    // ),
-                    // const SizedBox(width: 24),
-                    // Expanded(
-                    //   child: _buildSummaryCard(
-                    //     title: 'TOTAL REVENUE',
-                    //     value: '\$0.0M', // Placeholder
-                    //     subtitle: '+0.0% YTD', // Placeholder
-                    //     icon: Icons.account_balance,
-                    //   ),
-                    // ),
-                  ],
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: $err')),
+            BuildSearchBox(
+              searchController: _searchController,
+              searchQueryProvider: clientSearchQueryProvider,
+              onQueryChanged: (value) => ref
+                  .read(clientSearchQueryProvider.notifier)
+                  .setSearchQuery(value),
+              hintText:
+                  'Search client by name, address, contact, or department ...',
             ),
-
+            const SizedBox(height: 24),
+            // Summary Cards
+            // clientsAsync.when(
+            //   data: (clients) {
+            //     return Row(
+            //       children: [
+            //         Expanded(
+            //           child: _buildSummaryCard(
+            //             title: 'TOTAL CLIENTS',
+            //             value: clients.length.toString(),
+            //             subtitle: '+0 this quarter', // Placeholder
+            //             icon: Icons.business,
+            //           ),
+            //         ),
+            //         // const SizedBox(width: 24),
+            //         // Expanded(
+            //         //   child: _buildSummaryCard(
+            //         //     title: 'ACTIVE PROJECTS',
+            //         //     value: '0', // Placeholder
+            //         //     subtitle: 'Across 0 clients', // Placeholder
+            //         //     icon: Icons.architecture,
+            //         //   ),
+            //         // ),
+            //         // const SizedBox(width: 24),
+            //         // Expanded(
+            //         //   child: _buildSummaryCard(
+            //         //     title: 'TOTAL REVENUE',
+            //         //     value: '\$0.0M', // Placeholder
+            //         //     subtitle: '+0.0% YTD', // Placeholder
+            //         //     icon: Icons.account_balance,
+            //         //   ),
+            //         // ),
+            //       ],
+            //     );
+            //   },
+            //   loading: () => const Center(child: CircularProgressIndicator()),
+            //   error: (err, _) => Center(child: Text('Error: $err')),
+            // ),
             const SizedBox(height: 48),
 
             // Filters & Sort
@@ -161,6 +192,19 @@ class ClientDashboardView extends ConsumerWidget {
                     filteredList = clients.where((c) => c.isActive).toList();
                   } else if (filter == ClientFilter.inactive) {
                     filteredList = clients.where((c) => !c.isActive).toList();
+                  }
+
+                  if (searchQuery.isNotEmpty) {
+                    final query = searchQuery.toLowerCase();
+                    filteredList = filteredList
+                        .where(
+                          (c) =>
+                              c.clientName.toLowerCase().contains(query) ||
+                              c.contactNumber.toLowerCase().contains(query) ||
+                              c.clientAddress.toLowerCase().contains(query) ||
+                              c.department.toLowerCase().contains(query),
+                        )
+                        .toList();
                   }
 
                   if (filteredList.isEmpty) {
@@ -477,85 +521,85 @@ class ClientDashboardView extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryCard({
-    required String title,
-    required String value,
-    required String subtitle,
-    required IconData icon,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: AppColors.textWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.5),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textGrey.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.textGrey,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textBlack,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.trending_up,
-                    color: AppColors.primary,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Positioned(
-            right: 0,
-            top: 0,
-            child: CircleAvatar(
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              radius: 20,
-              child: Icon(icon, color: AppColors.primary, size: 18),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildSummaryCard({
+  //   required String title,
+  //   required String value,
+  //   required String subtitle,
+  //   required IconData icon,
+  // }) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(32),
+  //     decoration: BoxDecoration(
+  //       color: AppColors.textWhite,
+  //       borderRadius: BorderRadius.circular(16),
+  //       border: Border.all(
+  //         color: AppColors.dividerColor.withValues(alpha: 0.5),
+  //       ),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: AppColors.textGrey.withValues(alpha: 0.05),
+  //           blurRadius: 10,
+  //           offset: const Offset(0, 4),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Stack(
+  //       children: [
+  //         Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Text(
+  //               title,
+  //               style: const TextStyle(
+  //                 color: AppColors.textGrey,
+  //                 fontSize: 12,
+  //                 fontWeight: FontWeight.bold,
+  //                 letterSpacing: 1.2,
+  //               ),
+  //             ),
+  //             const SizedBox(height: 24),
+  //             Text(
+  //               value,
+  //               style: const TextStyle(
+  //                 fontSize: 48,
+  //                 fontWeight: FontWeight.bold,
+  //                 color: AppColors.textBlack,
+  //               ),
+  //             ),
+  //             const SizedBox(height: 8),
+  //             Row(
+  //               children: [
+  //                 const Icon(
+  //                   Icons.trending_up,
+  //                   color: AppColors.primary,
+  //                   size: 16,
+  //                 ),
+  //                 const SizedBox(width: 8),
+  //                 Text(
+  //                   subtitle,
+  //                   style: const TextStyle(
+  //                     color: AppColors.primary,
+  //                     fontSize: 14,
+  //                     fontWeight: FontWeight.w500,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ],
+  //         ),
+  //         Positioned(
+  //           right: 0,
+  //           top: 0,
+  //           child: CircleAvatar(
+  //             backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+  //             radius: 20,
+  //             child: Icon(icon, color: AppColors.primary, size: 18),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildFilterPill(
     String label, {

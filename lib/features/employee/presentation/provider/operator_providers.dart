@@ -13,6 +13,13 @@ EmployeeRemoteDatasource operatorRemoteDatasource(Ref ref) {
 }
 
 @riverpod
+class OperatorSearchQuery extends _$OperatorSearchQuery {
+  @override
+  String build() => '';
+  void setSearchQuery(String query) => state = query;
+}
+
+@riverpod
 EmployeeRepository operatorRepository(Ref ref) {
   return EmployeeRepositoryImpl(ref.watch(operatorRemoteDatasourceProvider));
 }

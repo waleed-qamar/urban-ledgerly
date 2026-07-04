@@ -106,6 +106,60 @@ final class RawMaterialRepositoryProvider
 String _$rawMaterialRepositoryHash() =>
     r'bee5af1761a1db4cae8b2326d01f43cc1eb0ca40';
 
+@ProviderFor(RawMaterialSearchQuery)
+const rawMaterialSearchQueryProvider = RawMaterialSearchQueryProvider._();
+
+final class RawMaterialSearchQueryProvider
+    extends $NotifierProvider<RawMaterialSearchQuery, String> {
+  const RawMaterialSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'rawMaterialSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$rawMaterialSearchQueryHash();
+
+  @$internal
+  @override
+  RawMaterialSearchQuery create() => RawMaterialSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$rawMaterialSearchQueryHash() =>
+    r'cef2a580190cf5de3880561ded87ff477a4da69a';
+
+abstract class _$RawMaterialSearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(getAllRawMaterials)
 const getAllRawMaterialsProvider = GetAllRawMaterialsProvider._();
 

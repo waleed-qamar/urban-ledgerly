@@ -19,6 +19,13 @@ ProductRepository productRepository(Ref ref) {
 }
 
 @riverpod
+class ProductSearchQuery extends _$ProductSearchQuery {
+  @override
+  String build() => '';
+  void setSearchQuery(String query) => state = query;
+}
+
+@riverpod
 Future<List<ProductEntity>> getAllProducts(Ref ref) {
   return ref.watch(productRepositoryProvider).getProducts();
 }

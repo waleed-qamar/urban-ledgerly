@@ -104,6 +104,60 @@ final class ProductRepositoryProvider
 
 String _$productRepositoryHash() => r'3f5ae24697b7fc114b01d7b89a42094813b98548';
 
+@ProviderFor(ProductSearchQuery)
+const productSearchQueryProvider = ProductSearchQueryProvider._();
+
+final class ProductSearchQueryProvider
+    extends $NotifierProvider<ProductSearchQuery, String> {
+  const ProductSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'productSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$productSearchQueryHash();
+
+  @$internal
+  @override
+  ProductSearchQuery create() => ProductSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$productSearchQueryHash() =>
+    r'c35683a3a51fcb3916bde1857b0fdac1da51f35a';
+
+abstract class _$ProductSearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(getAllProducts)
 const getAllProductsProvider = GetAllProductsProvider._();
 

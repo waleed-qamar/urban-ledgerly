@@ -63,6 +63,59 @@ abstract class _$ClientFilterNotifier extends $Notifier<ClientFilter> {
   }
 }
 
+@ProviderFor(ClientSearchQuery)
+const clientSearchQueryProvider = ClientSearchQueryProvider._();
+
+final class ClientSearchQueryProvider
+    extends $NotifierProvider<ClientSearchQuery, String> {
+  const ClientSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'clientSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$clientSearchQueryHash();
+
+  @$internal
+  @override
+  ClientSearchQuery create() => ClientSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$clientSearchQueryHash() => r'3d177617fd52bd60cb1b031e397288905b0ea41b';
+
+abstract class _$ClientSearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(clientRemoteDatasource)
 const clientRemoteDatasourceProvider = ClientRemoteDatasourceProvider._();
 
