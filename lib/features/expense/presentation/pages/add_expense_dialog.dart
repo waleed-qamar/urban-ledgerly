@@ -35,7 +35,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
 
     if (widget.expense != null) {
       _selectedHeadId = widget.expense!.expenseHeadId;
-      _remarksController.text = widget.expense!.remarks;
+      _remarksController.text = widget.expense!.remarks ?? "";
       _amountController.text = widget.expense!.amount.toString();
     }
   }

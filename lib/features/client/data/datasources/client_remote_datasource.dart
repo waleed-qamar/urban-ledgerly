@@ -1,3 +1,4 @@
+import 'package:ledgerly/core/utils/supabase_handler.dart';
 import 'package:ledgerly/features/client/domain/entities/client_entity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -15,16 +16,22 @@ class ClientRemoteDatasource {
   }
 
   Future<void> addClient(ClientEntity client) async {
-    final payload = client.toJson()..remove('id');
-    await _client.from('clients').insert(payload);
+    await supabaseSafeCall(() async {
+      final payload = client.toJson()..remove('id');
+      await _client.from('clients').insert(payload);
+    });
   }
 
   Future<void> updateClient(ClientEntity client) async {
-    await _client.from('clients').update(client.toJson()).eq('id', client.id);
+    await supabaseSafeCall(() async {
+      await _client.from('clients').update(client.toJson()).eq('id', client.id);
+    });
   }
 
   Future<void> deleteClient(int clientId) async {
-    await _client.from('clients').delete().eq('id', clientId);
+    await supabaseSafeCall(() async {
+      await _client.from('clients').delete().eq('id', clientId);
+    });
   }
 
   Map<String, dynamic> _normalizeClientRow(Map<String, dynamic> row) {

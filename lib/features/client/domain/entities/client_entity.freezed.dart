@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ClientEntity {
 
- int get id; String get clientName; String get contactNumber; String get clientAddress; String get department; DateTime get createdAt;// ignore: invalid_annotation_target
+ int get id;@JsonKey(name: 'client_name') String get clientName;@JsonKey(name: 'contact_number') String get contactNumber;@JsonKey(name: 'client_address') String get clientAddress; String get department;@JsonKey(name: 'created_at') DateTime get createdAt;// ignore: invalid_annotation_target
 @JsonKey(name: 'is_active', defaultValue: true) bool get isActive;
 /// Create a copy of ClientEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -49,7 +49,7 @@ abstract mixin class $ClientEntityCopyWith<$Res>  {
   factory $ClientEntityCopyWith(ClientEntity value, $Res Function(ClientEntity) _then) = _$ClientEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String clientName, String contactNumber, String clientAddress, String department, DateTime createdAt,@JsonKey(name: 'is_active', defaultValue: true) bool isActive
+ int id,@JsonKey(name: 'client_name') String clientName,@JsonKey(name: 'contact_number') String contactNumber,@JsonKey(name: 'client_address') String clientAddress, String department,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'is_active', defaultValue: true) bool isActive
 });
 
 
@@ -160,7 +160,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String clientName,  String contactNumber,  String clientAddress,  String department,  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'client_name')  String clientName, @JsonKey(name: 'contact_number')  String contactNumber, @JsonKey(name: 'client_address')  String clientAddress,  String department, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ClientEntity() when $default != null:
 return $default(_that.id,_that.clientName,_that.contactNumber,_that.clientAddress,_that.department,_that.createdAt,_that.isActive);case _:
@@ -181,7 +181,7 @@ return $default(_that.id,_that.clientName,_that.contactNumber,_that.clientAddres
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String clientName,  String contactNumber,  String clientAddress,  String department,  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'client_name')  String clientName, @JsonKey(name: 'contact_number')  String contactNumber, @JsonKey(name: 'client_address')  String clientAddress,  String department, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)  $default,) {final _that = this;
 switch (_that) {
 case _ClientEntity():
 return $default(_that.id,_that.clientName,_that.contactNumber,_that.clientAddress,_that.department,_that.createdAt,_that.isActive);case _:
@@ -201,7 +201,7 @@ return $default(_that.id,_that.clientName,_that.contactNumber,_that.clientAddres
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String clientName,  String contactNumber,  String clientAddress,  String department,  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'client_name')  String clientName, @JsonKey(name: 'contact_number')  String contactNumber, @JsonKey(name: 'client_address')  String clientAddress,  String department, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)?  $default,) {final _that = this;
 switch (_that) {
 case _ClientEntity() when $default != null:
 return $default(_that.id,_that.clientName,_that.contactNumber,_that.clientAddress,_that.department,_that.createdAt,_that.isActive);case _:
@@ -216,15 +216,15 @@ return $default(_that.id,_that.clientName,_that.contactNumber,_that.clientAddres
 @JsonSerializable()
 
 class _ClientEntity implements ClientEntity {
-   _ClientEntity({required this.id, required this.clientName, required this.contactNumber, required this.clientAddress, required this.department, required this.createdAt, @JsonKey(name: 'is_active', defaultValue: true) required this.isActive});
+   _ClientEntity({required this.id, @JsonKey(name: 'client_name') required this.clientName, @JsonKey(name: 'contact_number') required this.contactNumber, @JsonKey(name: 'client_address') required this.clientAddress, required this.department, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'is_active', defaultValue: true) required this.isActive});
   factory _ClientEntity.fromJson(Map<String, dynamic> json) => _$ClientEntityFromJson(json);
 
 @override final  int id;
-@override final  String clientName;
-@override final  String contactNumber;
-@override final  String clientAddress;
+@override@JsonKey(name: 'client_name') final  String clientName;
+@override@JsonKey(name: 'contact_number') final  String contactNumber;
+@override@JsonKey(name: 'client_address') final  String clientAddress;
 @override final  String department;
-@override final  DateTime createdAt;
+@override@JsonKey(name: 'created_at') final  DateTime createdAt;
 // ignore: invalid_annotation_target
 @override@JsonKey(name: 'is_active', defaultValue: true) final  bool isActive;
 
@@ -261,7 +261,7 @@ abstract mixin class _$ClientEntityCopyWith<$Res> implements $ClientEntityCopyWi
   factory _$ClientEntityCopyWith(_ClientEntity value, $Res Function(_ClientEntity) _then) = __$ClientEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String clientName, String contactNumber, String clientAddress, String department, DateTime createdAt,@JsonKey(name: 'is_active', defaultValue: true) bool isActive
+ int id,@JsonKey(name: 'client_name') String clientName,@JsonKey(name: 'contact_number') String contactNumber,@JsonKey(name: 'client_address') String clientAddress, String department,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'is_active', defaultValue: true) bool isActive
 });
 
 

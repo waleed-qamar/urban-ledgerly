@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProductEntity {
 
- int get id; String get name; double get weight; String? get description; DateTime get createdAt;
+ int get id; String get name; double get weight; String? get description;@JsonKey(name: 'created_at') DateTime get createdAt;
 /// Create a copy of ProductEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ProductEntityCopyWith<$Res>  {
   factory $ProductEntityCopyWith(ProductEntity value, $Res Function(ProductEntity) _then) = _$ProductEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, double weight, String? description, DateTime createdAt
+ int id, String name, double weight, String? description,@JsonKey(name: 'created_at') DateTime createdAt
 });
 
 
@@ -157,7 +157,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  double weight,  String? description,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  double weight,  String? description, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductEntity() when $default != null:
 return $default(_that.id,_that.name,_that.weight,_that.description,_that.createdAt);case _:
@@ -178,7 +178,7 @@ return $default(_that.id,_that.name,_that.weight,_that.description,_that.created
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  double weight,  String? description,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  double weight,  String? description, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _ProductEntity():
 return $default(_that.id,_that.name,_that.weight,_that.description,_that.createdAt);case _:
@@ -198,7 +198,7 @@ return $default(_that.id,_that.name,_that.weight,_that.description,_that.created
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  double weight,  String? description,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  double weight,  String? description, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductEntity() when $default != null:
 return $default(_that.id,_that.name,_that.weight,_that.description,_that.createdAt);case _:
@@ -213,14 +213,14 @@ return $default(_that.id,_that.name,_that.weight,_that.description,_that.created
 @JsonSerializable()
 
 class _ProductEntity implements ProductEntity {
-  const _ProductEntity({required this.id, required this.name, required this.weight, this.description, required this.createdAt});
+  const _ProductEntity({required this.id, required this.name, required this.weight, this.description, @JsonKey(name: 'created_at') required this.createdAt});
   factory _ProductEntity.fromJson(Map<String, dynamic> json) => _$ProductEntityFromJson(json);
 
 @override final  int id;
 @override final  String name;
 @override final  double weight;
 @override final  String? description;
-@override final  DateTime createdAt;
+@override@JsonKey(name: 'created_at') final  DateTime createdAt;
 
 /// Create a copy of ProductEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -255,7 +255,7 @@ abstract mixin class _$ProductEntityCopyWith<$Res> implements $ProductEntityCopy
   factory _$ProductEntityCopyWith(_ProductEntity value, $Res Function(_ProductEntity) _then) = __$ProductEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, double weight, String? description, DateTime createdAt
+ int id, String name, double weight, String? description,@JsonKey(name: 'created_at') DateTime createdAt
 });
 
 

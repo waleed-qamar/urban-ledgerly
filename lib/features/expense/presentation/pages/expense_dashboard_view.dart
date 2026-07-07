@@ -294,28 +294,28 @@ class ExpenseDashboardView extends ConsumerWidget {
                                     children: [
                                       Column(
                                         children: [
-                                          RadioListTile<String>(
-                                            title: const Text('Vendors (V)'),
-                                            value: 'vendor',
+                                          RadioGroup<String>(
                                             groupValue: selection,
                                             onChanged: (v) =>
                                                 setState(() => selection = v!),
-                                          ),
-                                          RadioListTile<String>(
-                                            title: const Text(
-                                              'Non-Vendors (NV)',
+                                            child: Column(
+                                              children: const [
+                                                RadioListTile<String>(
+                                                  title: Text('Vendors (V)'),
+                                                  value: 'vendor',
+                                                ),
+                                                RadioListTile<String>(
+                                                  title: Text(
+                                                    'Non-Vendors (NV)',
+                                                  ),
+                                                  value: 'nonvendor',
+                                                ),
+                                                RadioListTile<String>(
+                                                  title: Text('Both'),
+                                                  value: 'both',
+                                                ),
+                                              ],
                                             ),
-                                            value: 'nonvendor',
-                                            groupValue: selection,
-                                            onChanged: (v) =>
-                                                setState(() => selection = v!),
-                                          ),
-                                          RadioListTile<String>(
-                                            title: const Text('Both'),
-                                            value: 'both',
-                                            groupValue: selection,
-                                            onChanged: (v) =>
-                                                setState(() => selection = v!),
                                           ),
                                         ],
                                       ),
@@ -482,15 +482,18 @@ class ExpenseDashboardView extends ConsumerWidget {
                                       return buildLedgerItem(
                                         Icons.receipt_long,
                                         title, // Showing Head Name as title
-                                        exp.remarks, // Showing Remark as subtitle
+                                        exp.remarks ??
+                                            "", // Showing Remark as subtitle
                                         NumberFormat.currency(
                                           symbol: 'PKR ',
                                         ).format(exp.amount),
                                         DateFormat.yMMMd().format(exp.date),
                                         headType, // Showing Head Type in badge
-                                        DateFormat.yMMMd().format(
-                                          exp.createdAt!,
-                                        ),
+                                        exp.createdAt != null
+                                            ? DateFormat.yMMMd().format(
+                                                exp.createdAt!,
+                                              )
+                                            : '',
                                         AppColors.iconBackground,
                                         Colors.teal,
                                       );

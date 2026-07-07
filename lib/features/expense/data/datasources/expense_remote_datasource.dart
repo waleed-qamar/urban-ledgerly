@@ -1,4 +1,5 @@
 import 'package:ledgerly/features/expense/domain/entities/expense_head.dart';
+import 'package:ledgerly/core/utils/supabase_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/expense.dart';
@@ -127,44 +128,54 @@ class ExpenseRemoteDatasource {
   }
 
   Future<void> addExpenseHead(ExpenseHead expenseHead) async {
-    final payload = expenseHead.toJson()..remove('id');
-    await _client.from('expense_heads').insert(payload);
+    await supabaseSafeCall(() async {
+      final payload = expenseHead.toJson()..remove('id');
+      await _client.from('expense_heads').insert(payload);
+    });
   }
 
   Future<void> updateExpenseHead(ExpenseHead expenseHead) async {
-    await _client
-        .from('expense_heads')
-        .update(expenseHead.toJson())
-        .eq('id', expenseHead.id);
+    await supabaseSafeCall(() async {
+      await _client
+          .from('expense_heads')
+          .update(expenseHead.toJson())
+          .eq('id', expenseHead.id);
+    });
   }
 
   Future<void> deleteExpenseHead(int headId) async {
-    await _client.from('expense_heads').delete().eq('id', headId);
+    await supabaseSafeCall(() async {
+      await _client.from('expense_heads').delete().eq('id', headId);
+    });
   }
 
   Future<void> addExpense(Expense expense, {int? accountId}) async {
-    await _client.rpc(
-      'create_expense',
-      params: {
-        'p_expense_head_id': expense.expenseHeadId,
-        'p_amount': expense.amount,
-        'p_remarks': expense.remarks,
-        'p_date': expense.date.toIso8601String(),
-        'p_created_at': expense.createdAt?.toIso8601String(),
-        'p_account_id': accountId,
-      },
-    );
+    await supabaseSafeCall(() async {
+      await _client.rpc(
+        'create_expense',
+        params: {
+          'p_expense_head_id': expense.expenseHeadId,
+          'p_amount': expense.amount,
+          'p_remarks': expense.remarks,
+          'p_date': expense.date.toIso8601String(),
+          'p_created_at': expense.createdAt?.toIso8601String(),
+          'p_account_id': accountId,
+        },
+      );
+    });
   }
 
   Future<void> updateExpense(Expense expense) async {
-    final payload = expense.toJson()
-      ..remove('id')
-      ..remove('created_at')
-      ..remove('updated_at');
+    await supabaseSafeCall(() async {
+      final payload = expense.toJson()
+        ..remove('id')
+        ..remove('created_at')
+        ..remove('updated_at');
 
-    // Set updated_at to now so DB records last modification time
-    payload['updated_at'] = DateTime.now().toIso8601String();
+      // Set updated_at to now so DB records last modification time
+      payload['updated_at'] = DateTime.now().toIso8601String();
 
-    await _client.from('expenses').update(payload).eq('id', expense.id);
+      await _client.from('expenses').update(payload).eq('id', expense.id);
+    });
   }
 }

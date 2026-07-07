@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RawMaterialEntity {
 
- int get id; String get name; double get price; String? get description; DateTime get createdAt;
+ int get id; String get name; double get price; String? get description; String get unit; DateTime get createdAt;
 /// Create a copy of RawMaterialEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $RawMaterialEntityCopyWith<RawMaterialEntity> get copyWith => _$RawMaterialEntit
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawMaterialEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.price, price) || other.price == price)&&(identical(other.description, description) || other.description == description)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawMaterialEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.price, price) || other.price == price)&&(identical(other.description, description) || other.description == description)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,price,description,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,price,description,unit,createdAt);
 
 @override
 String toString() {
-  return 'RawMaterialEntity(id: $id, name: $name, price: $price, description: $description, createdAt: $createdAt)';
+  return 'RawMaterialEntity(id: $id, name: $name, price: $price, description: $description, unit: $unit, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $RawMaterialEntityCopyWith<$Res>  {
   factory $RawMaterialEntityCopyWith(RawMaterialEntity value, $Res Function(RawMaterialEntity) _then) = _$RawMaterialEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, double price, String? description, DateTime createdAt
+ int id, String name, double price, String? description, String unit, DateTime createdAt
 });
 
 
@@ -65,13 +65,14 @@ class _$RawMaterialEntityCopyWithImpl<$Res>
 
 /// Create a copy of RawMaterialEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? price = null,Object? description = freezed,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? price = null,Object? description = freezed,Object? unit = null,Object? createdAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String?,unit: null == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
+as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
@@ -157,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  double price,  String? description,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  double price,  String? description,  String unit,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RawMaterialEntity() when $default != null:
-return $default(_that.id,_that.name,_that.price,_that.description,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.price,_that.description,_that.unit,_that.createdAt);case _:
   return orElse();
 
 }
@@ -178,10 +179,10 @@ return $default(_that.id,_that.name,_that.price,_that.description,_that.createdA
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  double price,  String? description,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  double price,  String? description,  String unit,  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _RawMaterialEntity():
-return $default(_that.id,_that.name,_that.price,_that.description,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.price,_that.description,_that.unit,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +199,10 @@ return $default(_that.id,_that.name,_that.price,_that.description,_that.createdA
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  double price,  String? description,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  double price,  String? description,  String unit,  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _RawMaterialEntity() when $default != null:
-return $default(_that.id,_that.name,_that.price,_that.description,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.price,_that.description,_that.unit,_that.createdAt);case _:
   return null;
 
 }
@@ -213,13 +214,14 @@ return $default(_that.id,_that.name,_that.price,_that.description,_that.createdA
 @JsonSerializable()
 
 class _RawMaterialEntity implements RawMaterialEntity {
-  const _RawMaterialEntity({required this.id, required this.name, required this.price, this.description, required this.createdAt});
+  const _RawMaterialEntity({required this.id, required this.name, required this.price, this.description, this.unit = 'kg', required this.createdAt});
   factory _RawMaterialEntity.fromJson(Map<String, dynamic> json) => _$RawMaterialEntityFromJson(json);
 
 @override final  int id;
 @override final  String name;
 @override final  double price;
 @override final  String? description;
+@override@JsonKey() final  String unit;
 @override final  DateTime createdAt;
 
 /// Create a copy of RawMaterialEntity
@@ -235,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawMaterialEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.price, price) || other.price == price)&&(identical(other.description, description) || other.description == description)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawMaterialEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.price, price) || other.price == price)&&(identical(other.description, description) || other.description == description)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,price,description,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,price,description,unit,createdAt);
 
 @override
 String toString() {
-  return 'RawMaterialEntity(id: $id, name: $name, price: $price, description: $description, createdAt: $createdAt)';
+  return 'RawMaterialEntity(id: $id, name: $name, price: $price, description: $description, unit: $unit, createdAt: $createdAt)';
 }
 
 
@@ -255,7 +257,7 @@ abstract mixin class _$RawMaterialEntityCopyWith<$Res> implements $RawMaterialEn
   factory _$RawMaterialEntityCopyWith(_RawMaterialEntity value, $Res Function(_RawMaterialEntity) _then) = __$RawMaterialEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, double price, String? description, DateTime createdAt
+ int id, String name, double price, String? description, String unit, DateTime createdAt
 });
 
 
@@ -272,13 +274,14 @@ class __$RawMaterialEntityCopyWithImpl<$Res>
 
 /// Create a copy of RawMaterialEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? price = null,Object? description = freezed,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? price = null,Object? description = freezed,Object? unit = null,Object? createdAt = null,}) {
   return _then(_RawMaterialEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String?,unit: null == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
+as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }

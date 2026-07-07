@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Expense {
 
- int get id; int get expenseHeadId; double get amount; String get remarks; DateTime get date; DateTime? get createdAt; DateTime? get updatedAt;
+ int get id;@JsonKey(name: 'expense_head_id') int get expenseHeadId; double get amount; String? get remarks; DateTime get date;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ExpenseCopyWith<$Res>  {
   factory $ExpenseCopyWith(Expense value, $Res Function(Expense) _then) = _$ExpenseCopyWithImpl;
 @useResult
 $Res call({
- int id, int expenseHeadId, double amount, String remarks, DateTime date, DateTime? createdAt, DateTime? updatedAt
+ int id,@JsonKey(name: 'expense_head_id') int expenseHeadId, double amount, String? remarks, DateTime date,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -65,13 +65,13 @@ class _$ExpenseCopyWithImpl<$Res>
 
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? expenseHeadId = null,Object? amount = null,Object? remarks = null,Object? date = null,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? expenseHeadId = null,Object? amount = null,Object? remarks = freezed,Object? date = null,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,expenseHeadId: null == expenseHeadId ? _self.expenseHeadId : expenseHeadId // ignore: cast_nullable_to_non_nullable
 as int,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
-as double,remarks: null == remarks ? _self.remarks : remarks // ignore: cast_nullable_to_non_nullable
-as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
+as double,remarks: freezed == remarks ? _self.remarks : remarks // ignore: cast_nullable_to_non_nullable
+as String?,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as DateTime,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
@@ -159,7 +159,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int expenseHeadId,  double amount,  String remarks,  DateTime date,  DateTime? createdAt,  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'expense_head_id')  int expenseHeadId,  double amount,  String? remarks,  DateTime date, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Expense() when $default != null:
 return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.date,_that.createdAt,_that.updatedAt);case _:
@@ -180,7 +180,7 @@ return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.da
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int expenseHeadId,  double amount,  String remarks,  DateTime date,  DateTime? createdAt,  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'expense_head_id')  int expenseHeadId,  double amount,  String? remarks,  DateTime date, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Expense():
 return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.date,_that.createdAt,_that.updatedAt);case _:
@@ -200,7 +200,7 @@ return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.da
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int expenseHeadId,  double amount,  String remarks,  DateTime date,  DateTime? createdAt,  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'expense_head_id')  int expenseHeadId,  double amount,  String? remarks,  DateTime date, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Expense() when $default != null:
 return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.date,_that.createdAt,_that.updatedAt);case _:
@@ -215,16 +215,16 @@ return $default(_that.id,_that.expenseHeadId,_that.amount,_that.remarks,_that.da
 @JsonSerializable()
 
 class _Expense implements Expense {
-   _Expense({required this.id, required this.expenseHeadId, required this.amount, required this.remarks, required this.date, this.createdAt, this.updatedAt});
+   _Expense({required this.id, @JsonKey(name: 'expense_head_id') required this.expenseHeadId, required this.amount, this.remarks, required this.date, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt});
   factory _Expense.fromJson(Map<String, dynamic> json) => _$ExpenseFromJson(json);
 
 @override final  int id;
-@override final  int expenseHeadId;
+@override@JsonKey(name: 'expense_head_id') final  int expenseHeadId;
 @override final  double amount;
-@override final  String remarks;
+@override final  String? remarks;
 @override final  DateTime date;
-@override final  DateTime? createdAt;
-@override final  DateTime? updatedAt;
+@override@JsonKey(name: 'created_at') final  DateTime? createdAt;
+@override@JsonKey(name: 'updated_at') final  DateTime? updatedAt;
 
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
@@ -259,7 +259,7 @@ abstract mixin class _$ExpenseCopyWith<$Res> implements $ExpenseCopyWith<$Res> {
   factory _$ExpenseCopyWith(_Expense value, $Res Function(_Expense) _then) = __$ExpenseCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int expenseHeadId, double amount, String remarks, DateTime date, DateTime? createdAt, DateTime? updatedAt
+ int id,@JsonKey(name: 'expense_head_id') int expenseHeadId, double amount, String? remarks, DateTime date,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -276,13 +276,13 @@ class __$ExpenseCopyWithImpl<$Res>
 
 /// Create a copy of Expense
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? expenseHeadId = null,Object? amount = null,Object? remarks = null,Object? date = null,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? expenseHeadId = null,Object? amount = null,Object? remarks = freezed,Object? date = null,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
   return _then(_Expense(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,expenseHeadId: null == expenseHeadId ? _self.expenseHeadId : expenseHeadId // ignore: cast_nullable_to_non_nullable
 as int,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
-as double,remarks: null == remarks ? _self.remarks : remarks // ignore: cast_nullable_to_non_nullable
-as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
+as double,remarks: freezed == remarks ? _self.remarks : remarks // ignore: cast_nullable_to_non_nullable
+as String?,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as DateTime,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,

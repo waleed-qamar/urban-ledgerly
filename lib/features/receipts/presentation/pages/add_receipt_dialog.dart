@@ -109,12 +109,12 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
       ref.invalidate(getAllReceiptsProvider);
       ref.invalidate(getAllAccountsProvider);
       if (context.mounted) {
-        Navigator.pop(context, true);
+        Navigator.pop(context.mounted ? context : context, true);
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
-          context,
+          context.mounted ? context : context,
         ).showSnackBar(SnackBar(content: Text('Failed to create receipt: $e')));
       }
     } finally {
@@ -284,35 +284,29 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
 
                       if (_paymentMethod == 'bank') ...[
                         const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            const Text(
-                              'Transfer Type:',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(width: 16),
-                            Radio<String>(
-                              value: 'online',
-                              groupValue: _bankTransferMode,
-                              onChanged: (val) {
-                                setState(() {
-                                  _bankTransferMode = val!;
-                                });
-                              },
-                            ),
-                            const Text('Online Transfer'),
-                            const SizedBox(width: 16),
-                            Radio<String>(
-                              value: 'cheque',
-                              groupValue: _bankTransferMode,
-                              onChanged: (val) {
-                                setState(() {
-                                  _bankTransferMode = val!;
-                                });
-                              },
-                            ),
-                            const Text('Cheque'),
-                          ],
+                        RadioGroup<String>(
+                          groupValue: _bankTransferMode,
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() {
+                                _bankTransferMode = value;
+                              });
+                            }
+                          },
+                          child: Row(
+                            children: [
+                              const Text(
+                                'Transfer Type:',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(width: 16),
+                              Radio<String>(value: 'online'),
+                              const Text('Online Transfer'),
+                              const SizedBox(width: 16),
+                              Radio<String>(value: 'cheque'),
+                              const Text('Cheque'),
+                            ],
+                          ),
                         ),
                       ],
                       const SizedBox(height: 16),
@@ -345,7 +339,7 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                           }
 
                           return DropdownButtonFormField<int?>(
-                            value: _selectedAccountId,
+                            initialValue: _selectedAccountId,
                             decoration: InputDecoration(
                               labelText: 'Select $_paymentMethod Account *',
                               border: const OutlineInputBorder(),

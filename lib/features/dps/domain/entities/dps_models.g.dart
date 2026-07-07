@@ -41,30 +41,6 @@ Map<String, dynamic> _$DpsReportToJson(_DpsReport instance) =>
       'created_at': instance.createdAt?.toIso8601String(),
     };
 
-_DpsEnergyLog _$DpsEnergyLogFromJson(Map<String, dynamic> json) =>
-    _DpsEnergyLog(
-      id: (json['id'] as num?)?.toInt(),
-      reportId: (json['report_id'] as num?)?.toInt(),
-      machineId: (json['machine_id'] as num).toInt(),
-      operatorName: json['operator_name'] as String?,
-      gasWeight: (json['gas_weight'] as num?)?.toDouble() ?? 0.0,
-      woodWeight: (json['wood_weight'] as num?)?.toDouble() ?? 0.0,
-      createdAt: json['created_at'] == null
-          ? null
-          : DateTime.parse(json['created_at'] as String),
-    );
-
-Map<String, dynamic> _$DpsEnergyLogToJson(_DpsEnergyLog instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'report_id': instance.reportId,
-      'machine_id': instance.machineId,
-      'operator_name': instance.operatorName,
-      'gas_weight': instance.gasWeight,
-      'wood_weight': instance.woodWeight,
-      'created_at': instance.createdAt?.toIso8601String(),
-    };
-
 _DpsProductionLog _$DpsProductionLogFromJson(Map<String, dynamic> json) =>
     _DpsProductionLog(
       id: (json['id'] as num?)?.toInt(),
@@ -91,7 +67,6 @@ _DpsConsumptionLog _$DpsConsumptionLogFromJson(Map<String, dynamic> json) =>
     _DpsConsumptionLog(
       id: (json['id'] as num?)?.toInt(),
       reportId: (json['report_id'] as num?)?.toInt(),
-      machineId: (json['machine_id'] as num).toInt(),
       rawMaterialId: (json['raw_material_id'] as num).toInt(),
       quantity: (json['quantity'] as num).toDouble(),
       createdAt: json['created_at'] == null
@@ -103,7 +78,6 @@ Map<String, dynamic> _$DpsConsumptionLogToJson(_DpsConsumptionLog instance) =>
     <String, dynamic>{
       'id': instance.id,
       'report_id': instance.reportId,
-      'machine_id': instance.machineId,
       'raw_material_id': instance.rawMaterialId,
       'quantity': instance.quantity,
       'created_at': instance.createdAt?.toIso8601String(),

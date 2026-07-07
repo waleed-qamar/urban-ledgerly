@@ -14,6 +14,7 @@ abstract class RawMaterialEntity with _$RawMaterialEntity {
     required String name,
     required double price,
     String? description,
+    @Default('kg') String unit,
     required DateTime createdAt,
   }) = _RawMaterialEntity;
 

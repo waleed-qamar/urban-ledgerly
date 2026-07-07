@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:ledgerly/features/dps/domain/entities/dps_models.dart';
+import 'package:ledgerly/core/theme/app_colors.dart';
 import '../providers/dps_providers.dart';
 import 'add_dps_report_page.dart';
 import 'dps_report_details_page.dart';
@@ -24,35 +25,54 @@ class _DpsDashboardState extends ConsumerState<DpsDashboard> {
     super.dispose();
   }
 
+  Future<void> _openReportDetails(DpsReport report) async {
+    // Details + editing now happen in a modal dialog rather than a full
+    // page push — keeps the user anchored on the list behind it.
+    final changed = await DpsReportDetailsDialog.show(context, report);
+    if (changed == true) {
+      ref.invalidate(dpsReportsProvider);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final reportsAsync = ref.watch(dpsReportsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.textWhite,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.textWhite,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: Icon(Icons.arrow_back, color: AppColors.textBlack87),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Production Reports',
           style: TextStyle(
-            color: Color(0xFF6B6BF0),
+            color: AppColors.primary,
             fontSize: 18,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.grid_view_rounded, color: Colors.black54),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const DpsSummaryPage()),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.iconBackground,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              icon: Icon(Icons.grid_view_rounded, color: AppColors.iconColor),
+              tooltip: 'Report summary',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DpsSummaryPage()),
+              ),
             ),
           ),
         ],
@@ -64,20 +84,38 @@ class _DpsDashboardState extends ConsumerState<DpsDashboard> {
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFF2F2F2),
+                color: AppColors.lightBackground,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.dividerColor),
               ),
               child: TextField(
                 controller: _searchController,
                 onChanged: (v) =>
                     setState(() => _searchQuery = v.toLowerCase()),
                 style: const TextStyle(fontSize: 15),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Search reports...',
-                  hintStyle: TextStyle(color: Colors.grey, fontSize: 15),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey, size: 20),
+                  hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 15),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: AppColors.textGrey,
+                    size: 20,
+                  ),
+                  suffixIcon: _searchQuery.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: Icon(
+                            Icons.close,
+                            size: 18,
+                            color: AppColors.textGrey,
+                          ),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        ),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
             ),
@@ -86,8 +124,15 @@ class _DpsDashboardState extends ConsumerState<DpsDashboard> {
           // ── List ─────────────────────────────────────────────────────
           Expanded(
             child: reportsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              loading: () => Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
+              error: (e, _) => Center(
+                child: Text(
+                  'Error: $e',
+                  style: TextStyle(color: AppColors.errorText),
+                ),
+              ),
               data: (reports) {
                 final filtered = _searchQuery.isEmpty
                     ? reports
@@ -101,10 +146,24 @@ class _DpsDashboardState extends ConsumerState<DpsDashboard> {
                       }).toList();
 
                 if (filtered.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No reports found.',
-                      style: TextStyle(color: Colors.grey),
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 40,
+                          color: AppColors.textGrey,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          reports.isEmpty
+                              ? 'No reports yet. Tap "Add Report" to create one.'
+                              : 'No reports match your search.',
+                          style: TextStyle(color: AppColors.textGrey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -112,20 +171,14 @@ class _DpsDashboardState extends ConsumerState<DpsDashboard> {
                 return ListView.separated(
                   padding: const EdgeInsets.only(top: 4, bottom: 100),
                   itemCount: filtered.length,
-                  separatorBuilder: (_, _) => const Divider(
+                  separatorBuilder: (_, _) => Divider(
                     height: 1,
                     thickness: 0.5,
-                    color: Color(0xFFEEEEEE),
+                    color: AppColors.dividerColor,
                   ),
                   itemBuilder: (_, i) => _ReportTile(
                     report: filtered[i],
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            DpsReportDetailsPage(report: filtered[i]),
-                      ),
-                    ),
+                    onTap: () => _openReportDetails(filtered[i]),
                   ),
                 );
               },
@@ -143,17 +196,14 @@ class _DpsDashboardState extends ConsumerState<DpsDashboard> {
           );
           if (added == true) ref.invalidate(dpsReportsProvider);
         },
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-          side: const BorderSide(color: Color(0xFFDDDDDD)),
-        ),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textWhite,
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         icon: const Icon(Icons.add),
         label: const Text(
           'Add Report',
-          style: TextStyle(fontWeight: FontWeight.w500),
+          style: TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -185,13 +235,13 @@ class _ReportTile extends StatelessWidget {
               children: [
                 Text(
                   dateLabel,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
-                    color: Colors.black87,
+                    color: AppColors.textBlack87,
                   ),
                 ),
-                const Icon(Icons.more_vert, size: 20, color: Colors.black38),
+                Icon(Icons.chevron_right, size: 20, color: AppColors.textGrey),
               ],
             ),
 
@@ -205,9 +255,9 @@ class _ReportTile extends StatelessWidget {
                 _InfoChip(
                   icon: Icons.precision_manufacturing_outlined,
                   label: 'Report #${report.id ?? '—'}',
-                  bgColor: const Color(0xFFEDE9FE),
-                  iconColor: const Color(0xFF7C3AED),
-                  textColor: const Color(0xFF5B21B6),
+                  bgColor: AppColors.iconBackground,
+                  iconColor: AppColors.iconColor,
+                  textColor: AppColors.indicatorText,
                 ),
                 if (report.notes != null && report.notes!.isNotEmpty)
                   _InfoChip(
@@ -215,16 +265,16 @@ class _ReportTile extends StatelessWidget {
                     label: report.notes!.length > 24
                         ? '${report.notes!.substring(0, 24)}…'
                         : report.notes!,
-                    bgColor: const Color(0xFFE0F2FE),
-                    iconColor: const Color(0xFF0284C7),
-                    textColor: const Color(0xFF0369A1),
+                    bgColor: AppColors.badgeBackground,
+                    iconColor: AppColors.textGrey,
+                    textColor: AppColors.textBlack87,
                   ),
                 _InfoChip(
                   icon: Icons.calendar_today_outlined,
                   label: DateFormat('EEE').format(report.reportDate),
-                  bgColor: const Color(0xFFF0FDF4),
-                  iconColor: const Color(0xFF16A34A),
-                  textColor: const Color(0xFF15803D),
+                  bgColor: AppColors.totalSummaryBackground,
+                  iconColor: AppColors.successText,
+                  textColor: AppColors.successText,
                 ),
               ],
             ),

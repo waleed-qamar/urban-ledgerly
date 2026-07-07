@@ -125,7 +125,7 @@ DECLARE
     modules TEXT[] := ARRAY[
         'clients','vendors','products','raw_material','orders','invoices',
         'inventory','ledger','accounts','receipts','disbursements','expenses',
-        'procurements','employees','suppliers'
+        'procurements','employees','suppliers','dps','overview'
     ];
     actions TEXT[] := ARRAY['create','read','update','delete'];
 BEGIN

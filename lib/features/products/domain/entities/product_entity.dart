@@ -10,7 +10,7 @@ abstract class ProductEntity with _$ProductEntity {
     required String name,
     required double weight,
     String? description,
-    required DateTime createdAt,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _ProductEntity;
 
   factory ProductEntity.fromJson(Map<String, dynamic> json) =>

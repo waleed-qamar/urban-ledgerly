@@ -1,3 +1,4 @@
+import 'package:ledgerly/core/utils/supabase_handler.dart';
 import 'package:ledgerly/features/ledger/domain/entities/ledger_entity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -6,8 +7,10 @@ class LedgerRemoteDatasource {
 
   LedgerRemoteDatasource(this._client);
   Future<void> addEntry(LedgerEntity entry) async {
-    final payload = _toDbRow(entry.toJson())..remove('id');
-    await _client.from('ledger').insert(payload);
+    await supabaseSafeCall(() async {
+      final payload = _toDbRow(entry.toJson())..remove('id');
+      await _client.from('ledger').insert(payload);
+    });
   }
 
   Future<List<LedgerEntity>> getAllEntries() async {
@@ -120,7 +123,7 @@ class LedgerRemoteDatasource {
             .toString();
     normalized['entryType'] =
         (normalized['entryType'] ?? normalized['entry_type'] ?? '').toString();
-    normalized['amount'] = (normalized['amount'] ?? 0).toDouble();
+    normalized['amount'] = double.tryParse(normalized['amount']?.toString() ?? '0') ?? 0.0;
     normalized['paymentMethod'] =
         (normalized['paymentMethod'] ?? normalized['payment_method'])
             ?.toString();

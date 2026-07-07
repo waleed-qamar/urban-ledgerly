@@ -353,6 +353,7 @@
 //   }
 // }
 
+import 'package:ledgerly/core/widgets/audit_log_list_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -387,12 +388,13 @@ class InvoiceViewDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: SizedBox(
         width: 700,
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // ── Header ─────────────────────────────────────────────────
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -581,13 +583,25 @@ class InvoiceViewDialog extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              const Divider(height: 32),
+              const Text(
+                'Activity History',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textBlack),
+              ),
+              const SizedBox(height: 16),
+              AuditLogListWidget(
+                tableName: 'invoices',
+                recordId: invoice.id.toString(),
+              ),
               const SizedBox(height: 8),
             ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _InfoChip extends StatelessWidget {

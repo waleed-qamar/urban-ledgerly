@@ -8,9 +8,9 @@ abstract class ExpenseHead with _$ExpenseHead {
   const factory ExpenseHead({
     required int id,
     required String name,
-    required String description,
-    required HeadType headType,
-    required DateTime createdAt,
+    String? description,
+    @JsonKey(name: 'head_type') required HeadType headType,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _ExpenseHead;
 
   factory ExpenseHead.fromJson(Map<String, dynamic> json) =>

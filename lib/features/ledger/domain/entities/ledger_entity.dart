@@ -7,19 +7,19 @@ part 'ledger_entity.g.dart';
 abstract class LedgerEntity with _$LedgerEntity {
   const factory LedgerEntity({
     required int id,
-    required PartyType partyType,
-    required int partyId,
-    required String invoiceNumber,
-    required EntryType entryType,
+    @JsonKey(name: 'party_type') required PartyType partyType,
+    @JsonKey(name: 'party_id') required int partyId,
+    @JsonKey(name: 'invoice_number') String? invoiceNumber,
+    @JsonKey(name: 'entry_type') required EntryType entryType,
     required double amount,
-    String? paymentMethod,
-    required DateTime entryDate,
+    @JsonKey(name: 'payment_method') String? paymentMethod,
+    @JsonKey(name: 'entry_date') required DateTime entryDate,
 
-    String? transactionSource, // manual, order, payment
-    String? referenceId, // order_id, payment_id etc.
+    @JsonKey(name: 'transaction_source') String? transactionSource,
+    @JsonKey(name: 'reference_id') String? referenceId,
 
     String? remarks,
-    required DateTime createdAt,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _LedgerEntity;
 
   factory LedgerEntity.fromJson(Map<String, dynamic> json) =>

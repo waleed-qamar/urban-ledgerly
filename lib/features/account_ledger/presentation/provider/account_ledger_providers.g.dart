@@ -307,6 +307,75 @@ final class GetAccountTransactionsFamily extends $Family
   String toString() => r'getAccountTransactionsProvider';
 }
 
+@ProviderFor(createAccount)
+const createAccountProvider = CreateAccountFamily._();
+
+final class CreateAccountProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const CreateAccountProvider._({
+    required CreateAccountFamily super.from,
+    required AccountEntity super.argument,
+  }) : super(
+         retry: null,
+         name: r'createAccountProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$createAccountHash();
+
+  @override
+  String toString() {
+    return r'createAccountProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as AccountEntity;
+    return createAccount(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CreateAccountProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$createAccountHash() => r'377842821192e9c51132093821e8bfe38999bc1b';
+
+final class CreateAccountFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, AccountEntity> {
+  const CreateAccountFamily._()
+    : super(
+        retry: null,
+        name: r'createAccountProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  CreateAccountProvider call(AccountEntity account) =>
+      CreateAccountProvider._(argument: account, from: this);
+
+  @override
+  String toString() => r'createAccountProvider';
+}
+
 @ProviderFor(getAccountIdByReference)
 const getAccountIdByReferenceProvider = GetAccountIdByReferenceFamily._();
 

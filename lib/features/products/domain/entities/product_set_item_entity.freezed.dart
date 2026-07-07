@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProductSetItemEntity {
 
- int? get setid; int get productId; DateTime? get createdAt;
+@JsonKey(name: 'set_id') int? get setid;@JsonKey(name: 'product_id') int get productId;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of ProductSetItemEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ProductSetItemEntityCopyWith<$Res>  {
   factory $ProductSetItemEntityCopyWith(ProductSetItemEntity value, $Res Function(ProductSetItemEntity) _then) = _$ProductSetItemEntityCopyWithImpl;
 @useResult
 $Res call({
- int? setid, int productId, DateTime? createdAt
+@JsonKey(name: 'set_id') int? setid,@JsonKey(name: 'product_id') int productId,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -155,7 +155,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? setid,  int productId,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'set_id')  int? setid, @JsonKey(name: 'product_id')  int productId, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductSetItemEntity() when $default != null:
 return $default(_that.setid,_that.productId,_that.createdAt);case _:
@@ -176,7 +176,7 @@ return $default(_that.setid,_that.productId,_that.createdAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? setid,  int productId,  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'set_id')  int? setid, @JsonKey(name: 'product_id')  int productId, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _ProductSetItemEntity():
 return $default(_that.setid,_that.productId,_that.createdAt);case _:
@@ -196,7 +196,7 @@ return $default(_that.setid,_that.productId,_that.createdAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? setid,  int productId,  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'set_id')  int? setid, @JsonKey(name: 'product_id')  int productId, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductSetItemEntity() when $default != null:
 return $default(_that.setid,_that.productId,_that.createdAt);case _:
@@ -211,12 +211,12 @@ return $default(_that.setid,_that.productId,_that.createdAt);case _:
 @JsonSerializable()
 
 class _ProductSetItemEntity implements ProductSetItemEntity {
-  const _ProductSetItemEntity({this.setid, required this.productId, this.createdAt});
+  const _ProductSetItemEntity({@JsonKey(name: 'set_id') this.setid, @JsonKey(name: 'product_id') required this.productId, @JsonKey(name: 'created_at') this.createdAt});
   factory _ProductSetItemEntity.fromJson(Map<String, dynamic> json) => _$ProductSetItemEntityFromJson(json);
 
-@override final  int? setid;
-@override final  int productId;
-@override final  DateTime? createdAt;
+@override@JsonKey(name: 'set_id') final  int? setid;
+@override@JsonKey(name: 'product_id') final  int productId;
+@override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 
 /// Create a copy of ProductSetItemEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -251,7 +251,7 @@ abstract mixin class _$ProductSetItemEntityCopyWith<$Res> implements $ProductSet
   factory _$ProductSetItemEntityCopyWith(_ProductSetItemEntity value, $Res Function(_ProductSetItemEntity) _then) = __$ProductSetItemEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? setid, int productId, DateTime? createdAt
+@JsonKey(name: 'set_id') int? setid,@JsonKey(name: 'product_id') int productId,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 

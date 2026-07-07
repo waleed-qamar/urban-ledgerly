@@ -9,17 +9,17 @@ part of 'product_set_item_entity.dart';
 _ProductSetItemEntity _$ProductSetItemEntityFromJson(
   Map<String, dynamic> json,
 ) => _ProductSetItemEntity(
-  setid: (json['setid'] as num?)?.toInt(),
-  productId: (json['productId'] as num).toInt(),
-  createdAt: json['createdAt'] == null
+  setid: (json['set_id'] as num?)?.toInt(),
+  productId: (json['product_id'] as num).toInt(),
+  createdAt: json['created_at'] == null
       ? null
-      : DateTime.parse(json['createdAt'] as String),
+      : DateTime.parse(json['created_at'] as String),
 );
 
 Map<String, dynamic> _$ProductSetItemEntityToJson(
   _ProductSetItemEntity instance,
 ) => <String, dynamic>{
-  'setid': instance.setid,
-  'productId': instance.productId,
-  'createdAt': instance.createdAt?.toIso8601String(),
+  'set_id': instance.setid,
+  'product_id': instance.productId,
+  'created_at': instance.createdAt?.toIso8601String(),
 };

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../provider/account_ledger_providers.dart';
 import 'account_details_page.dart';
+import 'add_account_dialog.dart';
 
 class AccountDashboard extends ConsumerWidget {
   const AccountDashboard({super.key});
@@ -14,20 +15,66 @@ class AccountDashboard extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
-      appBar: AppBar(
-        title: const Text(
-          'Accounts',
-          style: TextStyle(fontWeight: FontWeight.w800),
-        ),
-        backgroundColor: AppColors.textWhite,
-        elevation: 0,
-        foregroundColor: AppColors.textBlack,
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     'Accounts',
+      //     style: TextStyle(fontWeight: FontWeight.w800),
+      //   ),
+      //   backgroundColor: AppColors.textWhite,
+      //   elevation: 0,
+      //   foregroundColor: AppColors.textBlack,
+      //   actions: [
+      //     FloatingActionButton(onPressed: )
+      //   ],
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Accounts',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textBlack,
+                  ),
+                ),
+                Row(
+                  children: [
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.textWhite,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 18,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () {
+                        AccountFormDialog.show(
+                          context,
+                          onSave: (account) async {
+                            await ref
+                                .read(accountLedgerRepositoryProvider)
+                                .createAccount(account);
+                            ref.invalidate(getAllAccountsProvider);
+                          },
+                        );
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add Account'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
             Text(
               'All Accounts',
               style: Theme.of(

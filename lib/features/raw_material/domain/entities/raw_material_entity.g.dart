@@ -12,6 +12,7 @@ _RawMaterialEntity _$RawMaterialEntityFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       price: (json['price'] as num).toDouble(),
       description: json['description'] as String?,
+      unit: json['unit'] as String? ?? 'kg',
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
 
@@ -21,5 +22,6 @@ Map<String, dynamic> _$RawMaterialEntityToJson(_RawMaterialEntity instance) =>
       'name': instance.name,
       'price': instance.price,
       'description': instance.description,
+      'unit': instance.unit,
       'createdAt': instance.createdAt.toIso8601String(),
     };

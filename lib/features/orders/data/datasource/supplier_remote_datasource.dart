@@ -1,3 +1,4 @@
+import 'package:ledgerly/core/utils/supabase_handler.dart';
 import 'package:ledgerly/features/orders/domain/entities/supplier_entity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -24,18 +25,24 @@ class SupplierRemoteDatasource {
   }
 
   Future<void> addSupplier(SupplierEntity supplier) async {
-    await _client.from('suppliers').insert(supplier.toJson());
+    await supabaseSafeCall(() async {
+      await _client.from('suppliers').insert(supplier.toJson());
+    });
   }
 
   Future<void> updateSupplier(SupplierEntity supplier) async {
-    await _client
-        .from('suppliers')
-        .update(supplier.toJson())
-        .eq('id', supplier.id!);
+    await supabaseSafeCall(() async {
+      await _client
+          .from('suppliers')
+          .update(supplier.toJson())
+          .eq('id', supplier.id!);
+    });
   }
 
   Future<void> deleteSupplier(int id) async {
-    await _client.from('suppliers').delete().eq('id', id);
+    await supabaseSafeCall(() async {
+      await _client.from('suppliers').delete().eq('id', id);
+    });
   }
 
   Map<String, dynamic> _normalizeSupplierRow(Map<String, dynamic> row) {

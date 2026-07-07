@@ -136,7 +136,7 @@ class VnvReportView extends ConsumerWidget {
             final type = r['type'] as String;
             final head = r['head'] as String;
             final amount = (r['amount'] as num).toStringAsFixed(2);
-            final date = DateFormat('dd/MM/yyyy').format(r['date'] as DateTime);
+            final date = DateFormat('M/dd/yyyy').format(r['date'] as DateTime);
 
             exportRows.add([idx.toString(), type, head, amount, date]);
 

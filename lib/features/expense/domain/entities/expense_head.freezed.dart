@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ExpenseHead {
 
- int get id; String get name; String get description; HeadType get headType; DateTime get createdAt;
+ int get id; String get name; String? get description;@JsonKey(name: 'head_type') HeadType get headType;@JsonKey(name: 'created_at') DateTime get createdAt;
 /// Create a copy of ExpenseHead
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ExpenseHeadCopyWith<$Res>  {
   factory $ExpenseHeadCopyWith(ExpenseHead value, $Res Function(ExpenseHead) _then) = _$ExpenseHeadCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String description, HeadType headType, DateTime createdAt
+ int id, String name, String? description,@JsonKey(name: 'head_type') HeadType headType,@JsonKey(name: 'created_at') DateTime createdAt
 });
 
 
@@ -65,12 +65,12 @@ class _$ExpenseHeadCopyWithImpl<$Res>
 
 /// Create a copy of ExpenseHead
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? description = null,Object? headType = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? description = freezed,Object? headType = null,Object? createdAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String,headType: null == headType ? _self.headType : headType // ignore: cast_nullable_to_non_nullable
+as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,headType: null == headType ? _self.headType : headType // ignore: cast_nullable_to_non_nullable
 as HeadType,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
@@ -157,7 +157,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String description,  HeadType headType,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String? description, @JsonKey(name: 'head_type')  HeadType headType, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ExpenseHead() when $default != null:
 return $default(_that.id,_that.name,_that.description,_that.headType,_that.createdAt);case _:
@@ -178,7 +178,7 @@ return $default(_that.id,_that.name,_that.description,_that.headType,_that.creat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String description,  HeadType headType,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String? description, @JsonKey(name: 'head_type')  HeadType headType, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _ExpenseHead():
 return $default(_that.id,_that.name,_that.description,_that.headType,_that.createdAt);case _:
@@ -198,7 +198,7 @@ return $default(_that.id,_that.name,_that.description,_that.headType,_that.creat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String description,  HeadType headType,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String? description, @JsonKey(name: 'head_type')  HeadType headType, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ExpenseHead() when $default != null:
 return $default(_that.id,_that.name,_that.description,_that.headType,_that.createdAt);case _:
@@ -213,14 +213,14 @@ return $default(_that.id,_that.name,_that.description,_that.headType,_that.creat
 @JsonSerializable()
 
 class _ExpenseHead implements ExpenseHead {
-  const _ExpenseHead({required this.id, required this.name, required this.description, required this.headType, required this.createdAt});
+  const _ExpenseHead({required this.id, required this.name, this.description, @JsonKey(name: 'head_type') required this.headType, @JsonKey(name: 'created_at') required this.createdAt});
   factory _ExpenseHead.fromJson(Map<String, dynamic> json) => _$ExpenseHeadFromJson(json);
 
 @override final  int id;
 @override final  String name;
-@override final  String description;
-@override final  HeadType headType;
-@override final  DateTime createdAt;
+@override final  String? description;
+@override@JsonKey(name: 'head_type') final  HeadType headType;
+@override@JsonKey(name: 'created_at') final  DateTime createdAt;
 
 /// Create a copy of ExpenseHead
 /// with the given fields replaced by the non-null parameter values.
@@ -255,7 +255,7 @@ abstract mixin class _$ExpenseHeadCopyWith<$Res> implements $ExpenseHeadCopyWith
   factory _$ExpenseHeadCopyWith(_ExpenseHead value, $Res Function(_ExpenseHead) _then) = __$ExpenseHeadCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String description, HeadType headType, DateTime createdAt
+ int id, String name, String? description,@JsonKey(name: 'head_type') HeadType headType,@JsonKey(name: 'created_at') DateTime createdAt
 });
 
 
@@ -272,12 +272,12 @@ class __$ExpenseHeadCopyWithImpl<$Res>
 
 /// Create a copy of ExpenseHead
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? description = null,Object? headType = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? description = freezed,Object? headType = null,Object? createdAt = null,}) {
   return _then(_ExpenseHead(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String,headType: null == headType ? _self.headType : headType // ignore: cast_nullable_to_non_nullable
+as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,headType: null == headType ? _self.headType : headType // ignore: cast_nullable_to_non_nullable
 as HeadType,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));

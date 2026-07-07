@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$VendorEntity {
 
- int get id; String get vendorName; String get vendorAddress; String get vendorNotes; String get companyName; String get contactNumber; DateTime get createdAt;// ignore: invalid_annotation_target
+ int get id;@JsonKey(name: 'vendor_name') String get vendorName;@JsonKey(name: 'vendor_address') String get vendorAddress;@JsonKey(name: 'vendor_notes') String get vendorNotes;@JsonKey(name: 'company_name') String get companyName;@JsonKey(name: 'contact_number') String get contactNumber;@JsonKey(name: 'created_at') DateTime get createdAt;// ignore: invalid_annotation_target
 @JsonKey(name: 'is_active', defaultValue: true) bool get isActive;
 /// Create a copy of VendorEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -49,7 +49,7 @@ abstract mixin class $VendorEntityCopyWith<$Res>  {
   factory $VendorEntityCopyWith(VendorEntity value, $Res Function(VendorEntity) _then) = _$VendorEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String vendorName, String vendorAddress, String vendorNotes, String companyName, String contactNumber, DateTime createdAt,@JsonKey(name: 'is_active', defaultValue: true) bool isActive
+ int id,@JsonKey(name: 'vendor_name') String vendorName,@JsonKey(name: 'vendor_address') String vendorAddress,@JsonKey(name: 'vendor_notes') String vendorNotes,@JsonKey(name: 'company_name') String companyName,@JsonKey(name: 'contact_number') String contactNumber,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'is_active', defaultValue: true) bool isActive
 });
 
 
@@ -161,7 +161,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String vendorName,  String vendorAddress,  String vendorNotes,  String companyName,  String contactNumber,  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'vendor_name')  String vendorName, @JsonKey(name: 'vendor_address')  String vendorAddress, @JsonKey(name: 'vendor_notes')  String vendorNotes, @JsonKey(name: 'company_name')  String companyName, @JsonKey(name: 'contact_number')  String contactNumber, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VendorEntity() when $default != null:
 return $default(_that.id,_that.vendorName,_that.vendorAddress,_that.vendorNotes,_that.companyName,_that.contactNumber,_that.createdAt,_that.isActive);case _:
@@ -182,7 +182,7 @@ return $default(_that.id,_that.vendorName,_that.vendorAddress,_that.vendorNotes,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String vendorName,  String vendorAddress,  String vendorNotes,  String companyName,  String contactNumber,  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'vendor_name')  String vendorName, @JsonKey(name: 'vendor_address')  String vendorAddress, @JsonKey(name: 'vendor_notes')  String vendorNotes, @JsonKey(name: 'company_name')  String companyName, @JsonKey(name: 'contact_number')  String contactNumber, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)  $default,) {final _that = this;
 switch (_that) {
 case _VendorEntity():
 return $default(_that.id,_that.vendorName,_that.vendorAddress,_that.vendorNotes,_that.companyName,_that.contactNumber,_that.createdAt,_that.isActive);case _:
@@ -202,7 +202,7 @@ return $default(_that.id,_that.vendorName,_that.vendorAddress,_that.vendorNotes,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String vendorName,  String vendorAddress,  String vendorNotes,  String companyName,  String contactNumber,  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'vendor_name')  String vendorName, @JsonKey(name: 'vendor_address')  String vendorAddress, @JsonKey(name: 'vendor_notes')  String vendorNotes, @JsonKey(name: 'company_name')  String companyName, @JsonKey(name: 'contact_number')  String contactNumber, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_active', defaultValue: true)  bool isActive)?  $default,) {final _that = this;
 switch (_that) {
 case _VendorEntity() when $default != null:
 return $default(_that.id,_that.vendorName,_that.vendorAddress,_that.vendorNotes,_that.companyName,_that.contactNumber,_that.createdAt,_that.isActive);case _:
@@ -217,16 +217,16 @@ return $default(_that.id,_that.vendorName,_that.vendorAddress,_that.vendorNotes,
 @JsonSerializable()
 
 class _VendorEntity implements VendorEntity {
-   _VendorEntity({required this.id, required this.vendorName, required this.vendorAddress, required this.vendorNotes, required this.companyName, required this.contactNumber, required this.createdAt, @JsonKey(name: 'is_active', defaultValue: true) required this.isActive});
+   _VendorEntity({required this.id, @JsonKey(name: 'vendor_name') required this.vendorName, @JsonKey(name: 'vendor_address') required this.vendorAddress, @JsonKey(name: 'vendor_notes') required this.vendorNotes, @JsonKey(name: 'company_name') required this.companyName, @JsonKey(name: 'contact_number') required this.contactNumber, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'is_active', defaultValue: true) required this.isActive});
   factory _VendorEntity.fromJson(Map<String, dynamic> json) => _$VendorEntityFromJson(json);
 
 @override final  int id;
-@override final  String vendorName;
-@override final  String vendorAddress;
-@override final  String vendorNotes;
-@override final  String companyName;
-@override final  String contactNumber;
-@override final  DateTime createdAt;
+@override@JsonKey(name: 'vendor_name') final  String vendorName;
+@override@JsonKey(name: 'vendor_address') final  String vendorAddress;
+@override@JsonKey(name: 'vendor_notes') final  String vendorNotes;
+@override@JsonKey(name: 'company_name') final  String companyName;
+@override@JsonKey(name: 'contact_number') final  String contactNumber;
+@override@JsonKey(name: 'created_at') final  DateTime createdAt;
 // ignore: invalid_annotation_target
 @override@JsonKey(name: 'is_active', defaultValue: true) final  bool isActive;
 
@@ -263,7 +263,7 @@ abstract mixin class _$VendorEntityCopyWith<$Res> implements $VendorEntityCopyWi
   factory _$VendorEntityCopyWith(_VendorEntity value, $Res Function(_VendorEntity) _then) = __$VendorEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String vendorName, String vendorAddress, String vendorNotes, String companyName, String contactNumber, DateTime createdAt,@JsonKey(name: 'is_active', defaultValue: true) bool isActive
+ int id,@JsonKey(name: 'vendor_name') String vendorName,@JsonKey(name: 'vendor_address') String vendorAddress,@JsonKey(name: 'vendor_notes') String vendorNotes,@JsonKey(name: 'company_name') String companyName,@JsonKey(name: 'contact_number') String contactNumber,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'is_active', defaultValue: true) bool isActive
 });
 
 

@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/dashboard.dart';
+import 'package:ledgerly/features/audit_logs/presentation/pages/audit_log_page.dart';
 import 'package:ledgerly/features/employee/presentation/pages/operator_dashboard.dart';
+import 'package:ledgerly/features/employee/presentation/pages/users_dashboard.dart';
 import 'package:ledgerly/features/orders/presentation/pages/order_dashboard.dart';
 import 'package:ledgerly/features/procurement/presentation/pages/procurement_dashboard.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_dashboard.dart';
@@ -27,123 +29,217 @@ class MainLayout extends ConsumerStatefulWidget {
   ConsumerState<MainLayout> createState() => _MainLayoutState();
 }
 
-class _MainLayoutState extends ConsumerState<MainLayout> {
-  int _selectedIndex = 0; // Default to Expenses as per your request
+class _MainLayoutState extends ConsumerState<MainLayout>
+    with WidgetsBindingObserver {
+  int _selectedIndex = 0;
 
-  // Placeholder for future modules
   Future<void> _signOut() async {
     await Supabase.instance.client.auth.signOut();
-    // The AuthWrapper will automatically redirect you back to the Login Screen!
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.invalidate(userPermissionsProvider);
+      ref.invalidate(currentEmployeeProvider);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isMaster = ref.watch(isMasterProvider);
+    final showOverview = ref.watch(hasPermissionProvider('overview.read'));
+    final showAccounts = ref.watch(hasPermissionProvider('accounts.read'));
+    final showLedger = ref.watch(hasPermissionProvider('ledger.read'));
+    final showOrders = ref.watch(hasPermissionProvider('orders.read'));
+    final showReceipts = ref.watch(hasPermissionProvider('receipts.read'));
+    final showClients = ref.watch(hasPermissionProvider('clients.read'));
+    final showVendors = ref.watch(hasPermissionProvider('vendors.read'));
+    final showProducts = ref.watch(hasPermissionProvider('products.read'));
+    final showRawMaterial = ref.watch(
+      hasPermissionProvider('raw_material.read'),
+    );
+    final showProcurements = ref.watch(
+      hasPermissionProvider('procurements.read'),
+    );
+    final showExpenses = ref.watch(hasPermissionProvider('expenses.read'));
+    final showInventory = ref.watch(hasPermissionProvider('inventory.read'));
+    final showDps = ref.watch(hasPermissionProvider('dps.read'));
+    final showOperators = ref.watch(hasPermissionProvider('employees.read'));
+    final showUsers = ref.watch(hasPermissionProvider('employees.update'));
+    // Audit Logs are master-only — no DB permission row needed
+    final showAudit = ref.watch(isMasterProvider);
 
-    // Build lists dynamically
-    final List<Widget> pages = [
-      Dashboard(),
-      if (isMaster) const OverviewDashboard(),
-      if (isMaster) const AccountDashboard(),
-      const LedgerPage(),
-      const OrderDashboard(),
-      if (isMaster) const ReceiptsDashboard(),
-      const ClientDashboardView(),
-      const VenderDashboardView(),
-      const ProductDashboard(),
-      const RawMaterialDashboard(),
-      const ProcurementDashboard(),
-      const ExpenseDashboardView(),
-      const DpsDashboard(),
-      const OperatorDashboard(),
+    final List<(NavigationRailDestination destination, Widget page)> items = [
+      (
+        const NavigationRailDestination(
+          icon: Icon(Icons.dashboard_outlined),
+          selectedIcon: Icon(Icons.dashboard),
+          label: Text('Dashboard'),
+        ),
+        Dashboard(),
+      ),
+      if (showOverview)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.analytics_outlined),
+            selectedIcon: Icon(Icons.analytics),
+            label: Text('Overview'),
+          ),
+          const OverviewDashboard(),
+        ),
+      if (showAccounts)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.account_balance_outlined),
+            selectedIcon: Icon(Icons.account_balance),
+            label: Text('Accounts'),
+          ),
+          const AccountDashboard(),
+        ),
+      if (showLedger)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.book_outlined),
+            selectedIcon: Icon(Icons.book),
+            label: Text('Ledger'),
+          ),
+          const LedgerPage(),
+        ),
+      if (showOrders)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
+            label: Text('Orders'),
+          ),
+          const OrderDashboard(),
+        ),
+      if (showReceipts)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.payments_outlined),
+            selectedIcon: Icon(Icons.payments),
+            label: Text('Payments'),
+          ),
+          const ReceiptsDashboard(),
+        ),
+      if (showClients)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.people_outline),
+            selectedIcon: Icon(Icons.people),
+            label: Text('Clients'),
+          ),
+          const ClientDashboardView(),
+        ),
+      if (showVendors)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.bar_chart_outlined),
+            selectedIcon: Icon(Icons.bar_chart),
+            label: Text('Venders'),
+          ),
+          const VenderDashboardView(),
+        ),
+      if (showProducts)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.inventory_2_outlined),
+            selectedIcon: Icon(Icons.inventory_2),
+            label: Text('Products'),
+          ),
+          const ProductDashboard(),
+        ),
+      if (showRawMaterial)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.category_outlined),
+            selectedIcon: Icon(Icons.category),
+            label: Text('Raw Materials'),
+          ),
+          const RawMaterialDashboard(),
+        ),
+      if (showProcurements)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.shopping_cart_outlined),
+            selectedIcon: Icon(Icons.shopping_cart),
+            label: Text('Procurement'),
+          ),
+          const ProcurementDashboard(),
+        ),
+      if (showExpenses)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet),
+            label: Text('Non-Vender Payments'),
+          ),
+          const ExpenseDashboardView(),
+        ),
+      if (showDps)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.precision_manufacturing_outlined),
+            selectedIcon: Icon(Icons.precision_manufacturing),
+            label: Text('DPS'),
+          ),
+          const DpsDashboard(),
+        ),
+      if (showOperators)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.emoji_people_outlined),
+            selectedIcon: Icon(Icons.emoji_people),
+            label: Text('Operators'),
+          ),
+          const OperatorDashboard(),
+        ),
+      if (showUsers)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.supervised_user_circle_outlined),
+            selectedIcon: Icon(Icons.supervised_user_circle),
+            label: Text('Users & RBAC'),
+          ),
+          const UsersDashboard(),
+        ),
+      if (showUsers)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.history_outlined),
+            selectedIcon: Icon(Icons.history),
+            label: Text('Audit Logs'),
+          ),
+          const AuditLogPage(),
+        ),
     ];
 
-    final List<NavigationRailDestination> destinations = [
-      const NavigationRailDestination(
-        icon: Icon(Icons.dashboard_outlined),
-        selectedIcon: Icon(Icons.dashboard),
-        label: Text('Dashboard'),
-      ),
-      if (isMaster)
-        const NavigationRailDestination(
-          icon: Icon(Icons.analytics_outlined),
-          selectedIcon: Icon(Icons.analytics),
-          label: Text('Overview'),
-        ),
-      if (isMaster)
-        const NavigationRailDestination(
-          icon: Icon(Icons.account_balance_outlined),
-          selectedIcon: Icon(Icons.account_balance),
-          label: Text('Accounts'),
-        ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.book_outlined),
-        selectedIcon: Icon(Icons.book),
-        label: Text('Ledger'),
-      ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.receipt_long_outlined),
-        selectedIcon: Icon(Icons.receipt_long),
-        label: Text('Orders'),
-      ),
-      if (isMaster)
-        const NavigationRailDestination(
-          icon: Icon(Icons.payments_outlined),
-          selectedIcon: Icon(Icons.payments),
-          label: Text('Payments'),
-        ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.dashboard_outlined),
-        selectedIcon: Icon(Icons.dashboard),
-        label: Text('Clients'),
-      ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.bar_chart_outlined),
-        selectedIcon: Icon(Icons.bar_chart),
-        label: Text('Venders'),
-      ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.inventory_2_outlined),
-        selectedIcon: Icon(Icons.inventory_2),
-        label: Text('Products'),
-      ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.category_outlined),
-        selectedIcon: Icon(Icons.category),
-        label: Text('Raw Materials'),
-      ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.shopping_cart_outlined),
-        selectedIcon: Icon(Icons.shopping_cart),
-        label: Text('Procurement'),
-      ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.account_balance_wallet_outlined),
-        selectedIcon: Icon(Icons.account_balance_wallet),
-        label: Text('Non-Vender Payments'),
-      ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.precision_manufacturing_outlined),
-        selectedIcon: Icon(Icons.precision_manufacturing),
-        label: Text('DPS'),
-      ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.emoji_people_outlined),
-        selectedIcon: Icon(Icons.emoji_people),
-        label: Text('Employees'),
-      ),
-    ];
+    final destinations = items.map((e) => e.$1).toList();
+    final pages = items.map((e) => e.$2).toList();
+    final selectedIndex = _selectedIndex >= destinations.length
+        ? 0
+        : _selectedIndex;
 
     return Scaffold(
       body: Row(
         children: [
-          // The Sidebar
           NavigationRail(
-            extended: true, // Set to false if you want it collapsed
+            extended: true,
             backgroundColor: AppColors.primary.withValues(alpha: 0.05),
-            selectedIndex: _selectedIndex >= destinations.length
-                ? destinations.length - 1
-                : _selectedIndex,
+            selectedIndex: selectedIndex,
             onDestinationSelected: (int index) {
               setState(() {
                 _selectedIndex = index;
@@ -172,7 +268,6 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
               ),
             ),
             destinations: destinations,
-            // Signout button at the bottom of the rail
             trailing: Expanded(
               child: Align(
                 alignment: Alignment.bottomCenter,
@@ -203,15 +298,12 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
               ),
             ),
           ),
-
           const VerticalDivider(
             thickness: 1,
             width: 1,
             color: Color(0xFFEEEEEE),
           ),
-
-          // Main Content Area
-          Expanded(child: pages[_selectedIndex]),
+          Expanded(child: pages[selectedIndex]),
         ],
       ),
     );

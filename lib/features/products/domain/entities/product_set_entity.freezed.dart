@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProductSetEntity {
 
- int? get setId; String get name; String? get description; List<ProductSetItemEntity> get products; DateTime? get createdAt;
+@JsonKey(name: 'set_id') int? get setId; String get name; String? get description; List<ProductSetItemEntity> get products;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of ProductSetEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ProductSetEntityCopyWith<$Res>  {
   factory $ProductSetEntityCopyWith(ProductSetEntity value, $Res Function(ProductSetEntity) _then) = _$ProductSetEntityCopyWithImpl;
 @useResult
 $Res call({
- int? setId, String name, String? description, List<ProductSetItemEntity> products, DateTime? createdAt
+@JsonKey(name: 'set_id') int? setId, String name, String? description, List<ProductSetItemEntity> products,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -157,7 +157,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? setId,  String name,  String? description,  List<ProductSetItemEntity> products,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'set_id')  int? setId,  String name,  String? description,  List<ProductSetItemEntity> products, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductSetEntity() when $default != null:
 return $default(_that.setId,_that.name,_that.description,_that.products,_that.createdAt);case _:
@@ -178,7 +178,7 @@ return $default(_that.setId,_that.name,_that.description,_that.products,_that.cr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? setId,  String name,  String? description,  List<ProductSetItemEntity> products,  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'set_id')  int? setId,  String name,  String? description,  List<ProductSetItemEntity> products, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _ProductSetEntity():
 return $default(_that.setId,_that.name,_that.description,_that.products,_that.createdAt);case _:
@@ -198,7 +198,7 @@ return $default(_that.setId,_that.name,_that.description,_that.products,_that.cr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? setId,  String name,  String? description,  List<ProductSetItemEntity> products,  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'set_id')  int? setId,  String name,  String? description,  List<ProductSetItemEntity> products, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductSetEntity() when $default != null:
 return $default(_that.setId,_that.name,_that.description,_that.products,_that.createdAt);case _:
@@ -213,20 +213,20 @@ return $default(_that.setId,_that.name,_that.description,_that.products,_that.cr
 @JsonSerializable()
 
 class _ProductSetEntity implements ProductSetEntity {
-  const _ProductSetEntity({this.setId, required this.name, this.description, required final  List<ProductSetItemEntity> products, this.createdAt}): _products = products;
+  const _ProductSetEntity({@JsonKey(name: 'set_id') this.setId, required this.name, this.description, final  List<ProductSetItemEntity> products = const [], @JsonKey(name: 'created_at') this.createdAt}): _products = products;
   factory _ProductSetEntity.fromJson(Map<String, dynamic> json) => _$ProductSetEntityFromJson(json);
 
-@override final  int? setId;
+@override@JsonKey(name: 'set_id') final  int? setId;
 @override final  String name;
 @override final  String? description;
  final  List<ProductSetItemEntity> _products;
-@override List<ProductSetItemEntity> get products {
+@override@JsonKey() List<ProductSetItemEntity> get products {
   if (_products is EqualUnmodifiableListView) return _products;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_products);
 }
 
-@override final  DateTime? createdAt;
+@override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 
 /// Create a copy of ProductSetEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -261,7 +261,7 @@ abstract mixin class _$ProductSetEntityCopyWith<$Res> implements $ProductSetEnti
   factory _$ProductSetEntityCopyWith(_ProductSetEntity value, $Res Function(_ProductSetEntity) _then) = __$ProductSetEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? setId, String name, String? description, List<ProductSetItemEntity> products, DateTime? createdAt
+@JsonKey(name: 'set_id') int? setId, String name, String? description, List<ProductSetItemEntity> products,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 

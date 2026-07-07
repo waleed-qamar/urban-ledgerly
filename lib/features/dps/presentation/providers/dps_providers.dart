@@ -26,31 +26,27 @@ Future<List<DpsReport>> dpsReports(Ref ref) async {
 
 class DpsFormState {
   final DateTime selectedDate;
-  final Map<int, DpsEnergyLog> energyLogs;
+  final List<DpsConsumptionLog> consumptionLogs;
   final Map<int, List<DpsProductionLog>> productionLogs;
-  final Map<int, List<DpsConsumptionLog>> consumptionLogs;
   final Map<int, List<DpsDamageLog>> damageLogs;
 
   DpsFormState({
     required this.selectedDate,
-    this.energyLogs = const {},
+    this.consumptionLogs = const [],
     this.productionLogs = const {},
-    this.consumptionLogs = const {},
     this.damageLogs = const {},
   });
 
   DpsFormState copyWith({
     DateTime? selectedDate,
-    Map<int, DpsEnergyLog>? energyLogs,
+    List<DpsConsumptionLog>? consumptionLogs,
     Map<int, List<DpsProductionLog>>? productionLogs,
-    Map<int, List<DpsConsumptionLog>>? consumptionLogs,
     Map<int, List<DpsDamageLog>>? damageLogs,
   }) {
     return DpsFormState(
       selectedDate: selectedDate ?? this.selectedDate,
-      energyLogs: energyLogs ?? this.energyLogs,
-      productionLogs: productionLogs ?? this.productionLogs,
       consumptionLogs: consumptionLogs ?? this.consumptionLogs,
+      productionLogs: productionLogs ?? this.productionLogs,
       damageLogs: damageLogs ?? this.damageLogs,
     );
   }
@@ -65,12 +61,6 @@ class DpsFormNotifier extends _$DpsFormNotifier {
 
   void setDate(DateTime date) {
     state = state.copyWith(selectedDate: date);
-  }
-
-  void updateEnergyLog(int machineId, DpsEnergyLog log) {
-    final logs = Map<int, DpsEnergyLog>.from(state.energyLogs);
-    logs[machineId] = log;
-    state = state.copyWith(energyLogs: logs);
   }
 
   void addProductionLog(int machineId, DpsProductionLog log) {
@@ -99,30 +89,20 @@ class DpsFormNotifier extends _$DpsFormNotifier {
     }
   }
 
-  void addConsumptionLog(int machineId, DpsConsumptionLog log) {
-    final logs = Map<int, List<DpsConsumptionLog>>.from(state.consumptionLogs);
-    logs[machineId] = [...(logs[machineId] ?? []), log];
-    state = state.copyWith(consumptionLogs: logs);
+  void addConsumptionLog(DpsConsumptionLog log) {
+    state = state.copyWith(consumptionLogs: [...state.consumptionLogs, log]);
   }
 
-  void updateConsumptionLog(int machineId, int index, DpsConsumptionLog log) {
-    final logs = Map<int, List<DpsConsumptionLog>>.from(state.consumptionLogs);
-    if (logs.containsKey(machineId)) {
-      final list = List<DpsConsumptionLog>.from(logs[machineId]!);
-      list[index] = log;
-      logs[machineId] = list;
-      state = state.copyWith(consumptionLogs: logs);
-    }
+  void updateConsumptionLog(int index, DpsConsumptionLog log) {
+    final list = List<DpsConsumptionLog>.from(state.consumptionLogs);
+    list[index] = log;
+    state = state.copyWith(consumptionLogs: list);
   }
 
-  void removeConsumptionLog(int machineId, int index) {
-    final logs = Map<int, List<DpsConsumptionLog>>.from(state.consumptionLogs);
-    if (logs.containsKey(machineId)) {
-      final list = List<DpsConsumptionLog>.from(logs[machineId]!);
-      list.removeAt(index);
-      logs[machineId] = list;
-      state = state.copyWith(consumptionLogs: logs);
-    }
+  void removeConsumptionLog(int index) {
+    final list = List<DpsConsumptionLog>.from(state.consumptionLogs);
+    list.removeAt(index);
+    state = state.copyWith(consumptionLogs: list);
   }
 
   void addDamageLog(int machineId, DpsDamageLog log) {
@@ -153,15 +133,11 @@ class DpsFormNotifier extends _$DpsFormNotifier {
 
   Future<bool> submit() async {
     try {
-      final allEnergyLogs = state.energyLogs.values.toList();
       final allProdLogs = state.productionLogs.values.expand((e) => e).toList();
-      final allConsLogs = state.consumptionLogs.values
-          .expand((e) => e)
-          .toList();
+      final allConsLogs = state.consumptionLogs;
       final allDamLogs = state.damageLogs.values.expand((e) => e).toList();
 
-      if (allEnergyLogs.isEmpty &&
-          allProdLogs.isEmpty &&
+      if (allProdLogs.isEmpty &&
           allConsLogs.isEmpty &&
           allDamLogs.isEmpty) {
         return false; // Prevent empty submission
@@ -171,7 +147,6 @@ class DpsFormNotifier extends _$DpsFormNotifier {
           .read(dpsRepositoryProvider)
           .createReport(
             reportDate: state.selectedDate,
-            energyLogs: allEnergyLogs,
             productionLogs: allProdLogs,
             consumptionLogs: allConsLogs,
             damageLogs: allDamLogs,

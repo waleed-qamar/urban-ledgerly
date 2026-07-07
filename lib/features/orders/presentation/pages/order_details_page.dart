@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
+import 'package:ledgerly/core/widgets/audit_log_list_widget.dart';
 import 'package:ledgerly/features/client/domain/entities/client_entity.dart';
 import 'package:ledgerly/features/client/presentation/providers/client_providers.dart';
 import 'package:ledgerly/features/orders/domain/entities/order_entity.dart';
@@ -122,6 +123,38 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 980;
           final details = _OrderTotals.from(_order);
+          final historyCard = Card(
+            elevation: 5,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.textWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.dividerColor.withValues(alpha: 0.6),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Order Activity History',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 17,
+                      color: AppColors.textBlack,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  AuditLogListWidget(
+                    tableName: 'orders',
+                    recordId: _order.id.toString(),
+                  ),
+                ],
+              ),
+            ),
+          );
 
           if (!isWide) {
             return SingleChildScrollView(
@@ -142,7 +175,11 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
                   const SizedBox(height: 14),
                   _ClientCard(client: resolvedClient),
                   const SizedBox(height: 14),
+                  _SupplierCard(supplier: _supplier),
+                  const SizedBox(height: 14),
                   _TotalsCard(totals: details),
+                  const SizedBox(height: 14),
+                  historyCard,
                 ],
               ),
             );
@@ -176,14 +213,18 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
                 const SizedBox(width: 16),
                 Expanded(
                   flex: 2,
-                  child: Column(
-                    children: [
-                      _ClientCard(client: resolvedClient),
-                      const SizedBox(height: 14),
-                      _SupplierCard(supplier: _supplier),
-                      const SizedBox(height: 14),
-                      _TotalsCard(totals: details),
-                    ],
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _ClientCard(client: resolvedClient),
+                        const SizedBox(height: 14),
+                        _SupplierCard(supplier: _supplier),
+                        const SizedBox(height: 14),
+                        _TotalsCard(totals: details),
+                        const SizedBox(height: 14),
+                        historyCard,
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -600,7 +641,7 @@ class _EditableOrderLineRow extends StatelessWidget {
             child: Column(
               children: [
                 DropdownButtonFormField<String>(
-                  value: line.isSet ? 'set' : 'product',
+                  initialValue: line.isSet ? 'set' : 'product',
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Type',
@@ -621,7 +662,7 @@ class _EditableOrderLineRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<int>(
-                  value: line.isSet ? line.setId : line.productId,
+                  initialValue: line.isSet ? line.setId : line.productId,
                   isExpanded: true,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -646,7 +687,7 @@ class _EditableOrderLineRow extends StatelessWidget {
                               child: Text('Loading'),
                             ),
                           ],
-                          error: (_, __) => [
+                          error: (_, _) => [
                             const DropdownMenuItem<int>(
                               value: -1,
                               child: Text('Error'),

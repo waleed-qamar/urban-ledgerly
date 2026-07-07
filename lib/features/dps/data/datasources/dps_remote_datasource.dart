@@ -1,3 +1,4 @@
+import 'package:ledgerly/core/utils/supabase_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/dps_models.dart';
 
@@ -41,16 +42,6 @@ class DpsRemoteDataSource {
     return response.map((json) => DpsReport.fromJson(json)).toList();
   }
 
-  Future<List<DpsEnergyLog>> getEnergyLogsForReport(int reportId) async {
-    final response = await _selectFrom(
-      'dps_energy_logs',
-      eqColumn: 'report_id',
-      eqValue: reportId,
-      orderBy: 'machine_id',
-    );
-    return response.map((json) => DpsEnergyLog.fromJson(json)).toList();
-  }
-
   Future<List<DpsProductionLog>> getProductionLogsForReport(
     int reportId,
   ) async {
@@ -70,7 +61,7 @@ class DpsRemoteDataSource {
       'dps_consumption_logs',
       eqColumn: 'report_id',
       eqValue: reportId,
-      orderBy: 'machine_id',
+      orderBy: 'id',
     );
     return response.map((json) => DpsConsumptionLog.fromJson(json)).toList();
   }
@@ -104,7 +95,7 @@ class DpsRemoteDataSource {
     final response = await _selectFrom(
       'dps_consumption_logs',
       inIds: reportIds,
-      orderBy: 'machine_id',
+      orderBy: 'id',
     );
     return response.map((json) => DpsConsumptionLog.fromJson(json)).toList();
   }
@@ -123,23 +114,48 @@ class DpsRemoteDataSource {
 
   Future<int> createReport({
     required DateTime reportDate,
-    required List<DpsEnergyLog> energyLogs,
     required List<DpsProductionLog> productionLogs,
     required List<DpsConsumptionLog> consumptionLogs,
     required List<DpsDamageLog> damageLogs,
   }) async {
-    final payload = {
-      'report_date': reportDate.toIso8601String().split('T').first,
-      'energy': energyLogs.map((e) => e.toJson()).toList(),
-      'production': productionLogs.map((e) => e.toJson()).toList(),
-      'consumption': consumptionLogs.map((e) => e.toJson()).toList(),
-      'damage': damageLogs.map((e) => e.toJson()).toList(),
-    };
+    return supabaseSafeCall(() async {
+      final payload = {
+        'report_date': reportDate.toIso8601String().split('T').first,
+        'production': productionLogs.map((e) => e.toJson()).toList(),
+        'consumption': consumptionLogs.map((e) => e.toJson()).toList(),
+        'damage': damageLogs.map((e) => e.toJson()).toList(),
+      };
 
-    final response = await _client.rpc(
-      'create_dps_report',
-      params: {'payload': payload},
-    );
-    return response as int;
+      final response = await _client.rpc(
+        'create_dps_report',
+        params: {'payload': payload},
+      );
+      return response as int;
+    });
+  }
+
+  Future<void> updateReport({
+    required int reportId,
+    required DateTime reportDate,
+    String? notes,
+    required List<DpsProductionLog> productionLogs,
+    required List<DpsConsumptionLog> consumptionLogs,
+    required List<DpsDamageLog> damageLogs,
+  }) async {
+    return supabaseSafeCall(() async {
+      final payload = {
+        'report_id': reportId,
+        'report_date': reportDate.toIso8601String().split('T').first,
+        'notes': notes,
+        'production': productionLogs.map((e) => e.toJson()).toList(),
+        'consumption': consumptionLogs.map((e) => e.toJson()).toList(),
+        'damage': damageLogs.map((e) => e.toJson()).toList(),
+      };
+
+      await _client.rpc(
+        'update_dps_report',
+        params: {'payload': payload},
+      );
+    });
   }
 }

@@ -58,13 +58,13 @@ class FullLedgerView extends ConsumerWidget {
 
       sheetObject.appendRow([
         TextCellValue(exp.id.toString()),
-        TextCellValue(DateFormat('yyyy-MM-dd').format(expenseDate)),
+        TextCellValue(DateFormat('M/dd/yyyy').format(expenseDate)),
         TextCellValue(DateFormat('hh:mm a').format(expenseDate)),
         TextCellValue(headName),
         TextCellValue(exp.amount.toString()),
-        TextCellValue(exp.remarks),
+        TextCellValue(exp.remarks ?? ''),
         TextCellValue(
-          createdAt != null ? DateFormat('yyyy-MM-dd').format(createdAt) : '',
+          createdAt != null ? DateFormat('M/dd/yyyy').format(createdAt) : '',
         ),
         TextCellValue(
           createdAt != null ? DateFormat('hh:mm a').format(createdAt) : '',
@@ -118,7 +118,7 @@ class FullLedgerView extends ConsumerWidget {
     final ledgerAsync = ref.watch(filteredLedgerProvider);
     final dateRange = ref.watch(ledgerDateRangeProvider);
     final selectedHeadId = ref.watch(selectedLedgerHeadProvider);
-    final isMaster = ref.watch(isMasterProvider);
+    final canExport = ref.watch(hasPermissionProvider('ledger.read'));
 
     final headsAsync = ref.watch(expenseHeadsProvider);
     final headsList = headsAsync.value ?? [];
@@ -210,7 +210,7 @@ class FullLedgerView extends ConsumerWidget {
                               child: buildLedgerItem(
                                 Icons.receipt_long,
                                 title,
-                                exp.remarks,
+                                exp.remarks ?? '',
                                 NumberFormat.currency(
                                   symbol: 'PKR ',
                                 ).format(exp.amount),
@@ -261,7 +261,7 @@ class FullLedgerView extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          if (isMaster)
+                          if (canExport)
                             ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primaryDark,

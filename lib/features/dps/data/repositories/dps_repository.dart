@@ -14,10 +14,6 @@ class DpsRepositoryImpl implements DpsRepository {
   Future<List<DpsReport>> getReports() => remote.getReports();
 
   @override
-  Future<List<DpsEnergyLog>> getEnergyLogsForReport(int reportId) =>
-      remote.getEnergyLogsForReport(reportId);
-
-  @override
   Future<List<DpsProductionLog>> getProductionLogsForReport(int reportId) =>
       remote.getProductionLogsForReport(reportId);
 
@@ -46,13 +42,28 @@ class DpsRepositoryImpl implements DpsRepository {
   @override
   Future<int> createReport({
     required DateTime reportDate,
-    required List<DpsEnergyLog> energyLogs,
     required List<DpsProductionLog> productionLogs,
     required List<DpsConsumptionLog> consumptionLogs,
     required List<DpsDamageLog> damageLogs,
   }) => remote.createReport(
     reportDate: reportDate,
-    energyLogs: energyLogs,
+    productionLogs: productionLogs,
+    consumptionLogs: consumptionLogs,
+    damageLogs: damageLogs,
+  );
+
+  @override
+  Future<void> updateReport({
+    required int reportId,
+    required DateTime reportDate,
+    String? notes,
+    required List<DpsProductionLog> productionLogs,
+    required List<DpsConsumptionLog> consumptionLogs,
+    required List<DpsDamageLog> damageLogs,
+  }) => remote.updateReport(
+    reportId: reportId,
+    reportDate: reportDate,
+    notes: notes,
     productionLogs: productionLogs,
     consumptionLogs: consumptionLogs,
     damageLogs: damageLogs,

@@ -177,29 +177,29 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
 
                 if (_paymentMethod == 'bank') ...[
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const Text(
-                        'Transfer Type:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(width: 16),
-                      Radio<String>(
-                        value: 'online',
-                        groupValue: _bankTransferMode,
-                        onChanged: (val) =>
-                            setState(() => _bankTransferMode = val!),
-                      ),
-                      const Text('Online Transfer'),
-                      const SizedBox(width: 16),
-                      Radio<String>(
-                        value: 'cheque',
-                        groupValue: _bankTransferMode,
-                        onChanged: (val) =>
-                            setState(() => _bankTransferMode = val!),
-                      ),
-                      const Text('Cheque'),
-                    ],
+                  RadioGroup<String>(
+                    groupValue: _bankTransferMode,
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _bankTransferMode = value;
+                        });
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Transfer Type:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(width: 16),
+                        Radio<String>(value: 'online'),
+                        const Text('Online Transfer'),
+                        const SizedBox(width: 16),
+                        Radio<String>(value: 'cheque'),
+                        const Text('Cheque'),
+                      ],
+                    ),
                   ),
                 ],
                 const SizedBox(height: 12),
@@ -230,7 +230,7 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                     }
 
                     return DropdownButtonFormField<int?>(
-                      value: _selectedAccountId,
+                      initialValue: _selectedAccountId,
                       decoration: InputDecoration(
                         labelText: 'Select $_paymentMethod Account *',
                         border: const OutlineInputBorder(),
@@ -384,10 +384,12 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                     ref.invalidate(getBalanceProvider);
                     ref.invalidate(getAllDisbursementsProvider);
                     ref.invalidate(getAllAccountsProvider);
-                    Navigator.pop(context, true);
+                    Navigator.pop(context.mounted ? context : context, true);
                   } catch (error) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      ScaffoldMessenger.of(
+                        context.mounted ? context : context,
+                      ).showSnackBar(
                         SnackBar(
                           content: Text('Failed to add disbursement: $error'),
                         ),

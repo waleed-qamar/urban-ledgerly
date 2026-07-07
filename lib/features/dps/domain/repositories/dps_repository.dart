@@ -5,7 +5,7 @@ abstract class DpsRepository {
 
   Future<List<DpsReport>> getReports();
 
-  Future<List<DpsEnergyLog>> getEnergyLogsForReport(int reportId);
+
 
   Future<List<DpsProductionLog>> getProductionLogsForReport(int reportId);
 
@@ -25,7 +25,15 @@ abstract class DpsRepository {
 
   Future<int> createReport({
     required DateTime reportDate,
-    required List<DpsEnergyLog> energyLogs,
+    required List<DpsProductionLog> productionLogs,
+    required List<DpsConsumptionLog> consumptionLogs,
+    required List<DpsDamageLog> damageLogs,
+  });
+
+  Future<void> updateReport({
+    required int reportId,
+    required DateTime reportDate,
+    String? notes,
     required List<DpsProductionLog> productionLogs,
     required List<DpsConsumptionLog> consumptionLogs,
     required List<DpsDamageLog> damageLogs,

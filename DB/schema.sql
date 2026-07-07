@@ -102,6 +102,7 @@ CREATE TABLE IF NOT EXISTS raw_material (
     name TEXT NOT NULL UNIQUE,
     price DOUBLE PRECISION NOT NULL,
     description TEXT,
+    unit VARCHAR(20) DEFAULT 'kg',
     created_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() at time zone 'utc'),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() at time zone 'utc')
 );
@@ -394,15 +395,6 @@ CREATE TABLE IF NOT EXISTS dps_reports (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS dps_energy_logs (
-    id SERIAL PRIMARY KEY,
-    report_id INT NOT NULL REFERENCES dps_reports(id) ON DELETE CASCADE,
-    machine_id INT REFERENCES machines(id),
-    operator_name TEXT,
-    gas_weight NUMERIC(12,2) DEFAULT 0,
-    wood_weight NUMERIC(12,2) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT NOW()
-);
 
 CREATE TABLE IF NOT EXISTS dps_production_logs (
     id SERIAL PRIMARY KEY,
@@ -416,7 +408,6 @@ CREATE TABLE IF NOT EXISTS dps_production_logs (
 CREATE TABLE IF NOT EXISTS dps_consumption_logs (
     id SERIAL PRIMARY KEY,
     report_id INT NOT NULL REFERENCES dps_reports(id) ON DELETE CASCADE,
-    machine_id INT REFERENCES machines(id),
     raw_material_id INT REFERENCES raw_material(id),
     quantity NUMERIC(12,2) NOT NULL CHECK (quantity > 0),
     created_at TIMESTAMP DEFAULT NOW()
@@ -991,7 +982,6 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     new_report_id INT;
-    energy_item JSON;
     production_item JSON;
     consumption_item JSON;
     damage_item JSON;
@@ -1005,17 +995,7 @@ BEGIN
     VALUES (report_date_val, notes_val, 'submitted')
     RETURNING id INTO new_report_id;
 
-    FOR energy_item IN SELECT * FROM json_array_elements(payload->'energy')
-    LOOP
-        INSERT INTO dps_energy_logs (report_id, machine_id, operator_name, gas_weight, wood_weight)
-        VALUES (
-            new_report_id,
-            (energy_item->>'machine_id')::INT,
-            energy_item->>'operator_name',
-            (energy_item->>'gas_weight')::NUMERIC,
-            (energy_item->>'wood_weight')::NUMERIC
-        );
-    END LOOP;
+
 
     FOR production_item IN SELECT * FROM json_array_elements(payload->'production')
     LOOP
@@ -1028,7 +1008,7 @@ BEGIN
         );
 
         INSERT INTO inventory_transactions (
-            item_id, item_type, transaction_type, quantity, reference_type, reference_id, notes
+            item_id, item_type, transaction_type, quantity, reference_type, reference_id, notes, transaction_date
         ) VALUES (
             (production_item->>'product_id')::INT,
             'PRODUCT',
@@ -1036,22 +1016,22 @@ BEGIN
             (production_item->>'quantity')::NUMERIC,
             'dps_production',
             new_report_id,
-            'Produced via DPS Report on ' || (payload->>'report_date')
+            'Produced via DPS Report on ' || (payload->>'report_date'),
+            report_date_val::TIMESTAMPTZ
         );
     END LOOP;
 
     FOR consumption_item IN SELECT * FROM json_array_elements(payload->'consumption')
     LOOP
-        INSERT INTO dps_consumption_logs (report_id, machine_id, raw_material_id, quantity)
+        INSERT INTO dps_consumption_logs (report_id, raw_material_id, quantity)
         VALUES (
             new_report_id,
-            (consumption_item->>'machine_id')::INT,
             (consumption_item->>'raw_material_id')::INT,
             (consumption_item->>'quantity')::NUMERIC
         );
 
         INSERT INTO inventory_transactions (
-            item_id, item_type, transaction_type, quantity, reference_type, reference_id, notes
+            item_id, item_type, transaction_type, quantity, reference_type, reference_id, notes, transaction_date
         ) VALUES (
             (consumption_item->>'raw_material_id')::INT,
             'RAW_MATERIAL',
@@ -1059,7 +1039,8 @@ BEGIN
             (consumption_item->>'quantity')::NUMERIC,
             'dps_consumption',
             new_report_id,
-            'Consumed via DPS Report on ' || (payload->>'report_date')
+            'Consumed via DPS Report on ' || (payload->>'report_date'),
+            report_date_val::TIMESTAMPTZ
         );
     END LOOP;
 
@@ -1081,16 +1062,21 @@ BEGIN
             transaction_type, 
             quantity, 
             reference_type, 
-            reference_id,
-            notes
+            reference_id, 
+            notes,
+            transaction_date
         ) VALUES (
             (damage_item->>'item_id')::INT,
-            UPPER(damage_item->>'item_type'),
+            CASE 
+                WHEN (damage_item->>'item_type') = 'product' THEN 'PRODUCT'
+                ELSE 'RAW_MATERIAL'
+            END,
             'OUT',
             (damage_item->>'quantity')::NUMERIC,
             'dps_damage',
             new_report_id,
-            'Damage/Loss via DPS Report (' || (payload->>'report_date') || '): ' || COALESCE(damage_item->>'reason', '')
+            'Damaged (' || (damage_item->>'reason') || ') via DPS Report on ' || (payload->>'report_date'),
+            report_date_val::TIMESTAMPTZ
         );
     END LOOP;
 

@@ -160,6 +160,41 @@ class _ReceiptsDashboardState extends ConsumerState<ReceiptsDashboard> {
   }
 }
 
+// class _DashboardModeSelector extends StatelessWidget {
+//   final _DashboardSection selectedSection;
+//   final ValueChanged<_DashboardSection> onChanged;
+
+//   const _DashboardModeSelector({
+//     required this.selectedSection,
+//     required this.onChanged,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Row(
+//       children: [
+//         Expanded(
+//           child: _ModeChoiceTile(
+//             section: _DashboardSection.receipts,
+//             label: 'Receipts',
+//             selectedSection: selectedSection,
+//             onTap: () => onChanged(_DashboardSection.receipts),
+//           ),
+//         ),
+//         const SizedBox(width: 12),
+//         Expanded(
+//           child: _ModeChoiceTile(
+//             section: _DashboardSection.disbursements,
+//             label: 'Disbursements',
+//             selectedSection: selectedSection,
+//             onTap: () => onChanged(_DashboardSection.disbursements),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
+
 class _DashboardModeSelector extends StatelessWidget {
   final _DashboardSection selectedSection;
   final ValueChanged<_DashboardSection> onChanged;
@@ -171,26 +206,32 @@ class _DashboardModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _ModeChoiceTile(
-            section: _DashboardSection.receipts,
-            label: 'Receipts',
-            selectedSection: selectedSection,
-            onTap: () => onChanged(_DashboardSection.receipts),
+    return RadioGroup<_DashboardSection>(
+      groupValue: selectedSection,
+      onChanged: (value) {
+        if (value != null) onChanged(value);
+      },
+      child: Row(
+        children: [
+          Expanded(
+            child: _ModeChoiceTile(
+              section: _DashboardSection.receipts,
+              label: 'Receipts',
+              selectedSection: selectedSection,
+              onTap: () => onChanged(_DashboardSection.receipts),
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _ModeChoiceTile(
-            section: _DashboardSection.disbursements,
-            label: 'Disbursements',
-            selectedSection: selectedSection,
-            onTap: () => onChanged(_DashboardSection.disbursements),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _ModeChoiceTile(
+              section: _DashboardSection.disbursements,
+              label: 'Disbursements',
+              selectedSection: selectedSection,
+              onTap: () => onChanged(_DashboardSection.disbursements),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -233,8 +274,6 @@ class _ModeChoiceTile extends StatelessWidget {
           children: [
             Radio<_DashboardSection>(
               value: section,
-              groupValue: selectedSection,
-              onChanged: (_) => onTap(),
               visualDensity: VisualDensity.compact,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),

@@ -220,11 +220,13 @@ class _AddProductsetDialogState extends ConsumerState<AddProductsetDialog> {
                     await ref.read(addProductSetProvider(productSet).future);
                     ref.invalidate(getAllProductSetsProvider);
                     if (mounted) {
-                      Navigator.of(context).pop();
+                      Navigator.of(context.mounted ? context : context).pop();
                     }
                   } catch (error) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      ScaffoldMessenger.of(
+                        context.mounted ? context : context,
+                      ).showSnackBar(
                         SnackBar(
                           content: Text('Failed to create product set: $error'),
                           backgroundColor: AppColors.errorText,

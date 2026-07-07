@@ -9,31 +9,31 @@ part of 'account_entity.dart';
 _AccountEntity _$AccountEntityFromJson(Map<String, dynamic> json) =>
     _AccountEntity(
       id: (json['id'] as num).toInt(),
-      accountTitle: json['accountTitle'] as String,
-      accountType: json['accountType'] as String,
-      bankName: json['bankName'] as String?,
-      accountNumber: json['accountNumber'] as String?,
+      accountTitle: json['account_title'] as String,
+      accountType: json['account_type'] as String,
+      bankName: json['bank_name'] as String?,
+      accountNumber: json['account_number'] as String?,
       currency: json['currency'] as String? ?? 'PKR',
-      isActive: json['isActive'] as bool? ?? true,
-      createdAt: json['createdAt'] == null
+      isActive: json['is_active'] as bool? ?? true,
+      createdAt: json['created_at'] == null
           ? null
-          : DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] == null
+          : DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] == null
           ? null
-          : DateTime.parse(json['updatedAt'] as String),
+          : DateTime.parse(json['updated_at'] as String),
       currentBalance: (json['currentBalance'] as num?)?.toDouble() ?? 0.0,
     );
 
 Map<String, dynamic> _$AccountEntityToJson(_AccountEntity instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'accountTitle': instance.accountTitle,
-      'accountType': instance.accountType,
-      'bankName': instance.bankName,
-      'accountNumber': instance.accountNumber,
+      'account_title': instance.accountTitle,
+      'account_type': instance.accountType,
+      'bank_name': instance.bankName,
+      'account_number': instance.accountNumber,
       'currency': instance.currency,
-      'isActive': instance.isActive,
-      'createdAt': instance.createdAt?.toIso8601String(),
-      'updatedAt': instance.updatedAt?.toIso8601String(),
+      'is_active': instance.isActive,
+      'created_at': instance.createdAt?.toIso8601String(),
+      'updated_at': instance.updatedAt?.toIso8601String(),
       'currentBalance': instance.currentBalance,
     };

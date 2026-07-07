@@ -28,20 +28,7 @@ abstract class DpsReport with _$DpsReport {
   factory DpsReport.fromJson(Map<String, dynamic> json) => _$DpsReportFromJson(json);
 }
 
-@freezed
-abstract class DpsEnergyLog with _$DpsEnergyLog {
-  const factory DpsEnergyLog({
-    int? id,
-    @JsonKey(name: 'report_id') int? reportId,
-    @JsonKey(name: 'machine_id') required int machineId,
-    @JsonKey(name: 'operator_name') String? operatorName,
-    @JsonKey(name: 'gas_weight') @Default(0.0) double gasWeight,
-    @JsonKey(name: 'wood_weight') @Default(0.0) double woodWeight,
-    @JsonKey(name: 'created_at') DateTime? createdAt,
-  }) = _DpsEnergyLog;
 
-  factory DpsEnergyLog.fromJson(Map<String, dynamic> json) => _$DpsEnergyLogFromJson(json);
-}
 
 @freezed
 abstract class DpsProductionLog with _$DpsProductionLog {
@@ -62,7 +49,6 @@ abstract class DpsConsumptionLog with _$DpsConsumptionLog {
   const factory DpsConsumptionLog({
     int? id,
     @JsonKey(name: 'report_id') int? reportId,
-    @JsonKey(name: 'machine_id') required int machineId,
     @JsonKey(name: 'raw_material_id') required int rawMaterialId,
     required double quantity,
     @JsonKey(name: 'created_at') DateTime? createdAt,

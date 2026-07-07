@@ -15,9 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$LedgerEntity {
 
- int get id; PartyType get partyType; int get partyId; String get invoiceNumber; EntryType get entryType; double get amount; String? get paymentMethod; DateTime get entryDate; String? get transactionSource;// manual, order, payment
- String? get referenceId;// order_id, payment_id etc.
- String? get remarks; DateTime get createdAt;
+ int get id;@JsonKey(name: 'party_type') PartyType get partyType;@JsonKey(name: 'party_id') int get partyId;@JsonKey(name: 'invoice_number') String? get invoiceNumber;@JsonKey(name: 'entry_type') EntryType get entryType; double get amount;@JsonKey(name: 'payment_method') String? get paymentMethod;@JsonKey(name: 'entry_date') DateTime get entryDate;@JsonKey(name: 'transaction_source') String? get transactionSource;@JsonKey(name: 'reference_id') String? get referenceId; String? get remarks;@JsonKey(name: 'created_at') DateTime get createdAt;
 /// Create a copy of LedgerEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -50,7 +48,7 @@ abstract mixin class $LedgerEntityCopyWith<$Res>  {
   factory $LedgerEntityCopyWith(LedgerEntity value, $Res Function(LedgerEntity) _then) = _$LedgerEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, PartyType partyType, int partyId, String invoiceNumber, EntryType entryType, double amount, String? paymentMethod, DateTime entryDate, String? transactionSource, String? referenceId, String? remarks, DateTime createdAt
+ int id,@JsonKey(name: 'party_type') PartyType partyType,@JsonKey(name: 'party_id') int partyId,@JsonKey(name: 'invoice_number') String? invoiceNumber,@JsonKey(name: 'entry_type') EntryType entryType, double amount,@JsonKey(name: 'payment_method') String? paymentMethod,@JsonKey(name: 'entry_date') DateTime entryDate,@JsonKey(name: 'transaction_source') String? transactionSource,@JsonKey(name: 'reference_id') String? referenceId, String? remarks,@JsonKey(name: 'created_at') DateTime createdAt
 });
 
 
@@ -67,13 +65,13 @@ class _$LedgerEntityCopyWithImpl<$Res>
 
 /// Create a copy of LedgerEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? partyType = null,Object? partyId = null,Object? invoiceNumber = null,Object? entryType = null,Object? amount = null,Object? paymentMethod = freezed,Object? entryDate = null,Object? transactionSource = freezed,Object? referenceId = freezed,Object? remarks = freezed,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? partyType = null,Object? partyId = null,Object? invoiceNumber = freezed,Object? entryType = null,Object? amount = null,Object? paymentMethod = freezed,Object? entryDate = null,Object? transactionSource = freezed,Object? referenceId = freezed,Object? remarks = freezed,Object? createdAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,partyType: null == partyType ? _self.partyType : partyType // ignore: cast_nullable_to_non_nullable
 as PartyType,partyId: null == partyId ? _self.partyId : partyId // ignore: cast_nullable_to_non_nullable
-as int,invoiceNumber: null == invoiceNumber ? _self.invoiceNumber : invoiceNumber // ignore: cast_nullable_to_non_nullable
-as String,entryType: null == entryType ? _self.entryType : entryType // ignore: cast_nullable_to_non_nullable
+as int,invoiceNumber: freezed == invoiceNumber ? _self.invoiceNumber : invoiceNumber // ignore: cast_nullable_to_non_nullable
+as String?,entryType: null == entryType ? _self.entryType : entryType // ignore: cast_nullable_to_non_nullable
 as EntryType,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
 as String?,entryDate: null == entryDate ? _self.entryDate : entryDate // ignore: cast_nullable_to_non_nullable
@@ -166,7 +164,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  PartyType partyType,  int partyId,  String invoiceNumber,  EntryType entryType,  double amount,  String? paymentMethod,  DateTime entryDate,  String? transactionSource,  String? referenceId,  String? remarks,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'party_type')  PartyType partyType, @JsonKey(name: 'party_id')  int partyId, @JsonKey(name: 'invoice_number')  String? invoiceNumber, @JsonKey(name: 'entry_type')  EntryType entryType,  double amount, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'entry_date')  DateTime entryDate, @JsonKey(name: 'transaction_source')  String? transactionSource, @JsonKey(name: 'reference_id')  String? referenceId,  String? remarks, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LedgerEntity() when $default != null:
 return $default(_that.id,_that.partyType,_that.partyId,_that.invoiceNumber,_that.entryType,_that.amount,_that.paymentMethod,_that.entryDate,_that.transactionSource,_that.referenceId,_that.remarks,_that.createdAt);case _:
@@ -187,7 +185,7 @@ return $default(_that.id,_that.partyType,_that.partyId,_that.invoiceNumber,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  PartyType partyType,  int partyId,  String invoiceNumber,  EntryType entryType,  double amount,  String? paymentMethod,  DateTime entryDate,  String? transactionSource,  String? referenceId,  String? remarks,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'party_type')  PartyType partyType, @JsonKey(name: 'party_id')  int partyId, @JsonKey(name: 'invoice_number')  String? invoiceNumber, @JsonKey(name: 'entry_type')  EntryType entryType,  double amount, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'entry_date')  DateTime entryDate, @JsonKey(name: 'transaction_source')  String? transactionSource, @JsonKey(name: 'reference_id')  String? referenceId,  String? remarks, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _LedgerEntity():
 return $default(_that.id,_that.partyType,_that.partyId,_that.invoiceNumber,_that.entryType,_that.amount,_that.paymentMethod,_that.entryDate,_that.transactionSource,_that.referenceId,_that.remarks,_that.createdAt);case _:
@@ -207,7 +205,7 @@ return $default(_that.id,_that.partyType,_that.partyId,_that.invoiceNumber,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  PartyType partyType,  int partyId,  String invoiceNumber,  EntryType entryType,  double amount,  String? paymentMethod,  DateTime entryDate,  String? transactionSource,  String? referenceId,  String? remarks,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'party_type')  PartyType partyType, @JsonKey(name: 'party_id')  int partyId, @JsonKey(name: 'invoice_number')  String? invoiceNumber, @JsonKey(name: 'entry_type')  EntryType entryType,  double amount, @JsonKey(name: 'payment_method')  String? paymentMethod, @JsonKey(name: 'entry_date')  DateTime entryDate, @JsonKey(name: 'transaction_source')  String? transactionSource, @JsonKey(name: 'reference_id')  String? referenceId,  String? remarks, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _LedgerEntity() when $default != null:
 return $default(_that.id,_that.partyType,_that.partyId,_that.invoiceNumber,_that.entryType,_that.amount,_that.paymentMethod,_that.entryDate,_that.transactionSource,_that.referenceId,_that.remarks,_that.createdAt);case _:
@@ -222,23 +220,21 @@ return $default(_that.id,_that.partyType,_that.partyId,_that.invoiceNumber,_that
 @JsonSerializable()
 
 class _LedgerEntity implements LedgerEntity {
-  const _LedgerEntity({required this.id, required this.partyType, required this.partyId, required this.invoiceNumber, required this.entryType, required this.amount, this.paymentMethod, required this.entryDate, this.transactionSource, this.referenceId, this.remarks, required this.createdAt});
+  const _LedgerEntity({required this.id, @JsonKey(name: 'party_type') required this.partyType, @JsonKey(name: 'party_id') required this.partyId, @JsonKey(name: 'invoice_number') this.invoiceNumber, @JsonKey(name: 'entry_type') required this.entryType, required this.amount, @JsonKey(name: 'payment_method') this.paymentMethod, @JsonKey(name: 'entry_date') required this.entryDate, @JsonKey(name: 'transaction_source') this.transactionSource, @JsonKey(name: 'reference_id') this.referenceId, this.remarks, @JsonKey(name: 'created_at') required this.createdAt});
   factory _LedgerEntity.fromJson(Map<String, dynamic> json) => _$LedgerEntityFromJson(json);
 
 @override final  int id;
-@override final  PartyType partyType;
-@override final  int partyId;
-@override final  String invoiceNumber;
-@override final  EntryType entryType;
+@override@JsonKey(name: 'party_type') final  PartyType partyType;
+@override@JsonKey(name: 'party_id') final  int partyId;
+@override@JsonKey(name: 'invoice_number') final  String? invoiceNumber;
+@override@JsonKey(name: 'entry_type') final  EntryType entryType;
 @override final  double amount;
-@override final  String? paymentMethod;
-@override final  DateTime entryDate;
-@override final  String? transactionSource;
-// manual, order, payment
-@override final  String? referenceId;
-// order_id, payment_id etc.
+@override@JsonKey(name: 'payment_method') final  String? paymentMethod;
+@override@JsonKey(name: 'entry_date') final  DateTime entryDate;
+@override@JsonKey(name: 'transaction_source') final  String? transactionSource;
+@override@JsonKey(name: 'reference_id') final  String? referenceId;
 @override final  String? remarks;
-@override final  DateTime createdAt;
+@override@JsonKey(name: 'created_at') final  DateTime createdAt;
 
 /// Create a copy of LedgerEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -273,7 +269,7 @@ abstract mixin class _$LedgerEntityCopyWith<$Res> implements $LedgerEntityCopyWi
   factory _$LedgerEntityCopyWith(_LedgerEntity value, $Res Function(_LedgerEntity) _then) = __$LedgerEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, PartyType partyType, int partyId, String invoiceNumber, EntryType entryType, double amount, String? paymentMethod, DateTime entryDate, String? transactionSource, String? referenceId, String? remarks, DateTime createdAt
+ int id,@JsonKey(name: 'party_type') PartyType partyType,@JsonKey(name: 'party_id') int partyId,@JsonKey(name: 'invoice_number') String? invoiceNumber,@JsonKey(name: 'entry_type') EntryType entryType, double amount,@JsonKey(name: 'payment_method') String? paymentMethod,@JsonKey(name: 'entry_date') DateTime entryDate,@JsonKey(name: 'transaction_source') String? transactionSource,@JsonKey(name: 'reference_id') String? referenceId, String? remarks,@JsonKey(name: 'created_at') DateTime createdAt
 });
 
 
@@ -290,13 +286,13 @@ class __$LedgerEntityCopyWithImpl<$Res>
 
 /// Create a copy of LedgerEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? partyType = null,Object? partyId = null,Object? invoiceNumber = null,Object? entryType = null,Object? amount = null,Object? paymentMethod = freezed,Object? entryDate = null,Object? transactionSource = freezed,Object? referenceId = freezed,Object? remarks = freezed,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? partyType = null,Object? partyId = null,Object? invoiceNumber = freezed,Object? entryType = null,Object? amount = null,Object? paymentMethod = freezed,Object? entryDate = null,Object? transactionSource = freezed,Object? referenceId = freezed,Object? remarks = freezed,Object? createdAt = null,}) {
   return _then(_LedgerEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,partyType: null == partyType ? _self.partyType : partyType // ignore: cast_nullable_to_non_nullable
 as PartyType,partyId: null == partyId ? _self.partyId : partyId // ignore: cast_nullable_to_non_nullable
-as int,invoiceNumber: null == invoiceNumber ? _self.invoiceNumber : invoiceNumber // ignore: cast_nullable_to_non_nullable
-as String,entryType: null == entryType ? _self.entryType : entryType // ignore: cast_nullable_to_non_nullable
+as int,invoiceNumber: freezed == invoiceNumber ? _self.invoiceNumber : invoiceNumber // ignore: cast_nullable_to_non_nullable
+as String?,entryType: null == entryType ? _self.entryType : entryType // ignore: cast_nullable_to_non_nullable
 as EntryType,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,paymentMethod: freezed == paymentMethod ? _self.paymentMethod : paymentMethod // ignore: cast_nullable_to_non_nullable
 as String?,entryDate: null == entryDate ? _self.entryDate : entryDate // ignore: cast_nullable_to_non_nullable

@@ -42,6 +42,11 @@ Future<List<AccountTransactionEntity>> getAccountTransactions(
 }
 
 @riverpod
+Future<void> createAccount(Ref ref, AccountEntity account) {
+  return ref.watch(accountLedgerRepositoryProvider).createAccount(account);
+}
+
+@riverpod
 Future<int?> getAccountIdByReference(
   Ref ref, {
   required String referenceType,

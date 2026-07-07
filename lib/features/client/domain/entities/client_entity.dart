@@ -7,11 +7,11 @@ part 'client_entity.g.dart';
 abstract class ClientEntity with _$ClientEntity {
   factory ClientEntity({
     required int id,
-    required String clientName,
-    required String contactNumber,
-    required String clientAddress,
+    @JsonKey(name: 'client_name') required String clientName,
+    @JsonKey(name: 'contact_number') required String contactNumber,
+    @JsonKey(name: 'client_address') required String clientAddress,
     required String department,
-    required DateTime createdAt,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
     // ignore: invalid_annotation_target
     @JsonKey(name: 'is_active', defaultValue: true) required bool isActive,
   }) = _ClientEntity;

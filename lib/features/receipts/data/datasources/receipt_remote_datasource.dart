@@ -1,3 +1,4 @@
+import 'package:ledgerly/core/utils/supabase_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/disbursement_record.dart';
@@ -13,31 +14,33 @@ class ReceiptRemoteDatasource {
       'allocations:receipt_allocations(id, receipt_id, invoice_id, amount, created_at)';
 
   Future<ReceiptEntity> createReceipt(ReceiptEntity receipt) async {
-    final allocationPayload = receipt.allocations
-        .map(
-          (allocation) => {
-            'invoice_id': allocation.invoiceId,
-            'amount': allocation.amount,
-          },
-        )
-        .toList();
+    return supabaseSafeCall(() async {
+      final allocationPayload = receipt.allocations
+          .map(
+            (allocation) => {
+              'invoice_id': allocation.invoiceId,
+              'amount': allocation.amount,
+            },
+          )
+          .toList();
 
-    final createdReceiptId = await _client.rpc(
-      'create_receipt',
-      params: {
-        'p_client_id': receipt.clientId,
-        'p_total_amount': receipt.totalAmount,
-        'p_payment_method': receipt.paymentMethod,
-        'p_account_no': receipt.accountNo,
-        'p_account_id': receipt.accountId,
-        'p_remarks': receipt.remarks,
-        'p_received_date': receipt.receivedDate.toIso8601String(),
-        'p_allocations': allocationPayload,
-      },
-    );
+      final createdReceiptId = await _client.rpc(
+        'create_receipt',
+        params: {
+          'p_client_id': receipt.clientId,
+          'p_total_amount': receipt.totalAmount,
+          'p_payment_method': receipt.paymentMethod,
+          'p_account_no': receipt.accountNo,
+          'p_account_id': receipt.accountId,
+          'p_remarks': receipt.remarks,
+          'p_received_date': receipt.receivedDate.toIso8601String(),
+          'p_allocations': allocationPayload,
+        },
+      );
 
-    final receiptId = (createdReceiptId as num).toInt();
-    return getReceiptById(receiptId);
+      final receiptId = (createdReceiptId as num).toInt();
+      return getReceiptById(receiptId);
+    });
   }
 
   Future<void> createDisbursement({
@@ -50,23 +53,27 @@ class ReceiptRemoteDatasource {
     String? remarks,
     DateTime? paidDate,
   }) async {
-    await _client.rpc(
-      'create_disbursement',
-      params: {
-        'p_supplier_id': supplierId,
-        'p_total_amount': totalAmount,
-        'p_payment_method': paymentMethod,
-        'p_account_no': accountNo,
-        'p_account_id': accountId,
-        'p_category': category,
-        'p_remarks': remarks,
-        'p_paid_date': (paidDate ?? DateTime.now()).toIso8601String(),
-      },
-    );
+    await supabaseSafeCall(() async {
+      await _client.rpc(
+        'create_disbursement',
+        params: {
+          'p_supplier_id': supplierId,
+          'p_total_amount': totalAmount,
+          'p_payment_method': paymentMethod,
+          'p_account_no': accountNo,
+          'p_account_id': accountId,
+          'p_category': category,
+          'p_remarks': remarks,
+          'p_paid_date': (paidDate ?? DateTime.now()).toIso8601String(),
+        },
+      );
+    });
   }
 
   Future<void> deleteReceipt(int id) async {
-    await _client.rpc('delete_receipt', params: {'p_receipt_id': id});
+    await supabaseSafeCall(() async {
+      await _client.rpc('delete_receipt', params: {'p_receipt_id': id});
+    });
   }
 
   Future<List<DisbursementRecord>> getDisbursements() async {

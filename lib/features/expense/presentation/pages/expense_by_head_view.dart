@@ -57,7 +57,7 @@ class ExpensesByHeadView extends ConsumerWidget {
                         ),
                       ),
                       title: Text(
-                        exp.remarks,
+                        exp.remarks ?? "",
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
@@ -80,7 +80,9 @@ class ExpensesByHeadView extends ConsumerWidget {
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: AppColors.totalSummaryBackground,
-                  border: Border(top: BorderSide(color: AppColors.dividerColor)),
+                  border: Border(
+                    top: BorderSide(color: AppColors.dividerColor),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

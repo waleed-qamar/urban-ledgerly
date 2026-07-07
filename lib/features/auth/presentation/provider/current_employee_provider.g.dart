@@ -46,7 +46,7 @@ final class CurrentEmployeeProvider
   }
 }
 
-String _$currentEmployeeHash() => r'5bfb61c57f17d1c532e6c64e1142e8f02065f346';
+String _$currentEmployeeHash() => r'1090a6ea78854955209d99e3252b68f20fc2168a';
 
 @ProviderFor(isMaster)
 const isMasterProvider = IsMasterProvider._();
@@ -86,4 +86,119 @@ final class IsMasterProvider extends $FunctionalProvider<bool, bool, bool>
   }
 }
 
-String _$isMasterHash() => r'8c6eb36ebf4824a23cfb17af53d5beebb20b7202';
+String _$isMasterHash() => r'346ba901d9f2f52ccde658a6372b16ebe7e00391';
+
+@ProviderFor(userPermissions)
+const userPermissionsProvider = UserPermissionsProvider._();
+
+final class UserPermissionsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Set<String>>,
+          Set<String>,
+          FutureOr<Set<String>>
+        >
+    with $FutureModifier<Set<String>>, $FutureProvider<Set<String>> {
+  const UserPermissionsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'userPermissionsProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$userPermissionsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<Set<String>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Set<String>> create(Ref ref) {
+    return userPermissions(ref);
+  }
+}
+
+String _$userPermissionsHash() => r'03975edcba9bb079ef909de9001136efd12b1569';
+
+@ProviderFor(hasPermission)
+const hasPermissionProvider = HasPermissionFamily._();
+
+final class HasPermissionProvider extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const HasPermissionProvider._({
+    required HasPermissionFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'hasPermissionProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$hasPermissionHash();
+
+  @override
+  String toString() {
+    return r'hasPermissionProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    final argument = this.argument as String;
+    return hasPermission(ref, argument);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is HasPermissionProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$hasPermissionHash() => r'3117d04c220cb138a091ac1b03f64c298c7370ba';
+
+final class HasPermissionFamily extends $Family
+    with $FunctionalFamilyOverride<bool, String> {
+  const HasPermissionFamily._()
+    : super(
+        retry: null,
+        name: r'hasPermissionProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  HasPermissionProvider call(String permissionKey) =>
+      HasPermissionProvider._(argument: permissionKey, from: this);
+
+  @override
+  String toString() => r'hasPermissionProvider';
+}

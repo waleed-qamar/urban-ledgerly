@@ -111,6 +111,60 @@ abstract class _$OperatorSearchQuery extends $Notifier<String> {
   }
 }
 
+@ProviderFor(EmployeeSearchQuery)
+const employeeSearchQueryProvider = EmployeeSearchQueryProvider._();
+
+final class EmployeeSearchQueryProvider
+    extends $NotifierProvider<EmployeeSearchQuery, String> {
+  const EmployeeSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'employeeSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$employeeSearchQueryHash();
+
+  @$internal
+  @override
+  EmployeeSearchQuery create() => EmployeeSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$employeeSearchQueryHash() =>
+    r'71d8cbc4c1363033f4ec9cdaaa4f33664726987a';
+
+abstract class _$EmployeeSearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(operatorRepository)
 const operatorRepositoryProvider = OperatorRepositoryProvider._();
 
@@ -406,3 +460,168 @@ final class UpdateOperatorFamily extends $Family
   @override
   String toString() => r'updateOperatorProvider';
 }
+
+@ProviderFor(getAllEmployees)
+const getAllEmployeesProvider = GetAllEmployeesProvider._();
+
+final class GetAllEmployeesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<EmployeeEntity>>,
+          List<EmployeeEntity>,
+          FutureOr<List<EmployeeEntity>>
+        >
+    with
+        $FutureModifier<List<EmployeeEntity>>,
+        $FutureProvider<List<EmployeeEntity>> {
+  const GetAllEmployeesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'getAllEmployeesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$getAllEmployeesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<EmployeeEntity>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<EmployeeEntity>> create(Ref ref) {
+    return getAllEmployees(ref);
+  }
+}
+
+String _$getAllEmployeesHash() => r'8cea96e2e1e68615f73f7b6e6f92d66f3ff9ef4b';
+
+@ProviderFor(getAllRoles)
+const getAllRolesProvider = GetAllRolesProvider._();
+
+final class GetAllRolesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Map<String, dynamic>>>,
+          List<Map<String, dynamic>>,
+          FutureOr<List<Map<String, dynamic>>>
+        >
+    with
+        $FutureModifier<List<Map<String, dynamic>>>,
+        $FutureProvider<List<Map<String, dynamic>>> {
+  const GetAllRolesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'getAllRolesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$getAllRolesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Map<String, dynamic>>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Map<String, dynamic>>> create(Ref ref) {
+    return getAllRoles(ref);
+  }
+}
+
+String _$getAllRolesHash() => r'257f047ad7a94c98afc632494dd79c4d2bec2588';
+
+@ProviderFor(getAllPermissions)
+const getAllPermissionsProvider = GetAllPermissionsProvider._();
+
+final class GetAllPermissionsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Map<String, dynamic>>>,
+          List<Map<String, dynamic>>,
+          FutureOr<List<Map<String, dynamic>>>
+        >
+    with
+        $FutureModifier<List<Map<String, dynamic>>>,
+        $FutureProvider<List<Map<String, dynamic>>> {
+  const GetAllPermissionsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'getAllPermissionsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$getAllPermissionsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Map<String, dynamic>>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Map<String, dynamic>>> create(Ref ref) {
+    return getAllPermissions(ref);
+  }
+}
+
+String _$getAllPermissionsHash() => r'd266df3160859f514eeff1f51b5f17b10e9803ed';
+
+@ProviderFor(getRolePermissions)
+const getRolePermissionsProvider = GetRolePermissionsProvider._();
+
+final class GetRolePermissionsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Map<String, dynamic>>>,
+          List<Map<String, dynamic>>,
+          FutureOr<List<Map<String, dynamic>>>
+        >
+    with
+        $FutureModifier<List<Map<String, dynamic>>>,
+        $FutureProvider<List<Map<String, dynamic>>> {
+  const GetRolePermissionsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'getRolePermissionsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$getRolePermissionsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Map<String, dynamic>>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Map<String, dynamic>>> create(Ref ref) {
+    return getRolePermissions(ref);
+  }
+}
+
+String _$getRolePermissionsHash() =>
+    r'a8f7e20b8059d6335792e9e44c98ac4b02250cec';

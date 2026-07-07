@@ -10,13 +10,16 @@ abstract class EmployeeEntity with _$EmployeeEntity {
     required String name,
     required String phone,
     String? cnic,
-    required DateTime joiningDate,
-    required bool isActive,
+    String? email,
+    @JsonKey(name: 'joining_date') required DateTime joiningDate,
+    @JsonKey(name: 'is_active') required bool isActive,
     String? role,
-    String? userId,
-    DateTime? createdAt,
+    @JsonKey(name: 'role_id') int? roleId,
+    @JsonKey(name: 'user_id') String? userId,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _EmployeeEntity;
 
   factory EmployeeEntity.fromJson(Map<String, dynamic> json) =>
       _$EmployeeEntityFromJson(json);
 }
+

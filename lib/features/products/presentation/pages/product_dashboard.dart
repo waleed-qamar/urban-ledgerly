@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/core/widgets/build_search_box.dart';
@@ -7,6 +6,7 @@ import 'package:ledgerly/features/products/presentation/pages/add_productset_dia
 import 'package:ledgerly/features/products/presentation/pages/product_detail_page.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
 import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
+import 'package:ledgerly/core/inventory/presentation/widgets/inventory_transaction_dialog.dart';
 
 import 'add_product_dialog.dart';
 
@@ -417,71 +417,12 @@ class _ProductDashboardState extends ConsumerState<ProductDashboard> {
     int productId, {
     required String transactionType,
   }) async {
-    var quantityText = '';
-    var notesText = '';
-
-    final quantity = await showDialog<int>(
+    final result = await showInventoryTransactionDialog(
       context: context,
-      builder: (dialogContext) {
-        final formKey = GlobalKey<FormState>();
-
-        return AlertDialog(
-          backgroundColor: AppColors.textWhite,
-          title: Text(transactionType == 'IN' ? 'Add Stock' : 'Remove Stock'),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  autofocus: true,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                  ],
-                  decoration: const InputDecoration(labelText: 'Quantity'),
-                  onChanged: (value) => quantityText = value,
-                  validator: (value) {
-                    final parsed = int.tryParse(value ?? '');
-                    if (parsed == null || parsed <= 0) {
-                      return 'Enter a valid positive quantity';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Notes (optional)',
-                  ),
-                  maxLines: 2,
-                  onChanged: (value) => notesText = value,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (formKey.currentState?.validate() ?? false) {
-                  Navigator.of(dialogContext).pop(int.parse(quantityText));
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
+      transactionType: transactionType,
     );
 
-    if (quantity == null) return;
-    final notes = notesText.trim().isEmpty ? null : notesText.trim();
+    if (result == null) return;
 
     final repository = ref.read(inventoryRepositoryProvider);
     try {
@@ -489,17 +430,23 @@ class _ProductDashboardState extends ConsumerState<ProductDashboard> {
         await repository.recordIn(
           productId,
           'PRODUCT',
-          quantity.toDouble(),
-          notes: notes,
+          result.quantity,
+          notes: result.notes,
+          transactionDate: result.transactionDate,
         );
       } else {
         await repository.recordOut(
           productId,
           'PRODUCT',
-          quantity.toDouble(),
-          notes: notes,
+          result.quantity,
+          notes: result.notes,
+          transactionDate: result.transactionDate,
         );
       }
+
+      ref.invalidate(
+        inventoryTransactionsForItemProvider(productId, 'PRODUCT'),
+      );
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

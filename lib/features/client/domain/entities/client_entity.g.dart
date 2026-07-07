@@ -9,21 +9,21 @@ part of 'client_entity.dart';
 _ClientEntity _$ClientEntityFromJson(Map<String, dynamic> json) =>
     _ClientEntity(
       id: (json['id'] as num).toInt(),
-      clientName: json['clientName'] as String,
-      contactNumber: json['contactNumber'] as String,
-      clientAddress: json['clientAddress'] as String,
+      clientName: json['client_name'] as String,
+      contactNumber: json['contact_number'] as String,
+      clientAddress: json['client_address'] as String,
       department: json['department'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String),
       isActive: json['is_active'] as bool? ?? true,
     );
 
 Map<String, dynamic> _$ClientEntityToJson(_ClientEntity instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'clientName': instance.clientName,
-      'contactNumber': instance.contactNumber,
-      'clientAddress': instance.clientAddress,
+      'client_name': instance.clientName,
+      'contact_number': instance.contactNumber,
+      'client_address': instance.clientAddress,
       'department': instance.department,
-      'createdAt': instance.createdAt.toIso8601String(),
+      'created_at': instance.createdAt.toIso8601String(),
       'is_active': instance.isActive,
     };

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/core/inventory/domain/entities/inventory_transaction_entity.dart';
 import 'package:ledgerly/core/inventory/presentation/providers/inventory_providers.dart';
+import 'package:ledgerly/core/inventory/presentation/widgets/inventory_transaction_dialog.dart';
 import 'package:ledgerly/features/raw_material/domain/entities/raw_material_entity.dart';
 
 class RawMaterialDetailPage extends ConsumerWidget {
@@ -348,65 +349,12 @@ class RawMaterialDetailPage extends ConsumerWidget {
     WidgetRef ref, {
     required String transactionType,
   }) async {
-    var quantityText = '';
-    var notesText = '';
-
-    final quantity = await showDialog<double>(
+    final result = await showInventoryTransactionDialog(
       context: context,
-      builder: (dialogContext) {
-        final formKey = GlobalKey<FormState>();
-
-        return AlertDialog(
-          title: Text(transactionType == 'IN' ? 'Add Stock' : 'Remove Stock'),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  autofocus: true,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Quantity'),
-                  onChanged: (value) => quantityText = value,
-                  validator: (value) {
-                    final parsed = double.tryParse(value ?? '');
-                    if (parsed == null || parsed <= 0) {
-                      return 'Enter a valid positive quantity';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Notes (optional)',
-                  ),
-                  maxLines: 2,
-                  onChanged: (value) => notesText = value,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (formKey.currentState?.validate() ?? false) {
-                  Navigator.of(dialogContext).pop(double.parse(quantityText));
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
+      transactionType: transactionType,
     );
 
-    if (quantity == null) return;
-    final notes = notesText.trim().isEmpty ? null : notesText.trim();
+    if (result == null) return;
 
     final repository = ref.read(inventoryRepositoryProvider);
     try {
@@ -414,15 +362,17 @@ class RawMaterialDetailPage extends ConsumerWidget {
         await repository.recordIn(
           material.id,
           'RAW_MATERIAL',
-          quantity,
-          notes: notes,
+          result.quantity,
+          notes: result.notes,
+          transactionDate: result.transactionDate,
         );
       } else {
         await repository.recordOut(
           material.id,
           'RAW_MATERIAL',
-          quantity,
-          notes: notes,
+          result.quantity,
+          notes: result.notes,
+          transactionDate: result.transactionDate,
         );
       }
 

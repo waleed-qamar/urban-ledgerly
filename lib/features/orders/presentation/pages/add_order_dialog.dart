@@ -353,40 +353,34 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Delivery Terms',
-                      style: TextStyle(fontSize: 16),
-                    ),
+                child: RadioGroup<String>(
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _deliveryTerm = value;
+                      });
+                    }
+                  },
+                  groupValue: _deliveryTerm,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Delivery Terms',
+                        style: TextStyle(fontSize: 16),
+                      ),
 
-                    RadioListTile<String>(
-                      title: const Text('Ex-Factory'),
-                      value: 'exfactory',
-                      groupValue: _deliveryTerm,
-                      onChanged: _isSubmitting
-                          ? null
-                          : (value) {
-                              setState(() {
-                                _deliveryTerm = value;
-                              });
-                            },
-                    ),
+                      RadioListTile<String>(
+                        title: const Text('Ex-Factory'),
+                        value: 'exfactory',
+                      ),
 
-                    RadioListTile<String>(
-                      title: const Text('Onsite'),
-                      value: 'onsite',
-                      groupValue: _deliveryTerm,
-                      onChanged: _isSubmitting
-                          ? null
-                          : (value) {
-                              setState(() {
-                                _deliveryTerm = value;
-                              });
-                            },
-                    ),
-                  ],
+                      RadioListTile<String>(
+                        title: const Text('Onsite'),
+                        value: 'onsite',
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -575,7 +569,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
     final productById = {for (final p in products) p.id: p};
     final items = <OrderItemEntity>[];
     final department = _departmentController.text.trim();
-    final _po = _poController.text.trim();
+    final po = _poController.text.trim();
 
     for (final line in _lines) {
       if (line.isSet) {
@@ -650,7 +644,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
       status: _status,
       department: department,
       deliveryTerm: _deliveryTerm!,
-      po: _po.isEmpty ? null : _po,
+      po: po.isEmpty ? null : po,
       orderDate: _orderDate,
       createdAt: _orderDate,
     );
@@ -665,7 +659,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
       if (!mounted) {
         return;
       }
-      Navigator.of(context).pop();
+      Navigator.of(context.mounted ? context : context).pop();
     } catch (error) {
       if (!mounted) {
         return;

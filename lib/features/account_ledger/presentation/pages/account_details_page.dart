@@ -1,11 +1,11 @@
-import 'dart:typed_data';
-
 import 'package:excel/excel.dart' hide Border;
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
+import 'package:ledgerly/core/widgets/audit_log_list_widget.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../provider/account_ledger_providers.dart';
@@ -20,6 +20,8 @@ class AccountDetailsPage extends ConsumerStatefulWidget {
 }
 
 class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
+  int _activeTab = 0;
+
   @override
   Widget build(BuildContext context) {
     final accountAsync = ref.watch(getAccountByIdProvider(widget.accountId));
@@ -125,198 +127,256 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Transactions History',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                FilledButton.icon(
-                  onPressed: () => _openTransferDialog(context),
-                  icon: const Icon(Icons.compare_arrows),
-                  label: const Text('Transfer Money'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: transactionsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) => Center(
-                  child: Text(
-                    'Error: $err',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-                data: (transactions) {
-                  if (transactions.isEmpty) {
-                    return const Center(
-                      child: Text('No transactions found for this account.'),
-                    );
-                  }
-
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.dividerColor.withValues(alpha: 0.35),
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: SingleChildScrollView(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minWidth: MediaQuery.of(context).size.width - 48,
-                            ),
-                            child: DataTable(
-                              headingRowColor: WidgetStateProperty.all(
-                                Colors.grey.shade50,
-                              ),
-                              columns: const [
-                                DataColumn(
-                                  label: Text(
-                                    'Date',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Remarks',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Ref Type',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Credit',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Debit',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Balance',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              rows: transactions.map((tx) {
-                                final isCredit = tx.transactionType == 'credit';
-                                final dateFormat = DateFormat(
-                                  'dd MMM yyyy, HH:mm',
-                                );
-                                return DataRow(
-                                  cells: [
-                                    DataCell(
-                                      Text(
-                                        dateFormat.format(tx.transactionDate),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      SizedBox(
-                                        width: 300,
-                                        child: Text(
-                                          tx.description ?? '',
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade100,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          tx.referenceType.toUpperCase(),
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        isCredit
-                                            ? tx.amount.toStringAsFixed(2)
-                                            : '-',
-                                        style: TextStyle(
-                                          color: isCredit
-                                              ? Colors.green.shade700
-                                              : Colors.black,
-                                          fontWeight: isCredit
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        !isCredit
-                                            ? tx.amount.toStringAsFixed(2)
-                                            : '-',
-                                        style: TextStyle(
-                                          color: !isCredit
-                                              ? Colors.red.shade700
-                                              : Colors.black,
-                                          fontWeight: !isCredit
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        tx.runningBalance.toStringAsFixed(2),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
-                            ),
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: () => setState(() => _activeTab = 0),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          'Transactions History',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: _activeTab == 0
+                                ? AppColors.primary
+                                : AppColors.textGrey,
                           ),
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
+                    const SizedBox(width: 16),
+                    InkWell(
+                      onTap: () => setState(() => _activeTab = 1),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          'System Activity Logs',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: _activeTab == 1
+                                ? AppColors.primary
+                                : AppColors.textGrey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (_activeTab == 0)
+                  FilledButton.icon(
+                    onPressed: () => _openTransferDialog(context),
+                    icon: const Icon(Icons.compare_arrows),
+                    label: const Text('Transfer Money'),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _activeTab == 1
+                  ? SingleChildScrollView(
+                      child: AuditLogListWidget(
+                        tableName: 'accounts',
+                        recordId: widget.accountId.toString(),
+                      ),
+                    )
+                  : transactionsAsync.when(
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (err, _) => Center(
+                        child: Text(
+                          'Error: $err',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                      data: (transactions) {
+                        if (transactions.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              'No transactions found for this account.',
+                            ),
+                          );
+                        }
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.dividerColor.withValues(
+                                alpha: 0.35,
+                              ),
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: SingleChildScrollView(
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minWidth:
+                                        MediaQuery.of(context).size.width - 48,
+                                  ),
+                                  child: DataTable(
+                                    headingRowColor: WidgetStateProperty.all(
+                                      Colors.grey.shade50,
+                                    ),
+                                    columns: const [
+                                      DataColumn(
+                                        label: Text(
+                                          'Date',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Remarks',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Ref Type',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Credit',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Debit',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Balance',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                    rows: transactions.map((tx) {
+                                      final isCredit =
+                                          tx.transactionType == 'credit';
+                                      final dateFormat = DateFormat(
+                                        'dd MMM yyyy, hh:mm a',
+                                      );
+                                      return DataRow(
+                                        cells: [
+                                          DataCell(
+                                            Text(
+                                              dateFormat.format(
+                                                tx.transactionDate,
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            SizedBox(
+                                              width: 300,
+                                              child: Text(
+                                                tx.description ?? '',
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 2,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey.shade100,
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                tx.referenceType.toUpperCase(),
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Text(
+                                              isCredit
+                                                  ? tx.amount.toStringAsFixed(2)
+                                                  : '-',
+                                              style: TextStyle(
+                                                color: isCredit
+                                                    ? Colors.green.shade700
+                                                    : Colors.black,
+                                                fontWeight: isCredit
+                                                    ? FontWeight.bold
+                                                    : FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Text(
+                                              !isCredit
+                                                  ? tx.amount.toStringAsFixed(2)
+                                                  : '-',
+                                              style: TextStyle(
+                                                color: !isCredit
+                                                    ? Colors.red.shade700
+                                                    : Colors.black,
+                                                fontWeight: !isCredit
+                                                    ? FontWeight.bold
+                                                    : FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Text(
+                                              tx.runningBalance.toStringAsFixed(
+                                                2,
+                                              ),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -424,7 +484,7 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
 
       sheet.appendRow([
         TextCellValue('Statement Date:'),
-        TextCellValue(DateFormat('dd MMM yyyy').format(DateTime.now())),
+        TextCellValue(DateFormat('MMM dd yyyy').format(DateTime.now())),
       ]);
       sheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
@@ -455,7 +515,7 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
       row++;
 
       // Transactions
-      final dateFormat = DateFormat('dd MMM yyyy, HH:mm');
+      final dateFormat = DateFormat('M/dd/yyyy');
       for (final tx in transactions) {
         final isCredit = tx.transactionType == 'credit';
         final date = dateFormat.format(tx.transactionDate);
@@ -546,7 +606,7 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
-        context,
+        context.mounted ? context : context,
       ).showSnackBar(SnackBar(content: Text('Export failed: $e')));
     }
   }

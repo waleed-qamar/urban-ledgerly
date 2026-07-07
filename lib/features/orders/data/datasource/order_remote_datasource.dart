@@ -1,5 +1,6 @@
 import 'package:ledgerly/features/orders/domain/entities/order_entity.dart';
 import 'package:ledgerly/features/orders/domain/entities/order_item_entity.dart';
+import 'package:ledgerly/core/utils/supabase_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class OrderRemoteDatasource {
@@ -11,144 +12,138 @@ class OrderRemoteDatasource {
   OrderRemoteDatasource(this._client);
 
   Future<void> createOrder(OrderEntity order) async {
-    // 1. Insert order
-    final orderRes = await _client
-        .from('orders')
-        .insert({
-          'supplier_id': order.supplierId,
-          'client_id': order.clientId,
-          'status': order.status ?? 'pending',
-          'department': order.department,
-          'po': order.po,
-          'delivery_term': order.deliveryTerm,
-          'order_date': order.orderDate.toIso8601String(),
-          'created_at': order.createdAt?.toIso8601String(),
-        })
-        .select('id')
-        .single();
+    await supabaseSafeCall(() async {
+      // 1. Insert order
+      final orderRes = await _client
+          .from('orders')
+          .insert({
+            'supplier_id': order.supplierId,
+            'client_id': order.clientId,
+            'status': order.status ?? 'pending',
+            'department': order.department,
+            'po': order.po,
+            'delivery_term': order.deliveryTerm,
+            'order_date': order.orderDate.toIso8601String(),
+            'created_at': order.createdAt?.toIso8601String(),
+          })
+          .select('id')
+          .single();
 
-    final orderId = orderRes['id'];
+      final orderId = orderRes['id'];
 
-    // 2. Insert order items
-    final items = order.items.map((e) {
-      return {
-        'order_id': orderId,
-        'product_id': e.productId,
-        'set_id': e.setId,
-        'is_set': e.isSet,
-        'quantity': e.quantity,
-        'price': e.price,
-        'invoiced_quantity': 0,
-      };
-    }).toList();
+      // 2. Insert order items
+      final items = order.items.map((e) {
+        return {
+          'order_id': orderId,
+          'product_id': e.productId,
+          'set_id': e.setId,
+          'is_set': e.isSet,
+          'quantity': e.quantity,
+          'price': e.price,
+          'invoiced_quantity': 0,
+        };
+      }).toList();
 
-    await _client.from('order_items').insert(items);
+      await _client.from('order_items').insert(items);
 
-    // 3. Insert Credit ledger entry for the vendor (procurement amount)
-    final totalAmount = order.items.fold<double>(
-      0,
-      (sum, item) => sum + (item.quantity * item.price),
-    );
+      // 3. Insert Credit ledger entry for the vendor (procurement amount)
+      final totalAmount = order.items.fold<double>(
+        0,
+        (sum, item) => sum + (item.quantity * item.price),
+      );
 
-    // Try to add a ledger entry for this order. In some deployments a DB
-    // trigger may already insert the same ledger row (unique constraint on
-    // reference_id for order entries). Swallow duplicate-key errors so the
-    // overall order creation still succeeds when the DB already recorded the
-    // ledger entry.
-    try {
-      await _client.from('ledger').insert({
-        'party_type': 'vendor',
-        'party_id': order.supplierId,
-        'entry_type': 'credit',
-        'amount': totalAmount,
-        'entry_date':
-            order.createdAt?.toIso8601String() ??
-            DateTime.now().toIso8601String(),
-        'transaction_source': 'order',
-        'reference_id': orderId.toString(),
-        'remarks': 'Auto recorded credit on procurement generation',
-        'created_at': DateTime.now().toIso8601String(),
-      });
-    } catch (e) {
-      final err = e.toString();
-      // Postgres duplicate key error code is 23505; message contains
-      // 'duplicate key value violates unique constraint'. If we detect that
-      // it's a duplicate-key error for the ledger unique constraint, ignore
-      // it. Otherwise rethrow so callers see real failures.
-      if (err.contains('duplicate key') || err.contains('23505')) {
-        // ignore duplicate ledger entry
-      } else {
-        rethrow;
+      try {
+        await _client.from('ledger').insert({
+          'party_type': 'vendor',
+          'party_id': order.supplierId,
+          'entry_type': 'credit',
+          'amount': totalAmount,
+          'entry_date':
+              order.createdAt?.toIso8601String() ??
+              DateTime.now().toIso8601String(),
+          'transaction_source': 'order',
+          'reference_id': orderId.toString(),
+          'remarks': 'Auto recorded credit on procurement generation',
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      } catch (e) {
+        final err = e.toString();
+        if (err.contains('duplicate key') || err.contains('23505')) {
+          // ignore duplicate ledger entry
+        } else {
+          rethrow;
+        }
       }
-    }
-
-    // (Phase 2)
-    // 4. Insert inventory RESERVE transactions
+    });
   }
 
   Future<void> deleteOrder(int id) async {
-    await _client.from('orders').delete().eq('id', id);
+    await supabaseSafeCall(() async {
+      await _client.from('orders').delete().eq('id', id);
+    });
   }
 
   Future<void> updateOrder(OrderEntity orderData) async {
-    final payload = <String, dynamic>{
-      'supplier_id': orderData.supplierId,
-      'client_id': orderData.clientId,
-      'department': orderData.department,
-      'delivery_term': orderData.deliveryTerm,
-      'po': orderData.po,
-    };
-    if (orderData.status != null) {
-      payload['status'] = orderData.status;
-    }
-
-    final existingOrder = await getOrderById(orderData.id!);
-
-    await _client.from('orders').update(payload).eq('id', orderData.id!);
-
-    if (_hasSameItems(existingOrder.items, orderData.items)) {
-      return;
-    }
-
-    // Granular update of order items instead of delete-all-and-insert
-    final updatedItemIds = orderData.items
-        .map((e) => e.id)
-        .whereType<int>()
-        .toSet();
-
-    final itemsToDelete = existingOrder.items
-        .where((e) => e.id != null && !updatedItemIds.contains(e.id))
-        .toList();
-
-    for (final item in itemsToDelete) {
-      await _client.from('order_items').delete().eq('id', item.id!);
-    }
-
-    for (final item in orderData.items) {
-      if (item.id != null) {
-        await _client
-            .from('order_items')
-            .update({
-              'product_id': item.productId,
-              'set_id': item.setId,
-              'is_set': item.isSet,
-              'quantity': item.quantity,
-              'price': item.price,
-              'invoiced_quantity': item.invoicedQuantity ?? 0,
-            })
-            .eq('id', item.id!);
-      } else {
-        await _client.from('order_items').insert({
-          'order_id': orderData.id,
-          'product_id': item.productId,
-          'set_id': item.setId,
-          'is_set': item.isSet,
-          'quantity': item.quantity,
-          'price': item.price,
-          'invoiced_quantity': item.invoicedQuantity ?? 0,
-        });
+    await supabaseSafeCall(() async {
+      final payload = <String, dynamic>{
+        'supplier_id': orderData.supplierId,
+        'client_id': orderData.clientId,
+        'department': orderData.department,
+        'delivery_term': orderData.deliveryTerm,
+        'po': orderData.po,
+      };
+      if (orderData.status != null) {
+        payload['status'] = orderData.status;
       }
-    }
+
+      final existingOrder = await getOrderById(orderData.id!);
+
+      await _client.from('orders').update(payload).eq('id', orderData.id!);
+
+      if (_hasSameItems(existingOrder.items, orderData.items)) {
+        return;
+      }
+
+      // Granular update of order items instead of delete-all-and-insert
+      final updatedItemIds = orderData.items
+          .map((e) => e.id)
+          .whereType<int>()
+          .toSet();
+
+      final itemsToDelete = existingOrder.items
+          .where((e) => e.id != null && !updatedItemIds.contains(e.id))
+          .toList();
+
+      for (final item in itemsToDelete) {
+        await _client.from('order_items').delete().eq('id', item.id!);
+      }
+
+      for (final item in orderData.items) {
+        if (item.id != null) {
+          await _client
+              .from('order_items')
+              .update({
+                'product_id': item.productId,
+                'set_id': item.setId,
+                'is_set': item.isSet,
+                'quantity': item.quantity,
+                'price': item.price,
+                'invoiced_quantity': item.invoicedQuantity ?? 0,
+              })
+              .eq('id', item.id!);
+        } else {
+          await _client.from('order_items').insert({
+            'order_id': orderData.id,
+            'product_id': item.productId,
+            'set_id': item.setId,
+            'is_set': item.isSet,
+            'quantity': item.quantity,
+            'price': item.price,
+            'invoiced_quantity': item.invoicedQuantity ?? 0,
+          });
+        }
+      }
+    });
   }
 
   bool _hasSameItems(

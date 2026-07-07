@@ -36,7 +36,7 @@ class AccountLedgerRemoteDatasource {
       }
 
       var normalized = _normalizeAccountRow(row);
-      normalized['currentBalance'] = balance;
+      normalized['current_balance'] = balance;
       accounts.add(AccountEntity.fromJson(normalized));
     }
 
@@ -66,7 +66,7 @@ class AccountLedgerRemoteDatasource {
     }
 
     var normalized = _normalizeAccountRow(row);
-    normalized['currentBalance'] = balance;
+    normalized['current_balance'] = balance;
     return AccountEntity.fromJson(normalized);
   }
 
@@ -104,9 +104,9 @@ class AccountLedgerRemoteDatasource {
   Future<AccountEntity> createAccount(AccountEntity account) async {
     final payload = account.toJson()
       ..remove('id')
-      ..remove('currentBalance')
-      ..remove('createdAt')
-      ..remove('updatedAt');
+      ..remove('current_balance')
+      ..remove('created_at')
+      ..remove('updated_at');
 
     final response = await _client
         .from('accounts')
@@ -119,16 +119,8 @@ class AccountLedgerRemoteDatasource {
 
   Map<String, dynamic> _normalizeAccountRow(Map<String, dynamic> row) {
     return {
-      'id': row['id'] ?? 0,
-      'accountTitle': row['account_title']?.toString() ?? '',
-      'accountType': row['account_type']?.toString() ?? '',
-      'bankName': row['bank_name']?.toString(),
-      'accountNumber': row['account_number']?.toString(),
-      'currency': row['currency']?.toString() ?? 'PKR',
-      'isActive': row['is_active'] ?? true,
-      'createdAt': row['created_at']?.toString(),
-      'updatedAt': row['updated_at']?.toString(),
-      'currentBalance': row['currentBalance'] ?? 0.0,
+      ...row,
+      'current_balance': row['current_balance'] ?? row['currentBalance'] ?? 0.0,
     };
   }
 

@@ -7,11 +7,11 @@ part 'product_set_entity.g.dart';
 @freezed
 abstract class ProductSetEntity with _$ProductSetEntity {
   const factory ProductSetEntity({
-    int? setId,
+    @JsonKey(name: 'set_id') int? setId,
     required String name,
     String? description,
-    required List<ProductSetItemEntity> products,
-    DateTime? createdAt,
+    @Default([]) List<ProductSetItemEntity> products,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _ProductSetEntity;
 
   factory ProductSetEntity.fromJson(Map<String, dynamic> json) =>
