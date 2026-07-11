@@ -12,11 +12,14 @@ _OperatorEntity _$OperatorEntityFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       phone: json['phone'] as String,
       cnic: json['cnic'] as String?,
-      joiningDate: DateTime.parse(json['joiningDate'] as String),
-      isActive: json['isActive'] as bool,
-      createdAt: json['createdAt'] == null
+      joiningDate: DateTime.parse(json['joining_date'] as String),
+      isActive: json['is_active'] as bool,
+      createdAt: json['created_at'] == null
           ? null
-          : DateTime.parse(json['createdAt'] as String),
+          : DateTime.parse(json['created_at'] as String),
+      workGroupId: (json['work_group_id'] as num?)?.toInt(),
+      defaultWageRoleId: (json['default_wage_role_id'] as num?)?.toInt(),
+      overtimeEnabled: json['overtime_enabled'] as bool? ?? true,
     );
 
 Map<String, dynamic> _$OperatorEntityToJson(_OperatorEntity instance) =>
@@ -25,7 +28,10 @@ Map<String, dynamic> _$OperatorEntityToJson(_OperatorEntity instance) =>
       'name': instance.name,
       'phone': instance.phone,
       'cnic': instance.cnic,
-      'joiningDate': instance.joiningDate.toIso8601String(),
-      'isActive': instance.isActive,
-      'createdAt': instance.createdAt?.toIso8601String(),
+      'joining_date': instance.joiningDate.toIso8601String(),
+      'is_active': instance.isActive,
+      'created_at': instance.createdAt?.toIso8601String(),
+      'work_group_id': instance.workGroupId,
+      'default_wage_role_id': instance.defaultWageRoleId,
+      'overtime_enabled': instance.overtimeEnabled,
     };

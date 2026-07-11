@@ -79,7 +79,7 @@ class _AccountFormDialogState extends State<AccountFormDialog> {
   late final TextEditingController _bankNameController;
   late final TextEditingController _accountNumberController;
   late final TextEditingController _currencyController;
-  late final TextEditingController _balanceController;
+  // late final TextEditingController _balanceController;
 
   late AccountTypeOption _selectedType;
   late bool _isActive;
@@ -100,9 +100,9 @@ class _AccountFormDialogState extends State<AccountFormDialog> {
     _currencyController = TextEditingController(
       text: account?.currency ?? 'PKR',
     );
-    _balanceController = TextEditingController(
-      text: (account?.currentBalance ?? 0.0).toStringAsFixed(2),
-    );
+    // _balanceController = TextEditingController(
+    //   text: (account?.currentBalance ?? 0.0).toStringAsFixed(2),
+    // );
 
     _selectedType = account != null
         ? AccountTypeOptionX.fromDb(account.accountType)
@@ -116,7 +116,7 @@ class _AccountFormDialogState extends State<AccountFormDialog> {
     _bankNameController.dispose();
     _accountNumberController.dispose();
     _currencyController.dispose();
-    _balanceController.dispose();
+    // _balanceController.dispose();
     super.dispose();
   }
 
@@ -144,7 +144,6 @@ class _AccountFormDialogState extends State<AccountFormDialog> {
       isActive: _isActive,
       createdAt: widget.account?.createdAt ?? now,
       updatedAt: now,
-      currentBalance: double.parse(_balanceController.text.trim()),
     );
 
     try {
@@ -260,25 +259,25 @@ class _AccountFormDialogState extends State<AccountFormDialog> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _balanceController,
-                        decoration: const InputDecoration(
-                          labelText: 'Current Balance',
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        validator: (value) {
-                          final v = value?.trim() ?? '';
-                          if (v.isEmpty) return 'Required';
-                          if (double.tryParse(v) == null) {
-                            return 'Invalid number';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
+                    // Expanded(
+                    //   child: TextFormField(
+                    //     controller: _balanceController,
+                    //     decoration: const InputDecoration(
+                    //       labelText: 'Current Balance',
+                    //     ),
+                    //     keyboardType: const TextInputType.numberWithOptions(
+                    //       decimal: true,
+                    //     ),
+                    //     validator: (value) {
+                    //       final v = value?.trim() ?? '';
+                    //       if (v.isEmpty) return 'Required';
+                    //       if (double.tryParse(v) == null) {
+                    //         return 'Invalid number';
+                    //       }
+                    //       return null;
+                    //     },
+                    //   ),
+                    // ),
                   ],
                 ),
                 const SizedBox(height: 8),

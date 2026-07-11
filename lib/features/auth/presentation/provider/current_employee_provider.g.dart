@@ -46,7 +46,7 @@ final class CurrentEmployeeProvider
   }
 }
 
-String _$currentEmployeeHash() => r'1090a6ea78854955209d99e3252b68f20fc2168a';
+String _$currentEmployeeHash() => r'c9923e20ba656f7dcecb0517644dbf0604d484c3';
 
 @ProviderFor(isMaster)
 const isMasterProvider = IsMasterProvider._();
@@ -86,7 +86,7 @@ final class IsMasterProvider extends $FunctionalProvider<bool, bool, bool>
   }
 }
 
-String _$isMasterHash() => r'346ba901d9f2f52ccde658a6372b16ebe7e00391';
+String _$isMasterHash() => r'411b0ee931eb1d0f0000d2a92b83f5122e9bb768';
 
 @ProviderFor(userPermissions)
 const userPermissionsProvider = UserPermissionsProvider._();
@@ -183,7 +183,7 @@ final class HasPermissionProvider extends $FunctionalProvider<bool, bool, bool>
   }
 }
 
-String _$hasPermissionHash() => r'3117d04c220cb138a091ac1b03f64c298c7370ba';
+String _$hasPermissionHash() => r'e55d3c16352382c067e119b0c4f41e3105176a72';
 
 final class HasPermissionFamily extends $Family
     with $FunctionalFamilyOverride<bool, String> {

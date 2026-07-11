@@ -21,7 +21,7 @@ _AccountEntity _$AccountEntityFromJson(Map<String, dynamic> json) =>
       updatedAt: json['updated_at'] == null
           ? null
           : DateTime.parse(json['updated_at'] as String),
-      currentBalance: (json['currentBalance'] as num?)?.toDouble() ?? 0.0,
+      currentBalance: (json['current_balance'] as num?)?.toDouble() ?? 0,
     );
 
 Map<String, dynamic> _$AccountEntityToJson(_AccountEntity instance) =>
@@ -35,5 +35,5 @@ Map<String, dynamic> _$AccountEntityToJson(_AccountEntity instance) =>
       'is_active': instance.isActive,
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
-      'currentBalance': instance.currentBalance,
+      'current_balance': instance.currentBalance,
     };

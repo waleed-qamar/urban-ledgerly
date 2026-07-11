@@ -22,6 +22,9 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
   late final TextEditingController _cnicController;
   late DateTime _joiningDate;
   late bool _isActive;
+  int? _workGroupId;
+  int? _defaultWageRoleId;
+  late bool _overtimeEnabled;
 
   bool _isLoading = false;
 
@@ -39,6 +42,9 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
     );
     _joiningDate = widget.clientToEdit?.joiningDate ?? DateTime.now();
     _isActive = widget.clientToEdit?.isActive ?? true;
+    _workGroupId = widget.clientToEdit?.workGroupId;
+    _defaultWageRoleId = widget.clientToEdit?.defaultWageRoleId;
+    _overtimeEnabled = widget.clientToEdit?.overtimeEnabled ?? true;
   }
 
   @override
@@ -65,6 +71,9 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
       joiningDate: _joiningDate,
       isActive: _isActive,
       createdAt: widget.clientToEdit?.createdAt ?? DateTime.now(),
+      workGroupId: _workGroupId,
+      defaultWageRoleId: _defaultWageRoleId,
+      overtimeEnabled: _overtimeEnabled,
     );
 
     try {
@@ -162,6 +171,65 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                     label: const Text('Select'),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final workGroupsAsync = ref.watch(getAllWorkGroupsProvider);
+                        return workGroupsAsync.when(
+                          data: (groups) => DropdownButtonFormField<int>(
+                            value: _workGroupId,
+                            decoration: const InputDecoration(labelText: 'Work Group', border: OutlineInputBorder()),
+                            items: [
+                              const DropdownMenuItem<int>(value: null, child: Text('None')),
+                              ...groups.map((g) => DropdownMenuItem<int>(
+                                value: g['id'] as int,
+                                child: Text(g['name'] as String),
+                              )),
+                            ],
+                            onChanged: (val) => setState(() => _workGroupId = val),
+                          ),
+                          loading: () => const CircularProgressIndicator(),
+                          error: (e, s) => Text('Err: $e'),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final rolesAsync = ref.watch(getAllWageRolesProvider);
+                        return rolesAsync.when(
+                          data: (roles) => DropdownButtonFormField<int>(
+                            value: _defaultWageRoleId,
+                            decoration: const InputDecoration(labelText: 'Default Wage Role', border: OutlineInputBorder()),
+                            items: [
+                              const DropdownMenuItem<int>(value: null, child: Text('None')),
+                              ...roles.map((r) => DropdownMenuItem<int>(
+                                value: r['id'] as int,
+                                child: Text(r['role_name'] as String),
+                              )),
+                            ],
+                            onChanged: (val) => setState(() => _defaultWageRoleId = val),
+                          ),
+                          loading: () => const CircularProgressIndicator(),
+                          error: (e, s) => Text('Err: $e'),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              SwitchListTile(
+                title: const Text('Overtime Enabled'),
+                value: _overtimeEnabled,
+                onChanged: (val) => setState(() => _overtimeEnabled = val),
+                activeThumbColor: AppColors.primary,
+                contentPadding: EdgeInsets.zero,
               ),
               SwitchListTile(
                 title: const Text('Is Active'),

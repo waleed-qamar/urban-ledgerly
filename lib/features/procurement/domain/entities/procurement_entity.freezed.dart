@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProcurementEntity {
 
- int? get id; int get vendorId; String get procurementDate; double get total; String? get notes; List<ProcurementItemEntity> get items;
+ int? get id;@JsonKey(name: 'vendor_id') int get vendorId;@JsonKey(name: 'procurement_date') String get procurementDate;@JsonKey(readValue: _readDouble) double get total; String? get notes; List<ProcurementItemEntity> get items;
 /// Create a copy of ProcurementEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ProcurementEntityCopyWith<$Res>  {
   factory $ProcurementEntityCopyWith(ProcurementEntity value, $Res Function(ProcurementEntity) _then) = _$ProcurementEntityCopyWithImpl;
 @useResult
 $Res call({
- int? id, int vendorId, String procurementDate, double total, String? notes, List<ProcurementItemEntity> items
+ int? id,@JsonKey(name: 'vendor_id') int vendorId,@JsonKey(name: 'procurement_date') String procurementDate,@JsonKey(readValue: _readDouble) double total, String? notes, List<ProcurementItemEntity> items
 });
 
 
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int vendorId,  String procurementDate,  double total,  String? notes,  List<ProcurementItemEntity> items)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'vendor_id')  int vendorId, @JsonKey(name: 'procurement_date')  String procurementDate, @JsonKey(readValue: _readDouble)  double total,  String? notes,  List<ProcurementItemEntity> items)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProcurementEntity() when $default != null:
 return $default(_that.id,_that.vendorId,_that.procurementDate,_that.total,_that.notes,_that.items);case _:
@@ -179,7 +179,7 @@ return $default(_that.id,_that.vendorId,_that.procurementDate,_that.total,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int vendorId,  String procurementDate,  double total,  String? notes,  List<ProcurementItemEntity> items)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'vendor_id')  int vendorId, @JsonKey(name: 'procurement_date')  String procurementDate, @JsonKey(readValue: _readDouble)  double total,  String? notes,  List<ProcurementItemEntity> items)  $default,) {final _that = this;
 switch (_that) {
 case _ProcurementEntity():
 return $default(_that.id,_that.vendorId,_that.procurementDate,_that.total,_that.notes,_that.items);case _:
@@ -199,7 +199,7 @@ return $default(_that.id,_that.vendorId,_that.procurementDate,_that.total,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int vendorId,  String procurementDate,  double total,  String? notes,  List<ProcurementItemEntity> items)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(name: 'vendor_id')  int vendorId, @JsonKey(name: 'procurement_date')  String procurementDate, @JsonKey(readValue: _readDouble)  double total,  String? notes,  List<ProcurementItemEntity> items)?  $default,) {final _that = this;
 switch (_that) {
 case _ProcurementEntity() when $default != null:
 return $default(_that.id,_that.vendorId,_that.procurementDate,_that.total,_that.notes,_that.items);case _:
@@ -214,13 +214,13 @@ return $default(_that.id,_that.vendorId,_that.procurementDate,_that.total,_that.
 @JsonSerializable()
 
 class _ProcurementEntity implements ProcurementEntity {
-  const _ProcurementEntity({this.id, required this.vendorId, required this.procurementDate, required this.total, this.notes, required final  List<ProcurementItemEntity> items}): _items = items;
+  const _ProcurementEntity({this.id, @JsonKey(name: 'vendor_id') required this.vendorId, @JsonKey(name: 'procurement_date') required this.procurementDate, @JsonKey(readValue: _readDouble) required this.total, this.notes, required final  List<ProcurementItemEntity> items}): _items = items;
   factory _ProcurementEntity.fromJson(Map<String, dynamic> json) => _$ProcurementEntityFromJson(json);
 
 @override final  int? id;
-@override final  int vendorId;
-@override final  String procurementDate;
-@override final  double total;
+@override@JsonKey(name: 'vendor_id') final  int vendorId;
+@override@JsonKey(name: 'procurement_date') final  String procurementDate;
+@override@JsonKey(readValue: _readDouble) final  double total;
 @override final  String? notes;
  final  List<ProcurementItemEntity> _items;
 @override List<ProcurementItemEntity> get items {
@@ -263,7 +263,7 @@ abstract mixin class _$ProcurementEntityCopyWith<$Res> implements $ProcurementEn
   factory _$ProcurementEntityCopyWith(_ProcurementEntity value, $Res Function(_ProcurementEntity) _then) = __$ProcurementEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, int vendorId, String procurementDate, double total, String? notes, List<ProcurementItemEntity> items
+ int? id,@JsonKey(name: 'vendor_id') int vendorId,@JsonKey(name: 'procurement_date') String procurementDate,@JsonKey(readValue: _readDouble) double total, String? notes, List<ProcurementItemEntity> items
 });
 
 

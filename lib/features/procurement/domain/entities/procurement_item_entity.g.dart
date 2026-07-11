@@ -10,19 +10,19 @@ _ProcurementItemEntity _$ProcurementItemEntityFromJson(
   Map<String, dynamic> json,
 ) => _ProcurementItemEntity(
   id: (json['id'] as num?)?.toInt(),
-  procurementId: (json['procurementId'] as num?)?.toInt(),
-  rawMaterialId: (json['rawMaterialId'] as num).toInt(),
+  procurementId: (json['procurement_id'] as num?)?.toInt(),
+  rawMaterialId: (json['raw_material_id'] as num).toInt(),
   quantity: (json['quantity'] as num).toInt(),
-  price: (json['price'] as num).toDouble(),
-  total: (json['total'] as num).toDouble(),
+  price: (_readDouble(json, 'price') as num).toDouble(),
+  total: (_readDouble(json, 'total') as num).toDouble(),
 );
 
 Map<String, dynamic> _$ProcurementItemEntityToJson(
   _ProcurementItemEntity instance,
 ) => <String, dynamic>{
   'id': instance.id,
-  'procurementId': instance.procurementId,
-  'rawMaterialId': instance.rawMaterialId,
+  'procurement_id': instance.procurementId,
+  'raw_material_id': instance.rawMaterialId,
   'quantity': instance.quantity,
   'price': instance.price,
   'total': instance.total,

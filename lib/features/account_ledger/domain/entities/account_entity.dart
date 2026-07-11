@@ -15,7 +15,7 @@ abstract class AccountEntity with _$AccountEntity {
     @JsonKey(name: 'is_active') @Default(true) bool isActive,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
-    @Default(0.0) double currentBalance,
+    @JsonKey(name: 'current_balance') @Default(0) double currentBalance,
   }) = _AccountEntity;
 
   factory AccountEntity.fromJson(Map<String, dynamic> json) =>

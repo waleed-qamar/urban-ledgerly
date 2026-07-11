@@ -10,9 +10,12 @@ abstract class OperatorEntity with _$OperatorEntity {
     required String name,
     required String phone,
     String? cnic,
-    required DateTime joiningDate,
-    required bool isActive,
-    DateTime? createdAt,
+    @JsonKey(name: 'joining_date') required DateTime joiningDate,
+    @JsonKey(name: 'is_active') required bool isActive,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
+    @JsonKey(name: 'work_group_id') int? workGroupId,
+    @JsonKey(name: 'default_wage_role_id') int? defaultWageRoleId,
+    @JsonKey(name: 'overtime_enabled') @Default(true) bool overtimeEnabled,
   }) = _OperatorEntity;
 
   factory OperatorEntity.fromJson(Map<String, dynamic> json) =>

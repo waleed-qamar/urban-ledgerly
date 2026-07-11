@@ -18,6 +18,7 @@ import 'features/ledger/presentation/pages/ledger_page.dart';
 import 'package:ledgerly/features/vender/presentation/pages/vendor_dashboard_view.dart';
 import 'package:ledgerly/features/dps/presentation/pages/dps_dashboard.dart';
 import 'package:ledgerly/features/overview/overview_dashboard.dart';
+import 'package:ledgerly/features/attendance_review/presentation/screens/attendance_review_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/features/auth/presentation/provider/current_employee_provider.dart';
@@ -77,6 +78,7 @@ class _MainLayoutState extends ConsumerState<MainLayout>
     final showInventory = ref.watch(hasPermissionProvider('inventory.read'));
     final showDps = ref.watch(hasPermissionProvider('dps.read'));
     final showOperators = ref.watch(hasPermissionProvider('employees.read'));
+    final showAttendance = ref.watch(hasPermissionProvider('attendance.read'));
     final showUsers = ref.watch(hasPermissionProvider('employees.update'));
     // Audit Logs are master-only — no DB permission row needed
     final showAudit = ref.watch(isMasterProvider);
@@ -207,6 +209,15 @@ class _MainLayoutState extends ConsumerState<MainLayout>
           ),
           const OperatorDashboard(),
         ),
+      if (showAttendance)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.access_time_outlined),
+            selectedIcon: Icon(Icons.access_time),
+            label: Text('Attendance'),
+          ),
+          const AttendanceReviewScreen(),
+        ),
       if (showUsers)
         (
           const NavigationRailDestination(
@@ -216,7 +227,8 @@ class _MainLayoutState extends ConsumerState<MainLayout>
           ),
           const UsersDashboard(),
         ),
-      if (showUsers)
+
+      if (showAudit)
         (
           const NavigationRailDestination(
             icon: Icon(Icons.history_outlined),
@@ -236,67 +248,83 @@ class _MainLayoutState extends ConsumerState<MainLayout>
     return Scaffold(
       body: Row(
         children: [
-          NavigationRail(
-            extended: true,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.05),
-            selectedIndex: selectedIndex,
-            onDestinationSelected: (int index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            leading: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24.0),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.blue.shade100,
-                    child: const Icon(Icons.person, color: Colors.blue),
-                  ),
-                  const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final minHeight = destinations.length * 60.0 + 200.0;
+              final rail = NavigationRail(
+                extended: true,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.05),
+                selectedIndex: selectedIndex,
+                onDestinationSelected: (int index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                },
+                leading: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24.0),
+                  child: Row(
                     children: [
-                      Text('UC', style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(
-                        'Inventory Management',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      CircleAvatar(
+                        backgroundColor: Colors.blue.shade100,
+                        child: const Icon(Icons.person, color: Colors.blue),
+                      ),
+                      const SizedBox(width: 12),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('UC', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                            'Inventory Management',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            destinations: destinations,
-            trailing: Expanded(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 24.0),
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(
-                        255,
-                        120,
-                        19,
-                        19,
-                      ).withValues(alpha: 0.7),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                ),
+                destinations: destinations,
+                trailing: Expanded(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 24.0),
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            120,
+                            19,
+                            19,
+                          ).withValues(alpha: 0.7),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: _signOut,
+                        icon: const Icon(Icons.logout, size: 18),
+                        label: const Text('Sign Out'),
                       ),
                     ),
-                    onPressed: _signOut,
-                    icon: const Icon(Icons.logout, size: 18),
-                    label: const Text('Sign Out'),
                   ),
                 ),
-              ),
-            ),
+              );
+
+              if (constraints.maxHeight < minHeight) {
+                return SingleChildScrollView(
+                  child: SizedBox(
+                    height: minHeight,
+                    child: rail,
+                  ),
+                );
+              } else {
+                return rail;
+              }
+            },
           ),
           const VerticalDivider(
             thickness: 1,

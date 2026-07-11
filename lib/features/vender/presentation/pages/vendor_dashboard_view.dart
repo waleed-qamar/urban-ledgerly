@@ -310,6 +310,16 @@ class _VenderDashboardViewState extends ConsumerState<VenderDashboardView> {
                               ),
                             ),
 
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                vender.vendorAddress,
+                                style: TextStyle(
+                                  color: AppColors.textGrey,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
                             // Balance Due
                             Expanded(
                               flex: 2,

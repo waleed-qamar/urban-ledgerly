@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProcurementItemEntity {
 
- int? get id; int? get procurementId; int get rawMaterialId; int get quantity; double get price; double get total;
+ int? get id;@JsonKey(name: 'procurement_id') int? get procurementId;@JsonKey(name: 'raw_material_id') int get rawMaterialId; int get quantity;@JsonKey(readValue: _readDouble) double get price;@JsonKey(readValue: _readDouble) double get total;
 /// Create a copy of ProcurementItemEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ProcurementItemEntityCopyWith<$Res>  {
   factory $ProcurementItemEntityCopyWith(ProcurementItemEntity value, $Res Function(ProcurementItemEntity) _then) = _$ProcurementItemEntityCopyWithImpl;
 @useResult
 $Res call({
- int? id, int? procurementId, int rawMaterialId, int quantity, double price, double total
+ int? id,@JsonKey(name: 'procurement_id') int? procurementId,@JsonKey(name: 'raw_material_id') int rawMaterialId, int quantity,@JsonKey(readValue: _readDouble) double price,@JsonKey(readValue: _readDouble) double total
 });
 
 
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int? procurementId,  int rawMaterialId,  int quantity,  double price,  double total)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'procurement_id')  int? procurementId, @JsonKey(name: 'raw_material_id')  int rawMaterialId,  int quantity, @JsonKey(readValue: _readDouble)  double price, @JsonKey(readValue: _readDouble)  double total)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProcurementItemEntity() when $default != null:
 return $default(_that.id,_that.procurementId,_that.rawMaterialId,_that.quantity,_that.price,_that.total);case _:
@@ -179,7 +179,7 @@ return $default(_that.id,_that.procurementId,_that.rawMaterialId,_that.quantity,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int? procurementId,  int rawMaterialId,  int quantity,  double price,  double total)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'procurement_id')  int? procurementId, @JsonKey(name: 'raw_material_id')  int rawMaterialId,  int quantity, @JsonKey(readValue: _readDouble)  double price, @JsonKey(readValue: _readDouble)  double total)  $default,) {final _that = this;
 switch (_that) {
 case _ProcurementItemEntity():
 return $default(_that.id,_that.procurementId,_that.rawMaterialId,_that.quantity,_that.price,_that.total);case _:
@@ -199,7 +199,7 @@ return $default(_that.id,_that.procurementId,_that.rawMaterialId,_that.quantity,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int? procurementId,  int rawMaterialId,  int quantity,  double price,  double total)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(name: 'procurement_id')  int? procurementId, @JsonKey(name: 'raw_material_id')  int rawMaterialId,  int quantity, @JsonKey(readValue: _readDouble)  double price, @JsonKey(readValue: _readDouble)  double total)?  $default,) {final _that = this;
 switch (_that) {
 case _ProcurementItemEntity() when $default != null:
 return $default(_that.id,_that.procurementId,_that.rawMaterialId,_that.quantity,_that.price,_that.total);case _:
@@ -214,15 +214,15 @@ return $default(_that.id,_that.procurementId,_that.rawMaterialId,_that.quantity,
 @JsonSerializable()
 
 class _ProcurementItemEntity implements ProcurementItemEntity {
-  const _ProcurementItemEntity({this.id, this.procurementId, required this.rawMaterialId, required this.quantity, required this.price, required this.total});
+  const _ProcurementItemEntity({this.id, @JsonKey(name: 'procurement_id') this.procurementId, @JsonKey(name: 'raw_material_id') required this.rawMaterialId, required this.quantity, @JsonKey(readValue: _readDouble) required this.price, @JsonKey(readValue: _readDouble) required this.total});
   factory _ProcurementItemEntity.fromJson(Map<String, dynamic> json) => _$ProcurementItemEntityFromJson(json);
 
 @override final  int? id;
-@override final  int? procurementId;
-@override final  int rawMaterialId;
+@override@JsonKey(name: 'procurement_id') final  int? procurementId;
+@override@JsonKey(name: 'raw_material_id') final  int rawMaterialId;
 @override final  int quantity;
-@override final  double price;
-@override final  double total;
+@override@JsonKey(readValue: _readDouble) final  double price;
+@override@JsonKey(readValue: _readDouble) final  double total;
 
 /// Create a copy of ProcurementItemEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -257,7 +257,7 @@ abstract mixin class _$ProcurementItemEntityCopyWith<$Res> implements $Procureme
   factory _$ProcurementItemEntityCopyWith(_ProcurementItemEntity value, $Res Function(_ProcurementItemEntity) _then) = __$ProcurementItemEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, int? procurementId, int rawMaterialId, int quantity, double price, double total
+ int? id,@JsonKey(name: 'procurement_id') int? procurementId,@JsonKey(name: 'raw_material_id') int rawMaterialId, int quantity,@JsonKey(readValue: _readDouble) double price,@JsonKey(readValue: _readDouble) double total
 });
 
 

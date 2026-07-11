@@ -8,7 +8,7 @@ class LedgerRemoteDatasource {
   LedgerRemoteDatasource(this._client);
   Future<void> addEntry(LedgerEntity entry) async {
     await supabaseSafeCall(() async {
-      final payload = _toDbRow(entry.toJson())..remove('id');
+      final payload = entry.toJson()..remove('id');
       await _client.from('ledger').insert(payload);
     });
   }

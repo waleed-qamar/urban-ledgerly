@@ -143,6 +143,12 @@ class DpsFormNotifier extends _$DpsFormNotifier {
         return false; // Prevent empty submission
       }
 
+      if (allProdLogs.any((l) => l.productId == -1) ||
+          allConsLogs.any((l) => l.rawMaterialId == -1) ||
+          allDamLogs.any((l) => l.itemId == -1)) {
+        return false; // Prevent submission with unselected items
+      }
+
       await ref
           .read(dpsRepositoryProvider)
           .createReport(

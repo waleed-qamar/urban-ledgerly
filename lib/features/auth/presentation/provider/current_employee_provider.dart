@@ -44,7 +44,7 @@ Future<EmployeeEntity?> currentEmployee(Ref ref) async {
       'email': response['email'],
       'joining_date': response['joining_date'],
       'is_active': response['is_active'],
-      'role': response['role'],
+      'role': response['role'] ?? await _fetchRoleName(response['role_id']),
       'role_id': response['role_id'],
       'userId': response['user_id'],   // g.dart still reads 'userId' for this field
       'created_at': response['created_at'],
@@ -60,10 +60,25 @@ Future<EmployeeEntity?> currentEmployee(Ref ref) async {
   }
 }
 
+Future<String?> _fetchRoleName(int? roleId) async {
+  if (roleId == null) return null;
+  try {
+    final response = await Supabase.instance.client
+        .from('roles')
+        .select('name')
+        .eq('id', roleId)
+        .maybeSingle();
+    return response?['name'] as String?;
+  } catch (e) {
+    print('DEBUG: _fetchRoleName error: $e');
+    return null;
+  }
+}
+
 @riverpod
 bool isMaster(Ref ref) {
   final employee = ref.watch(currentEmployeeProvider).value;
-  final check = employee?.role == 'master';
+  final check = employee?.role?.trim().toLowerCase() == 'master';
   print('DEBUG: isMaster check: $check (role is ${employee?.role})');
   return check;
 }
@@ -103,7 +118,7 @@ Future<Set<String>> userPermissions(Ref ref) async {
 bool hasPermission(Ref ref, String permissionKey) {
   final employee = ref.watch(currentEmployeeProvider).value;
   print('DEBUG: hasPermission("$permissionKey") check for role: "${employee?.role}"');
-  if (employee?.role == 'master') {
+  if (employee?.role?.trim().toLowerCase() == 'master') {
     print('DEBUG: hasPermission("$permissionKey") is true (master bypass)');
     return true;
   }

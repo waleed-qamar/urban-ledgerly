@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:ledgerly/features/raw_material/domain/entities/raw_material_entity.dart';
 
+import '../../../products/domain/entities/product_entity.dart';
 import '../../domain/entities/dps_models.dart';
 import '../providers/dps_providers.dart';
 import '../../../products/presentation/providers/product_providers.dart';
 import '../../../raw_material/presentation/providers/raw_material_providers.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/searchable_dropdown.dart';
 
 class AddDpsReportPage extends ConsumerStatefulWidget {
   const AddDpsReportPage({super.key});
@@ -340,8 +343,13 @@ class _CumulativeConsumptionFormCard extends ConsumerWidget {
                               .read(dpsFormProvider.notifier)
                               .addConsumptionLog(
                                 DpsConsumptionLog(
-                                  rawMaterialId: materials.first.id,
-                                  quantity: 1.0,
+                                  rawMaterialId: -1,
+                                  // Was 1.0 — seeding a real value here caused
+                                  // TextFormField's initialValue to render
+                                  // "1.0" in a brand-new row. 0.0 doubles as
+                                  // our "unset" sentinel; see the Qty field
+                                  // below where we check for it.
+                                  quantity: 0.0,
                                 ),
                               );
                         },
@@ -364,28 +372,25 @@ class _CumulativeConsumptionFormCard extends ConsumerWidget {
                       flex: 2,
                       child: rawMaterialsAsync.when(
                         data: (materials) {
-                          return DropdownButtonFormField<int>(
-                            initialValue: log.rawMaterialId,
-                            decoration: const InputDecoration(
-                              labelText: 'Raw Material',
-                            ),
-                            items: materials
-                                .map(
-                                  (m) => DropdownMenuItem(
-                                    value: m.id,
-                                    child: Text('${m.name} (${m.unit})'),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                ref
-                                    .read(dpsFormProvider.notifier)
-                                    .updateConsumptionLog(
-                                      index,
-                                      log.copyWith(rawMaterialId: val),
-                                    );
-                              }
+                          final selectedMaterial = materials
+                              .where((m) => m.id == log.rawMaterialId)
+                              .firstOrNull;
+
+                          return SearchableDropdown<RawMaterialEntity>(
+                            items: materials,
+                            displayStringForOption: (m) =>
+                                '${m.name} (${m.unit})',
+                            labelText: 'Raw Material',
+                            initialText: selectedMaterial != null
+                                ? '${selectedMaterial.name} (${selectedMaterial.unit})'
+                                : null,
+                            onSelected: (selected) {
+                              ref
+                                  .read(dpsFormProvider.notifier)
+                                  .updateConsumptionLog(
+                                    index,
+                                    log.copyWith(rawMaterialId: selected.id),
+                                  );
                             },
                           );
                         },
@@ -400,7 +405,10 @@ class _CumulativeConsumptionFormCard extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextFormField(
-                        initialValue: log.quantity.toString(),
+                        // Show blank instead of "0.0" for a freshly-added row.
+                        initialValue: log.quantity == 0.0
+                            ? null
+                            : log.quantity.toString(),
                         decoration: const InputDecoration(labelText: 'Qty'),
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
@@ -522,8 +530,10 @@ class _MachineActivityCard extends ConsumerWidget {
                                   machine.id,
                                   DpsProductionLog(
                                     machineId: machine.id,
-                                    productId: products.first.id,
-                                    quantity: 1.0,
+                                    productId: -1,
+                                    // Was 1.0 — see note in
+                                    // _CumulativeConsumptionFormCard above.
+                                    quantity: 0.0,
                                   ),
                                 );
                           },
@@ -546,32 +556,27 @@ class _MachineActivityCard extends ConsumerWidget {
                     Expanded(
                       flex: 2,
                       child: productsAsync.when(
-                        data: (products) => DropdownButtonFormField<int>(
-                          initialValue: log.productId,
-                          decoration: const InputDecoration(
+                        data: (products) {
+                          final selectedProduct = products
+                              .where((p) => p.id == log.productId)
+                              .firstOrNull;
+
+                          return SearchableDropdown<ProductEntity>(
+                            items: products,
+                            displayStringForOption: (p) => p.name,
                             labelText: 'Product',
-                            isDense: true,
-                          ),
-                          items: products
-                              .map(
-                                (p) => DropdownMenuItem(
-                                  value: p.id,
-                                  child: Text(p.name),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (val) {
-                            if (val != null) {
+                            initialText: selectedProduct?.name,
+                            onSelected: (selected) {
                               ref
                                   .read(dpsFormProvider.notifier)
                                   .updateProductionLog(
                                     machine.id,
                                     index,
-                                    log.copyWith(productId: val),
+                                    log.copyWith(productId: selected.id),
                                   );
-                            }
-                          },
-                        ),
+                            },
+                          );
+                        },
                         loading: () =>
                             CircularProgressIndicator(color: AppColors.primary),
                         error: (error, stackTrace) => Text(
@@ -583,7 +588,10 @@ class _MachineActivityCard extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextFormField(
-                        initialValue: log.quantity.toString(),
+                        // Show blank instead of "0.0" for a freshly-added row.
+                        initialValue: log.quantity == 0.0
+                            ? null
+                            : log.quantity.toString(),
                         decoration: const InputDecoration(
                           labelText: 'Qty',
                           isDense: true,
@@ -647,8 +655,10 @@ class _MachineActivityCard extends ConsumerWidget {
                                   DpsDamageLog(
                                     machineId: machine.id,
                                     itemType: 'product',
-                                    itemId: products.first.id,
-                                    quantity: 1.0,
+                                    itemId: -1,
+                                    // Was 1.0 — see note in
+                                    // _CumulativeConsumptionFormCard above.
+                                    quantity: 0.0,
                                   ),
                                 );
                           },
@@ -671,32 +681,27 @@ class _MachineActivityCard extends ConsumerWidget {
                     Expanded(
                       flex: 2,
                       child: productsAsync.when(
-                        data: (products) => DropdownButtonFormField<int>(
-                          initialValue: log.itemId,
-                          decoration: const InputDecoration(
+                        data: (products) {
+                          final selectedProduct = products
+                              .where((p) => p.id == log.itemId)
+                              .firstOrNull;
+
+                          return SearchableDropdown<ProductEntity>(
+                            items: products,
+                            displayStringForOption: (p) => p.name,
                             labelText: 'Damaged Product',
-                            isDense: true,
-                          ),
-                          items: products
-                              .map(
-                                (p) => DropdownMenuItem(
-                                  value: p.id,
-                                  child: Text(p.name),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (val) {
-                            if (val != null) {
+                            initialText: selectedProduct?.name,
+                            onSelected: (selected) {
                               ref
                                   .read(dpsFormProvider.notifier)
                                   .updateDamageLog(
                                     machine.id,
                                     index,
-                                    log.copyWith(itemId: val),
+                                    log.copyWith(itemId: selected.id),
                                   );
-                            }
-                          },
-                        ),
+                            },
+                          );
+                        },
                         loading: () =>
                             CircularProgressIndicator(color: AppColors.primary),
                         error: (error, stackTrace) => Text(
@@ -709,7 +714,10 @@ class _MachineActivityCard extends ConsumerWidget {
                     Expanded(
                       flex: 1,
                       child: TextFormField(
-                        initialValue: log.quantity.toString(),
+                        // Show blank instead of "0.0" for a freshly-added row.
+                        initialValue: log.quantity == 0.0
+                            ? null
+                            : log.quantity.toString(),
                         decoration: const InputDecoration(
                           labelText: 'Qty',
                           isDense: true,

@@ -15,7 +15,7 @@ class ProcurementRemoteDatasource {
         .select(_procurementSelect);
 
     return (response as List)
-        .map((row) => ProcurementEntity.fromJson(_normalizeRow(row)))
+        .map((row) => ProcurementEntity.fromJson(row as Map<String, dynamic>))
         .toList();
   }
 
@@ -26,7 +26,7 @@ class ProcurementRemoteDatasource {
         .eq('id', id)
         .single();
 
-    return ProcurementEntity.fromJson(_normalizeRow(response));
+    return ProcurementEntity.fromJson(response as Map<String, dynamic>);
   }
 
   Future<void> createProcurement(ProcurementEntity procurement) async {
@@ -203,37 +203,5 @@ class ProcurementRemoteDatasource {
   DateTime _parseDate(String raw) {
     final parsed = DateTime.tryParse(raw);
     return parsed ?? DateTime.now();
-  }
-
-  Map<String, dynamic> _normalizeRow(dynamic row) {
-    final json = Map<String, dynamic>.from(row as Map);
-
-    final vendorId = json['vendorId'] ?? json['vendor_id'];
-    final itemsRaw = json['items'] as List? ?? [];
-
-    final items = itemsRaw.map((itemRaw) {
-      final item = Map<String, dynamic>.from(itemRaw as Map);
-      final rawMaterialId = item['rawMaterialId'] ?? item['raw_material_id'];
-      final procurementId = item['procurementId'] ?? item['procurement_id'];
-      return {
-        'id': (item['id'] as num?)?.toInt(),
-        'procurement_id': (procurementId as num?)?.toInt(),
-        'rawMaterial_id': (rawMaterialId as num?)?.toInt() ?? 0,
-        'quantity': (item['quantity'] as num?)?.toInt() ?? 0,
-        'price': (item['price'] as num?)?.toDouble() ?? 0.0,
-        'total': (item['total'] as num?)?.toDouble() ?? 0.0,
-      };
-    }).toList();
-
-    return {
-      'id': (json['id'] as num?)?.toInt(),
-      'vendor_id': (vendorId as num?)?.toInt() ?? 0,
-      'procurement_date':
-          (json['procurementDate'] ?? json['procurement_date'] ?? '')
-              .toString(),
-      'total': (json['total'] as num?)?.toDouble() ?? 0.0,
-      'notes': json['notes']?.toString(),
-      'items': items,
-    };
   }
 }

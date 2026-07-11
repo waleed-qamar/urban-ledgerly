@@ -325,7 +325,7 @@ class _UsersDashboardState extends ConsumerState<UsersDashboard>
           data: (rolePermissions) {
             // Filter out system owner 'master' to prevent breaking essential access policies.
             final editableRoles = roles
-                .where((r) => r['name'] != 'master')
+                .where((r) => r['name']?.toString().trim().toLowerCase() != 'master')
                 .toList();
 
             return SingleChildScrollView(

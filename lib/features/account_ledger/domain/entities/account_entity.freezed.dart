@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AccountEntity {
 
- int get id;@JsonKey(name: 'account_title') String get accountTitle;@JsonKey(name: 'account_type') String get accountType;@JsonKey(name: 'bank_name') String? get bankName;@JsonKey(name: 'account_number') String? get accountNumber; String get currency;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt; double get currentBalance;
+ int get id;@JsonKey(name: 'account_title') String get accountTitle;@JsonKey(name: 'account_type') String get accountType;@JsonKey(name: 'bank_name') String? get bankName;@JsonKey(name: 'account_number') String? get accountNumber; String get currency;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;@JsonKey(name: 'current_balance') double get currentBalance;
 /// Create a copy of AccountEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $AccountEntityCopyWith<$Res>  {
   factory $AccountEntityCopyWith(AccountEntity value, $Res Function(AccountEntity) _then) = _$AccountEntityCopyWithImpl;
 @useResult
 $Res call({
- int id,@JsonKey(name: 'account_title') String accountTitle,@JsonKey(name: 'account_type') String accountType,@JsonKey(name: 'bank_name') String? bankName,@JsonKey(name: 'account_number') String? accountNumber, String currency,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt, double currentBalance
+ int id,@JsonKey(name: 'account_title') String accountTitle,@JsonKey(name: 'account_type') String accountType,@JsonKey(name: 'bank_name') String? bankName,@JsonKey(name: 'account_number') String? accountNumber, String currency,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt,@JsonKey(name: 'current_balance') double currentBalance
 });
 
 
@@ -162,7 +162,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'account_title')  String accountTitle, @JsonKey(name: 'account_type')  String accountType, @JsonKey(name: 'bank_name')  String? bankName, @JsonKey(name: 'account_number')  String? accountNumber,  String currency, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt,  double currentBalance)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'account_title')  String accountTitle, @JsonKey(name: 'account_type')  String accountType, @JsonKey(name: 'bank_name')  String? bankName, @JsonKey(name: 'account_number')  String? accountNumber,  String currency, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'current_balance')  double currentBalance)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AccountEntity() when $default != null:
 return $default(_that.id,_that.accountTitle,_that.accountType,_that.bankName,_that.accountNumber,_that.currency,_that.isActive,_that.createdAt,_that.updatedAt,_that.currentBalance);case _:
@@ -183,7 +183,7 @@ return $default(_that.id,_that.accountTitle,_that.accountType,_that.bankName,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'account_title')  String accountTitle, @JsonKey(name: 'account_type')  String accountType, @JsonKey(name: 'bank_name')  String? bankName, @JsonKey(name: 'account_number')  String? accountNumber,  String currency, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt,  double currentBalance)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'account_title')  String accountTitle, @JsonKey(name: 'account_type')  String accountType, @JsonKey(name: 'bank_name')  String? bankName, @JsonKey(name: 'account_number')  String? accountNumber,  String currency, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'current_balance')  double currentBalance)  $default,) {final _that = this;
 switch (_that) {
 case _AccountEntity():
 return $default(_that.id,_that.accountTitle,_that.accountType,_that.bankName,_that.accountNumber,_that.currency,_that.isActive,_that.createdAt,_that.updatedAt,_that.currentBalance);case _:
@@ -203,7 +203,7 @@ return $default(_that.id,_that.accountTitle,_that.accountType,_that.bankName,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'account_title')  String accountTitle, @JsonKey(name: 'account_type')  String accountType, @JsonKey(name: 'bank_name')  String? bankName, @JsonKey(name: 'account_number')  String? accountNumber,  String currency, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt,  double currentBalance)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'account_title')  String accountTitle, @JsonKey(name: 'account_type')  String accountType, @JsonKey(name: 'bank_name')  String? bankName, @JsonKey(name: 'account_number')  String? accountNumber,  String currency, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt, @JsonKey(name: 'current_balance')  double currentBalance)?  $default,) {final _that = this;
 switch (_that) {
 case _AccountEntity() when $default != null:
 return $default(_that.id,_that.accountTitle,_that.accountType,_that.bankName,_that.accountNumber,_that.currency,_that.isActive,_that.createdAt,_that.updatedAt,_that.currentBalance);case _:
@@ -218,7 +218,7 @@ return $default(_that.id,_that.accountTitle,_that.accountType,_that.bankName,_th
 @JsonSerializable()
 
 class _AccountEntity implements AccountEntity {
-  const _AccountEntity({required this.id, @JsonKey(name: 'account_title') required this.accountTitle, @JsonKey(name: 'account_type') required this.accountType, @JsonKey(name: 'bank_name') this.bankName, @JsonKey(name: 'account_number') this.accountNumber, this.currency = 'PKR', @JsonKey(name: 'is_active') this.isActive = true, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt, this.currentBalance = 0.0});
+  const _AccountEntity({required this.id, @JsonKey(name: 'account_title') required this.accountTitle, @JsonKey(name: 'account_type') required this.accountType, @JsonKey(name: 'bank_name') this.bankName, @JsonKey(name: 'account_number') this.accountNumber, this.currency = 'PKR', @JsonKey(name: 'is_active') this.isActive = true, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt, @JsonKey(name: 'current_balance') this.currentBalance = 0});
   factory _AccountEntity.fromJson(Map<String, dynamic> json) => _$AccountEntityFromJson(json);
 
 @override final  int id;
@@ -230,7 +230,7 @@ class _AccountEntity implements AccountEntity {
 @override@JsonKey(name: 'is_active') final  bool isActive;
 @override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime? updatedAt;
-@override@JsonKey() final  double currentBalance;
+@override@JsonKey(name: 'current_balance') final  double currentBalance;
 
 /// Create a copy of AccountEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -265,7 +265,7 @@ abstract mixin class _$AccountEntityCopyWith<$Res> implements $AccountEntityCopy
   factory _$AccountEntityCopyWith(_AccountEntity value, $Res Function(_AccountEntity) _then) = __$AccountEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id,@JsonKey(name: 'account_title') String accountTitle,@JsonKey(name: 'account_type') String accountType,@JsonKey(name: 'bank_name') String? bankName,@JsonKey(name: 'account_number') String? accountNumber, String currency,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt, double currentBalance
+ int id,@JsonKey(name: 'account_title') String accountTitle,@JsonKey(name: 'account_type') String accountType,@JsonKey(name: 'bank_name') String? bankName,@JsonKey(name: 'account_number') String? accountNumber, String currency,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt,@JsonKey(name: 'current_balance') double currentBalance
 });
 
 
