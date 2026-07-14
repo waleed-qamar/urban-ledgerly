@@ -363,3 +363,240 @@ final class DeleteReceiptFamily extends $Family
   @override
   String toString() => r'deleteReceiptProvider';
 }
+
+@ProviderFor(updateReceipt)
+const updateReceiptProvider = UpdateReceiptFamily._();
+
+final class UpdateReceiptProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const UpdateReceiptProvider._({
+    required UpdateReceiptFamily super.from,
+    required ({
+      int id,
+      String paymentMethod,
+      String? accountNo,
+      String? remarks,
+      DateTime receivedDate,
+    })
+    super.argument,
+  }) : super(
+         retry: null,
+         name: r'updateReceiptProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateReceiptHash();
+
+  @override
+  String toString() {
+    return r'updateReceiptProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument =
+        this.argument
+            as ({
+              int id,
+              String paymentMethod,
+              String? accountNo,
+              String? remarks,
+              DateTime receivedDate,
+            });
+    return updateReceipt(
+      ref,
+      id: argument.id,
+      paymentMethod: argument.paymentMethod,
+      accountNo: argument.accountNo,
+      remarks: argument.remarks,
+      receivedDate: argument.receivedDate,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UpdateReceiptProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$updateReceiptHash() => r'e703b313e9cb9da5fa31a2be6aca27b27cc7082f';
+
+final class UpdateReceiptFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<void>,
+          ({
+            int id,
+            String paymentMethod,
+            String? accountNo,
+            String? remarks,
+            DateTime receivedDate,
+          })
+        > {
+  const UpdateReceiptFamily._()
+    : super(
+        retry: null,
+        name: r'updateReceiptProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  UpdateReceiptProvider call({
+    required int id,
+    required String paymentMethod,
+    String? accountNo,
+    String? remarks,
+    required DateTime receivedDate,
+  }) => UpdateReceiptProvider._(
+    argument: (
+      id: id,
+      paymentMethod: paymentMethod,
+      accountNo: accountNo,
+      remarks: remarks,
+      receivedDate: receivedDate,
+    ),
+    from: this,
+  );
+
+  @override
+  String toString() => r'updateReceiptProvider';
+}
+
+@ProviderFor(updateDisbursement)
+const updateDisbursementProvider = UpdateDisbursementFamily._();
+
+final class UpdateDisbursementProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const UpdateDisbursementProvider._({
+    required UpdateDisbursementFamily super.from,
+    required ({
+      int id,
+      String paymentMethod,
+      String? accountNo,
+      String? category,
+      String? remarks,
+      DateTime paidDate,
+    })
+    super.argument,
+  }) : super(
+         retry: null,
+         name: r'updateDisbursementProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateDisbursementHash();
+
+  @override
+  String toString() {
+    return r'updateDisbursementProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument =
+        this.argument
+            as ({
+              int id,
+              String paymentMethod,
+              String? accountNo,
+              String? category,
+              String? remarks,
+              DateTime paidDate,
+            });
+    return updateDisbursement(
+      ref,
+      id: argument.id,
+      paymentMethod: argument.paymentMethod,
+      accountNo: argument.accountNo,
+      category: argument.category,
+      remarks: argument.remarks,
+      paidDate: argument.paidDate,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UpdateDisbursementProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$updateDisbursementHash() =>
+    r'eba34d9091bfffb2e04f482242b97f449ef936f8';
+
+final class UpdateDisbursementFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<void>,
+          ({
+            int id,
+            String paymentMethod,
+            String? accountNo,
+            String? category,
+            String? remarks,
+            DateTime paidDate,
+          })
+        > {
+  const UpdateDisbursementFamily._()
+    : super(
+        retry: null,
+        name: r'updateDisbursementProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  UpdateDisbursementProvider call({
+    required int id,
+    required String paymentMethod,
+    String? accountNo,
+    String? category,
+    String? remarks,
+    required DateTime paidDate,
+  }) => UpdateDisbursementProvider._(
+    argument: (
+      id: id,
+      paymentMethod: paymentMethod,
+      accountNo: accountNo,
+      category: category,
+      remarks: remarks,
+      paidDate: paidDate,
+    ),
+    from: this,
+  );
+
+  @override
+  String toString() => r'updateDisbursementProvider';
+}

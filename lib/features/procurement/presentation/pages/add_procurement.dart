@@ -43,6 +43,11 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
 
   DateTime _selectedDate = DateTime.now();
   int? _selectedVendorId;
+  int? _selectedBrokerId;
+  final _brokerageController = TextEditingController(text: '0');
+  final _loadingController = TextEditingController(text: '0');
+  final _unloadingController = TextEditingController(text: '0');
+
   bool _isSaving = false;
 
   final List<_DraftProcurementLine> _lines = [
@@ -56,7 +61,12 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
       final p = widget.procurementToEdit!;
       _selectedDate = DateTime.tryParse(p.procurementDate) ?? DateTime.now();
       _selectedVendorId = p.vendorId;
+      _selectedBrokerId = p.brokerId;
       _notesController.text = p.notes ?? '';
+      _brokerageController.text = p.brokeragePrice.toStringAsFixed(2);
+      _loadingController.text = p.loadingCharges.toStringAsFixed(2);
+      _unloadingController.text = p.unloadingCharges.toStringAsFixed(2);
+      
       _lines.clear();
       for (final item in p.items) {
         _lines.add(
@@ -73,11 +83,22 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
   @override
   void dispose() {
     _notesController.dispose();
+    _brokerageController.dispose();
+    _loadingController.dispose();
+    _unloadingController.dispose();
     super.dispose();
   }
 
-  double _calculateTotal() {
+  double _calculateItemsTotal() {
     return _lines.fold<double>(0, (sum, line) => sum + line.total);
+  }
+
+  double _calculateGrandTotal() {
+    final itemsTotal = _calculateItemsTotal();
+    final brokerage = double.tryParse(_brokerageController.text) ?? 0;
+    final loading = double.tryParse(_loadingController.text) ?? 0;
+    final unloading = double.tryParse(_unloadingController.text) ?? 0;
+    return itemsTotal + brokerage + loading + unloading;
   }
 
   Future<void> _pickDate() async {
@@ -128,12 +149,22 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
 
     setState(() => _isSaving = true);
 
-    final total = _calculateTotal();
+    final itemsTotal = _calculateItemsTotal();
+    final grandTotal = _calculateGrandTotal();
+    final brokerage = double.tryParse(_brokerageController.text) ?? 0;
+    final loading = double.tryParse(_loadingController.text) ?? 0;
+    final unloading = double.tryParse(_unloadingController.text) ?? 0;
+
     final procurement = ProcurementEntity(
       id: widget.procurementToEdit?.id,
       vendorId: _selectedVendorId!,
       procurementDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
-      total: total,
+      brokerId: _selectedBrokerId,
+      brokeragePrice: brokerage,
+      loadingCharges: loading,
+      unloadingCharges: unloading,
+      itemsTotal: itemsTotal,
+      total: grandTotal,
       notes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
@@ -330,6 +361,64 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: vendorsAsync.when(
+                        loading: () =>
+                            const LinearProgressIndicator(minHeight: 2),
+                        error: (error, _) => Text(
+                          'Failed to load brokers: $error',
+                          style: const TextStyle(color: AppColors.errorText),
+                        ),
+                        data: (vendors) {
+                          final activeVendors = vendors
+                              .where((v) => v.isActive)
+                              .toList();
+
+                          return FormField<int>(
+                            initialValue: _selectedBrokerId,
+                            builder: (fieldState) {
+                              final selectedBroker = activeVendors
+                                  .where((v) => v.id == _selectedBrokerId)
+                                  .firstOrNull;
+
+                              return SearchableDropdown<VendorEntity>(
+                                items: activeVendors,
+                                displayStringForOption: (v) => v.vendorName,
+                                labelText: 'Broker (Optional)',
+                                errorText: fieldState.errorText,
+                                enabled: !_isSaving,
+                                initialText: selectedBroker?.vendorName,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    _selectedBrokerId = selected.id;
+                                  });
+                                  fieldState.didChange(selected.id);
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _brokerageController,
+                        enabled: !_isSaving && _selectedBrokerId != null,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: const InputDecoration(
+                          labelText: 'Brokerage Price',
+                          border: OutlineInputBorder(),
+                          prefixText: 'Rs. ',
+                        ),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -394,15 +483,51 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
                   children: [
                     Expanded(
                       flex: 2,
-                      child: TextFormField(
-                        controller: _notesController,
-                        enabled: !_isSaving,
-                        maxLines: 3,
-                        decoration: const InputDecoration(
-                          labelText: 'Remarks / Notes',
-                          hintText: 'Add remarks...',
-                          border: OutlineInputBorder(),
-                        ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _loadingController,
+                                  enabled: !_isSaving,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  decoration: const InputDecoration(
+                                    labelText: 'Loading Charges',
+                                    border: OutlineInputBorder(),
+                                    prefixText: 'Rs. ',
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _unloadingController,
+                                  enabled: !_isSaving,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  decoration: const InputDecoration(
+                                    labelText: 'Unloading Charges',
+                                    border: OutlineInputBorder(),
+                                    prefixText: 'Rs. ',
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _notesController,
+                            enabled: !_isSaving,
+                            maxLines: 3,
+                            decoration: const InputDecoration(
+                              labelText: 'Remarks / Notes',
+                              hintText: 'Add remarks...',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 24),
@@ -422,7 +547,7 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             const Text(
-                              'TOTAL AMOUNT',
+                              'ITEMS TOTAL',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -431,7 +556,25 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Rs. ${NumberFormat('#,##0.00').format(_calculateTotal())}',
+                              'Rs. ${NumberFormat('#,##0.00').format(_calculateItemsTotal())}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textBlack,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'GRAND TOTAL',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Rs. ${NumberFormat('#,##0.00').format(_calculateGrandTotal())}',
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,

@@ -54,6 +54,9 @@ Future<void> updateInvoiceStatus(
 /// Always queries the DB fresh — never uses the cached invoices list.
 /// Prevents duplicate invoice number collisions.
 @riverpod
-Future<String> nextInvoiceNumber(Ref ref) {
-  return ref.watch(invoiceRepositoryProvider).getNextInvoiceNumber();
+Future<String> nextInvoiceNumber(Ref ref, int? clientId, String? clientInitials) {
+  return ref.watch(invoiceRepositoryProvider).getNextInvoiceNumber(
+        clientId: clientId,
+        clientInitials: clientInitials,
+      );
 }

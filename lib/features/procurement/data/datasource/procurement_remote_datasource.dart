@@ -36,7 +36,11 @@ class ProcurementRemoteDatasource {
           .insert({
             'vendor_id': procurement.vendorId,
             'procurement_date': procurement.procurementDate,
-            'total': procurement.total,
+            'broker_id': procurement.brokerId,
+            'brokerage_price': procurement.brokeragePrice,
+            'loading_charges': procurement.loadingCharges,
+            'unloading_charges': procurement.unloadingCharges,
+            'items_total': procurement.itemsTotal,
             'notes': procurement.notes,
           })
           .select()
@@ -76,13 +80,13 @@ class ProcurementRemoteDatasource {
           });
         }
 
-        // 3) Auto vendor ledger entry: credit increases payable.
+        // 3) Auto vendor ledger entry: credit increases payable (only for itemsTotal)
         await _client.from('ledger').insert({
           'party_type': 'vendor',
           'party_id': procurement.vendorId,
           'invoice_number': 'PRC-$createdId',
           'entry_type': 'credit',
-          'amount': procurement.total,
+          'amount': procurement.itemsTotal,
           'entry_date': _parseDate(
             procurement.procurementDate,
           ).toIso8601String(),
@@ -91,6 +95,24 @@ class ProcurementRemoteDatasource {
           'remarks': 'Auto credit from procurement #$createdId',
           'created_at': DateTime.now().toIso8601String(),
         });
+
+        // 4) Auto broker ledger entry if a broker is selected
+        if (procurement.brokerId != null && procurement.brokeragePrice > 0) {
+          await _client.from('ledger').insert({
+            'party_type': 'vendor',
+            'party_id': procurement.brokerId,
+            'invoice_number': 'PRC-BRK-$createdId',
+            'entry_type': 'credit',
+            'amount': procurement.brokeragePrice,
+            'entry_date': _parseDate(
+              procurement.procurementDate,
+            ).toIso8601String(),
+            'transaction_source': 'procurement_brokerage',
+            'reference_id': createdId.toString(),
+            'remarks': 'Auto brokerage credit from procurement #$createdId',
+            'created_at': DateTime.now().toIso8601String(),
+          });
+        }
       } catch (_) {
         // Keep data consistent: if side-effects fail, remove procurement row.
         await _client.from('procurements').delete().eq('id', createdId);
@@ -109,7 +131,11 @@ class ProcurementRemoteDatasource {
           .update({
             'vendor_id': procurement.vendorId,
             'procurement_date': procurement.procurementDate,
-            'total': procurement.total,
+            'broker_id': procurement.brokerId,
+            'brokerage_price': procurement.brokeragePrice,
+            'loading_charges': procurement.loadingCharges,
+            'unloading_charges': procurement.unloadingCharges,
+            'items_total': procurement.itemsTotal,
             'notes': procurement.notes,
           })
           .eq('id', procurementId);
@@ -169,13 +195,35 @@ class ProcurementRemoteDatasource {
         'party_id': procurement.vendorId,
         'invoice_number': 'PRC-$procurementId',
         'entry_type': 'credit',
-        'amount': procurement.total,
+        'amount': procurement.itemsTotal,
         'entry_date': _parseDate(procurement.procurementDate).toIso8601String(),
         'transaction_source': 'procurement',
         'reference_id': procurementId.toString(),
         'remarks': 'Auto credit from procurement #$procurementId',
         'created_at': DateTime.now().toIso8601String(),
       });
+
+      // 6) Update broker ledger entry
+      await _client
+          .from('ledger')
+          .delete()
+          .eq('transaction_source', 'procurement_brokerage')
+          .eq('reference_id', procurementId.toString());
+
+      if (procurement.brokerId != null && procurement.brokeragePrice > 0) {
+        await _client.from('ledger').insert({
+          'party_type': 'vendor',
+          'party_id': procurement.brokerId,
+          'invoice_number': 'PRC-BRK-$procurementId',
+          'entry_type': 'credit',
+          'amount': procurement.brokeragePrice,
+          'entry_date': _parseDate(procurement.procurementDate).toIso8601String(),
+          'transaction_source': 'procurement_brokerage',
+          'reference_id': procurementId.toString(),
+          'remarks': 'Auto brokerage credit from procurement #$procurementId',
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      }
     });
   }
 
@@ -188,11 +236,11 @@ class ProcurementRemoteDatasource {
           .eq('reference_type', 'PROCUREMENT')
           .eq('reference_id', id);
 
-      // 2) Delete ledger entry
+      // 2) Delete ledger entries (vendor and broker)
       await _client
           .from('ledger')
           .delete()
-          .eq('transaction_source', 'procurement')
+          .inFilter('transaction_source', ['procurement', 'procurement_brokerage'])
           .eq('reference_id', id.toString());
 
       // 3) Delete procurement itself (cascades to procurement_items)

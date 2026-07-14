@@ -98,11 +98,11 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
           cmp = _compareInvoiceNumbers(a.invoiceNumber, b.invoiceNumber);
           break;
         case _SortField.orderNumber:
-          cmp = a.orderId.compareTo(b.orderId);
+          cmp = (a.orderId ?? 0).compareTo(b.orderId ?? 0);
           break;
         case _SortField.client:
-          final nameA = clientById[a.clientId]?.clientName ?? '';
-          final nameB = clientById[b.clientId]?.clientName ?? '';
+          final nameA = clientById[a.clientId ?? 0]?.clientName ?? '';
+          final nameB = clientById[b.clientId ?? 0]?.clientName ?? '';
           cmp = nameA.compareTo(nameB);
           break;
       }
@@ -467,7 +467,7 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
         final existingClientLedgerEntries = await ref.read(
           getEntriesByPartyProvider(
             partyType: PartyType.client,
-            partyId: invoice.clientId,
+            partyId: invoice.clientId ?? 0,
           ).future,
         );
 
@@ -482,7 +482,7 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
               LedgerEntity(
                 id: 0,
                 partyType: PartyType.client,
-                partyId: invoice.clientId,
+                partyId: invoice.clientId ?? 0,
                 invoiceNumber: invoice.invoiceNumber,
                 entryType: EntryType.debit,
                 amount: invoice.grandTotal,

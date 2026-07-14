@@ -10,13 +10,15 @@ _InvoiceItemEntity _$InvoiceItemEntityFromJson(Map<String, dynamic> json) =>
     _InvoiceItemEntity(
       id: (json['id'] as num?)?.toInt(),
       invoiceId: (json['invoiceId'] as num?)?.toInt(),
-      orderItemId: (json['orderItemId'] as num).toInt(),
+      orderItemId: (json['orderItemId'] as num?)?.toInt(),
       productId: (json['productId'] as num?)?.toInt(),
       setId: (json['setId'] as num?)?.toInt(),
       isSet: json['isSet'] as bool? ?? false,
       quantity: (json['quantity'] as num).toInt(),
       unitPrice: (json['unitPrice'] as num).toDouble(),
       totalPrice: (json['totalPrice'] as num).toDouble(),
+      description: json['description'] as String?,
+      unitType: json['unitType'] as String? ?? 'Each',
     );
 
 Map<String, dynamic> _$InvoiceItemEntityToJson(_InvoiceItemEntity instance) =>
@@ -30,4 +32,6 @@ Map<String, dynamic> _$InvoiceItemEntityToJson(_InvoiceItemEntity instance) =>
       'quantity': instance.quantity,
       'unitPrice': instance.unitPrice,
       'totalPrice': instance.totalPrice,
+      'description': instance.description,
+      'unitType': instance.unitType,
     };

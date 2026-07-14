@@ -17,7 +17,12 @@ abstract class ProcurementEntity with _$ProcurementEntity {
     int? id,
     @JsonKey(name: 'vendor_id') required int vendorId,
     @JsonKey(name: 'procurement_date') required String procurementDate,
-    @JsonKey(readValue: _readDouble) required double total,
+    @JsonKey(name: 'broker_id') int? brokerId,
+    @JsonKey(name: 'brokerage_price', readValue: _readDouble) @Default(0.0) double brokeragePrice,
+    @JsonKey(name: 'loading_charges', readValue: _readDouble) @Default(0.0) double loadingCharges,
+    @JsonKey(name: 'unloading_charges', readValue: _readDouble) @Default(0.0) double unloadingCharges,
+    @JsonKey(name: 'items_total', readValue: _readDouble) @Default(0.0) double itemsTotal,
+    @JsonKey(name: 'grand_total', readValue: _readDouble) required double total,
     String? notes,
     required List<ProcurementItemEntity> items,
   }) = _ProcurementEntity;

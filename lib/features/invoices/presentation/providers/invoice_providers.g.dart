@@ -433,7 +433,7 @@ final class UpdateInvoiceStatusFamily extends $Family
 /// Prevents duplicate invoice number collisions.
 
 @ProviderFor(nextInvoiceNumber)
-const nextInvoiceNumberProvider = NextInvoiceNumberProvider._();
+const nextInvoiceNumberProvider = NextInvoiceNumberFamily._();
 
 /// Always queries the DB fresh — never uses the cached invoices list.
 /// Prevents duplicate invoice number collisions.
@@ -443,19 +443,26 @@ final class NextInvoiceNumberProvider
     with $FutureModifier<String>, $FutureProvider<String> {
   /// Always queries the DB fresh — never uses the cached invoices list.
   /// Prevents duplicate invoice number collisions.
-  const NextInvoiceNumberProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'nextInvoiceNumberProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  const NextInvoiceNumberProvider._({
+    required NextInvoiceNumberFamily super.from,
+    required (int?, String?) super.argument,
+  }) : super(
+         retry: null,
+         name: r'nextInvoiceNumberProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$nextInvoiceNumberHash();
+
+  @override
+  String toString() {
+    return r'nextInvoiceNumberProvider'
+        ''
+        '$argument';
+  }
 
   @$internal
   @override
@@ -464,8 +471,46 @@ final class NextInvoiceNumberProvider
 
   @override
   FutureOr<String> create(Ref ref) {
-    return nextInvoiceNumber(ref);
+    final argument = this.argument as (int?, String?);
+    return nextInvoiceNumber(ref, argument.$1, argument.$2);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is NextInvoiceNumberProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$nextInvoiceNumberHash() => r'86623d353847914a1931f1bff97ba8dfa59e901e';
+String _$nextInvoiceNumberHash() => r'ffdfc94702c061c70b30e4a11f57636cec9041c9';
+
+/// Always queries the DB fresh — never uses the cached invoices list.
+/// Prevents duplicate invoice number collisions.
+
+final class NextInvoiceNumberFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<String>, (int?, String?)> {
+  const NextInvoiceNumberFamily._()
+    : super(
+        retry: null,
+        name: r'nextInvoiceNumberProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Always queries the DB fresh — never uses the cached invoices list.
+  /// Prevents duplicate invoice number collisions.
+
+  NextInvoiceNumberProvider call(int? clientId, String? clientInitials) =>
+      NextInvoiceNumberProvider._(
+        argument: (clientId, clientInitials),
+        from: this,
+      );
+
+  @override
+  String toString() => r'nextInvoiceNumberProvider';
+}

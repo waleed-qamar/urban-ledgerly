@@ -168,9 +168,9 @@ CREATE TABLE IF NOT EXISTS order_items (
 
 CREATE TABLE IF NOT EXISTS invoices (
     id BIGSERIAL PRIMARY KEY,
-    order_id BIGINT REFERENCES orders(id),
-    client_id BIGINT NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-    supplier_id BIGINT REFERENCES suppliers(id),
+    order_id BIGINT REFERENCES orders(id) ON DELETE SET NULL,
+    client_id BIGINT REFERENCES clients(id) ON DELETE SET NULL,
+    supplier_id BIGINT REFERENCES suppliers(id) ON DELETE SET NULL,
     invoice_number TEXT NOT NULL UNIQUE,
     status TEXT DEFAULT 'undispatched' CHECK (status IN ('draft', 'issued', 'paid', 'cancelled', 'undispatched', 'dispatched')),
     po TEXT,
@@ -183,18 +183,35 @@ CREATE TABLE IF NOT EXISTS invoices (
     representative TEXT,
     paid_amount NUMERIC(12,2) DEFAULT 0,
     remaining_amount NUMERIC(12,2) DEFAULT 0,
+    supplier_name TEXT,
+    supplier_address TEXT,
+    supplier_strn TEXT,
+    supplier_ntn TEXT,
+    client_name TEXT,
+    client_address TEXT,
+    client_strn TEXT,
+    client_ntn TEXT,
+    advance_amount NUMERIC(12,2) DEFAULT 0,
+    balance_amount NUMERIC(12,2) DEFAULT 0,
+    invoice_type TEXT DEFAULT 'sales_tax',
+    supplier_style TEXT DEFAULT 'style_1',
+    dispatched_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() at time zone 'utc'),
     created_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() at time zone 'utc')
 );
 
 CREATE TABLE IF NOT EXISTS invoice_items (
     id BIGSERIAL PRIMARY KEY,
-    invoice_id BIGINT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
-    order_item_id BIGINT REFERENCES order_items(id),
-    product_id BIGINT REFERENCES products(id),
+    invoice_id BIGINT REFERENCES invoices(id) ON DELETE CASCADE,
+    order_item_id BIGINT REFERENCES order_items(id) ON DELETE SET NULL,
+    product_id BIGINT REFERENCES products(id) ON DELETE SET NULL,
+    set_id BIGINT REFERENCES product_sets(set_id) ON DELETE SET NULL,
+    is_set BOOLEAN DEFAULT FALSE,
     quantity INT NOT NULL CHECK (quantity > 0),
     unit_price NUMERIC(12,2) NOT NULL CHECK (unit_price > 0),
-    total_price NUMERIC(12,2) NOT NULL CHECK (total_price > 0)
+    total_price NUMERIC(12,2) NOT NULL CHECK (total_price > 0),
+    description TEXT,
+    unit_type TEXT DEFAULT 'Each'
 );
 
 -- ===============================================================
@@ -360,7 +377,13 @@ CREATE TABLE IF NOT EXISTS procurements (
     id BIGSERIAL PRIMARY KEY,
     vendor_id BIGINT NOT NULL REFERENCES vendors(id),
     procurement_date DATE NOT NULL,
-    total NUMERIC(12,2) NOT NULL CHECK (total >= 0),
+    broker_id BIGINT REFERENCES vendors(id),  -- fixed: was `vendor(id)`, typo
+    brokerage_price NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (brokerage_price >= 0),
+    loading_charges NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (loading_charges >= 0),
+    unloading_charges NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (unloading_charges >= 0),
+    items_total NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (items_total >= 0),
+    grand_total NUMERIC(12,2) GENERATED ALWAYS AS
+        (items_total + brokerage_price + loading_charges + unloading_charges) STORED,
     notes TEXT,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() at time zone 'utc'),
     created_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() at time zone 'utc')
@@ -371,6 +394,7 @@ CREATE TABLE IF NOT EXISTS procurement_items (
     procurement_id BIGINT NOT NULL REFERENCES procurements(id) ON DELETE CASCADE,
     raw_material_id BIGINT NOT NULL REFERENCES raw_material(id),
     quantity INT NOT NULL CHECK (quantity > 0),
+    
     price NUMERIC(12,2) NOT NULL CHECK (price > 0),
     total NUMERIC(12,2) NOT NULL CHECK (total > 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() at time zone 'utc')

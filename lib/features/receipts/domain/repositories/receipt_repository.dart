@@ -17,4 +17,19 @@ abstract class ReceiptRepository {
   Future<ReceiptEntity> getReceiptById(int id);
   Future<List<DisbursementRecord>> getDisbursements();
   Future<List<ReceiptEntity>> getReceipts();
+  Future<void> updateReceipt({
+    required int id,
+    required String paymentMethod,
+    String? accountNo,
+    String? remarks,
+    required DateTime receivedDate,
+  });
+  Future<void> updateDisbursement({
+    required int id,
+    required String paymentMethod,
+    String? accountNo,
+    String? category,
+    String? remarks,
+    required DateTime paidDate,
+  });
 }

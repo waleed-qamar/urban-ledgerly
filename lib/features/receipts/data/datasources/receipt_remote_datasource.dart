@@ -76,6 +76,42 @@ class ReceiptRemoteDatasource {
     });
   }
 
+  Future<void> updateReceipt({
+    required int id,
+    required String paymentMethod,
+    String? accountNo,
+    String? remarks,
+    required DateTime receivedDate,
+  }) async {
+    await supabaseSafeCall(() async {
+      await _client.from('receipts').update({
+        'payment_method': paymentMethod,
+        'account_no': accountNo,
+        'remarks': remarks,
+        'received_date': receivedDate.toIso8601String(),
+      }).eq('id', id);
+    });
+  }
+
+  Future<void> updateDisbursement({
+    required int id,
+    required String paymentMethod,
+    String? accountNo,
+    String? category,
+    String? remarks,
+    required DateTime paidDate,
+  }) async {
+    await supabaseSafeCall(() async {
+      await _client.from('disbursements').update({
+        'payment_method': paymentMethod,
+        'account_no': accountNo,
+        'category': category,
+        'remarks': remarks,
+        'paid_date': paidDate.toIso8601String(),
+      }).eq('id', id);
+    });
+  }
+
   Future<List<DisbursementRecord>> getDisbursements() async {
     final response = await _client
         .from('disbursements')

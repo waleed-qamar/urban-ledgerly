@@ -12,7 +12,6 @@ import '../../domain/entities/receipt_entity.dart';
 import '../providers/receipt_providers.dart';
 import 'add_disbursement_dialog.dart';
 import 'add_receipt_dialog.dart';
-import 'receipt_details_page.dart';
 
 enum _DashboardSection { receipts, disbursements }
 
@@ -147,6 +146,7 @@ class _ReceiptsDashboardState extends ConsumerState<ReceiptsDashboard> {
                       onSearchChanged: () => setState(() {}),
                     )
                   : _DisbursementSection(
+                      ref: ref,
                       disbursementsAsync: disbursementsAsync,
                       vendorsAsync: vendorsAsync,
                       searchController: _searchController,
@@ -358,21 +358,19 @@ class _ReceiptsSection extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final receipt = filtered[index];
                     final client = clientsById[receipt.clientId];
+                    final clientName =
+                          client?.clientName ?? 'Unknown Client';
                     return _ReceiptCard(
                       receipt: receipt,
-                      clientName: client?.clientName ?? 'Unknown Client',
-                      onOpen: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ReceiptDetailsPage(
-                              receipt: receipt,
-                              clientName:
-                                  client?.clientName ?? 'Unknown Client',
-                            ),
-                          ),
-                        );
-                      },
+                      clientName: clientName,
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (_) => _ReceiptDetailsDialog(
+                          receipt: receipt,
+                          clientName: clientName,
+                          ref: ref,
+                        ),
+                      ),
                       onDelete: () async {
                         final confirmed = await showDialog<bool>(
                           context: context,
@@ -424,6 +422,7 @@ class _ReceiptsSection extends StatelessWidget {
                         }
                       },
                     );
+
                   },
                 ),
               ),
@@ -532,87 +531,89 @@ class _StatPill extends StatelessWidget {
 
 class _ReceiptCard extends StatelessWidget {
   final String clientName;
-  final VoidCallback onOpen;
+  final VoidCallback onTap;
   final VoidCallback onDelete;
   final ReceiptEntity receipt;
 
   const _ReceiptCard({
     required this.receipt,
     required this.clientName,
-    required this.onOpen,
+    required this.onTap,
     required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.35),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  receipt.receiptNumber ?? 'Receipt',
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: AppColors.dividerColor.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      receipt.receiptNumber ?? 'Receipt',
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      clientName,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  receipt.paymentMethod.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'PKR ${receipt.totalAmount.toStringAsFixed(2)}',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(height: 4),
-                Text(clientName, overflow: TextOverflow.ellipsis),
-              ],
-            ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                tooltip: 'View / Edit',
+                onPressed: onTap,
+              ),
+            ],
           ),
-          Expanded(
-            child: Text(
-              receipt.paymentMethod.toUpperCase(),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              'PKR ${receipt.totalAmount.toStringAsFixed(2)}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
-          // Expanded(
-          //   child: Text(
-          //     '${receipt.allocations.length} invoice(s)',
-          //     textAlign: TextAlign.center,
-          //   ),
-          // ),
-          // IconButton(
-          //   onPressed: onOpen,
-          //   icon: const Icon(Icons.visibility_outlined),
-          //   tooltip: 'View details',
-          // ),
-          // IconButton(
-          //   onPressed: onDelete,
-          //   icon: const Icon(Icons.delete_outline, color: Colors.red),
-          //   tooltip: 'Delete receipt',
-          // ),
-        ],
+        ),
       ),
     );
   }
 }
 
 class _DisbursementSection extends StatelessWidget {
+  final WidgetRef ref;
   final AsyncValue<List<DisbursementRecord>> disbursementsAsync;
   final AsyncValue<List<VendorEntity>> vendorsAsync;
   final TextEditingController searchController;
   final VoidCallback onSearchChanged;
 
   const _DisbursementSection({
+    required this.ref,
     required this.disbursementsAsync,
     required this.vendorsAsync,
     required this.searchController,
@@ -708,9 +709,18 @@ class _DisbursementSection extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final disbursement = filtered[index];
                         final vendor = vendorsById[disbursement.supplierId];
+                        final vendorName = vendor?.vendorName ?? 'Unknown Vendor';
                         return _DisbursementCard(
                           disbursement: disbursement,
-                          vendorName: vendor?.vendorName ?? 'Unknown Vendor',
+                          vendorName: vendorName,
+                          onTap: () => showDialog(
+                            context: context,
+                            builder: (_) => _DisbursementDetailsDialog(
+                              disbursement: disbursement,
+                              vendorName: vendorName,
+                              ref: ref,
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -728,66 +738,601 @@ class _DisbursementSection extends StatelessWidget {
 class _DisbursementCard extends StatelessWidget {
   final DisbursementRecord disbursement;
   final String vendorName;
+  final VoidCallback onTap;
 
   const _DisbursementCard({
     required this.disbursement,
     required this.vendorName,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.35),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  disbursement.disbursementNumber,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: AppColors.dividerColor.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      disbursement.disbursementNumber,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      vendorName,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  disbursement.paymentMethod.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'PKR ${disbursement.totalAmount.toStringAsFixed(2)}',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(height: 4),
-                Text(vendorName, overflow: TextOverflow.ellipsis),
-              ],
-            ),
+              ),
+              Expanded(
+                child: Text(
+                  disbursement.category?.isNotEmpty == true
+                      ? disbursement.category!
+                      : (disbursement.remarks?.isNotEmpty == true
+                            ? disbursement.remarks!
+                            : 'Disbursement'),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                tooltip: 'View / Edit',
+                onPressed: onTap,
+              ),
+            ],
           ),
-          Expanded(
-            child: Text(
-              disbursement.paymentMethod.toUpperCase(),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              'PKR ${disbursement.totalAmount.toStringAsFixed(2)}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              disbursement.category?.isNotEmpty == true
-                  ? disbursement.category!
-                  : (disbursement.remarks?.isNotEmpty == true
-                        ? disbursement.remarks!
-                        : 'Disbursement'),
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
+        ),
       ),
+    );
+  }
+}
+
+// ── Receipt Details + Edit Dialog ─────────────────────────────────────────────
+
+class _ReceiptDetailsDialog extends StatefulWidget {
+  final ReceiptEntity receipt;
+  final String clientName;
+  final WidgetRef ref;
+
+  const _ReceiptDetailsDialog({
+    required this.receipt,
+    required this.clientName,
+    required this.ref,
+  });
+
+  @override
+  State<_ReceiptDetailsDialog> createState() => _ReceiptDetailsDialogState();
+}
+
+class _ReceiptDetailsDialogState extends State<_ReceiptDetailsDialog> {
+  bool _editing = false;
+  bool _saving = false;
+  late TextEditingController _accountNoCtrl;
+  late TextEditingController _remarksCtrl;
+  late String _paymentMethod;
+  late DateTime _receivedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _accountNoCtrl =
+        TextEditingController(text: widget.receipt.accountNo ?? '');
+    _remarksCtrl =
+        TextEditingController(text: widget.receipt.remarks ?? '');
+    _paymentMethod = widget.receipt.paymentMethod;
+    _receivedDate = widget.receipt.receivedDate;
+  }
+
+  @override
+  void dispose() {
+    _accountNoCtrl.dispose();
+    _remarksCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (widget.receipt.id == null) return;
+    setState(() => _saving = true);
+    try {
+      await widget.ref.read(
+        updateReceiptProvider(
+          id: widget.receipt.id!,
+          paymentMethod: _paymentMethod,
+          accountNo: _accountNoCtrl.text.trim().isEmpty
+              ? null
+              : _accountNoCtrl.text.trim(),
+          remarks: _remarksCtrl.text.trim().isEmpty
+              ? null
+              : _remarksCtrl.text.trim(),
+          receivedDate: _receivedDate,
+        ).future,
+      );
+      widget.ref.invalidate(getAllReceiptsProvider);
+      if (mounted) {
+        setState(() {
+          _editing = false;
+          _saving = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Receipt updated.')),
+        );
+      }
+    } catch (e) {
+      setState(() => _saving = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = widget.receipt;
+    const methods = ['cash', 'bank', 'cheque', 'other'];
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          r.receiptNumber ?? 'Receipt',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(widget.clientName,
+                            style:
+                                TextStyle(color: Colors.grey.shade600)),
+                      ],
+                    ),
+                  ),
+                  if (!_editing)
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: 'Edit',
+                      onPressed: () => setState(() => _editing = true),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(height: 24),
+              _DetailRow(
+                  'Amount', 'PKR ${r.totalAmount.toStringAsFixed(2)}'),
+              const SizedBox(height: 10),
+              _DetailRow(
+                  'Date',
+                  '${r.receivedDate.day}/${r.receivedDate.month}/${r.receivedDate.year}'),
+              if (r.allocations.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text('Allocations',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                ...r.allocations.map(
+                  (a) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Invoice #${a.invoiceId}'),
+                        Text(
+                          'PKR ${a.amount.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              if (_editing) ...[
+                const Divider(),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: _paymentMethod,
+                  decoration: const InputDecoration(
+                      labelText: 'Payment Method',
+                      border: OutlineInputBorder()),
+                  items: methods
+                      .map((m) => DropdownMenuItem(
+                          value: m, child: Text(m.toUpperCase())))
+                      .toList(),
+                  onChanged: (v) => setState(
+                      () => _paymentMethod = v ?? _paymentMethod),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _accountNoCtrl,
+                  decoration: const InputDecoration(
+                      labelText: 'Account No.',
+                      border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _remarksCtrl,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                      labelText: 'Remarks',
+                      border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.calendar_today, size: 16),
+                  label: Text(
+                      'Date: ${_receivedDate.day}/${_receivedDate.month}/${_receivedDate.year}'),
+                  onPressed: () async {
+                    final p = await showDatePicker(
+                      context: context,
+                      initialDate: _receivedDate,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2100),
+                    );
+                    if (p != null) setState(() => _receivedDate = p);
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: _saving
+                          ? null
+                          : () => setState(() => _editing = false),
+                      child: const Text('Cancel'),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: _saving ? null : _save,
+                      child: _saving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white))
+                          : const Text('Save'),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                _DetailRow(
+                    'Payment Method', r.paymentMethod.toUpperCase()),
+                if (r.accountNo?.isNotEmpty == true) ...[
+                  const SizedBox(height: 10),
+                  _DetailRow('Account No.', r.accountNo!),
+                ],
+                if (r.remarks?.isNotEmpty == true) ...[
+                  const SizedBox(height: 10),
+                  _DetailRow('Remarks', r.remarks!),
+                ],
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Disbursement Details + Edit Dialog ────────────────────────────────────────
+
+class _DisbursementDetailsDialog extends StatefulWidget {
+  final DisbursementRecord disbursement;
+  final String vendorName;
+  final WidgetRef ref;
+
+  const _DisbursementDetailsDialog({
+    required this.disbursement,
+    required this.vendorName,
+    required this.ref,
+  });
+
+  @override
+  State<_DisbursementDetailsDialog> createState() =>
+      _DisbursementDetailsDialogState();
+}
+
+class _DisbursementDetailsDialogState
+    extends State<_DisbursementDetailsDialog> {
+  bool _editing = false;
+  bool _saving = false;
+  late TextEditingController _accountNoCtrl;
+  late TextEditingController _categoryCtrl;
+  late TextEditingController _remarksCtrl;
+  late String _paymentMethod;
+  late DateTime _paidDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _accountNoCtrl =
+        TextEditingController(text: widget.disbursement.accountNo ?? '');
+    _categoryCtrl =
+        TextEditingController(text: widget.disbursement.category ?? '');
+    _remarksCtrl =
+        TextEditingController(text: widget.disbursement.remarks ?? '');
+    _paymentMethod = widget.disbursement.paymentMethod;
+    _paidDate = widget.disbursement.paidDate;
+  }
+
+  @override
+  void dispose() {
+    _accountNoCtrl.dispose();
+    _categoryCtrl.dispose();
+    _remarksCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      await widget.ref.read(
+        updateDisbursementProvider(
+          id: widget.disbursement.id,
+          paymentMethod: _paymentMethod,
+          accountNo: _accountNoCtrl.text.trim().isEmpty
+              ? null
+              : _accountNoCtrl.text.trim(),
+          category: _categoryCtrl.text.trim().isEmpty
+              ? null
+              : _categoryCtrl.text.trim(),
+          remarks: _remarksCtrl.text.trim().isEmpty
+              ? null
+              : _remarksCtrl.text.trim(),
+          paidDate: _paidDate,
+        ).future,
+      );
+      widget.ref.invalidate(getAllDisbursementsProvider);
+      if (mounted) {
+        setState(() {
+          _editing = false;
+          _saving = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Disbursement updated.')),
+        );
+      }
+    } catch (e) {
+      setState(() => _saving = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final d = widget.disbursement;
+    const methods = ['cash', 'bank', 'cheque', 'other'];
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          d.disbursementNumber,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(widget.vendorName,
+                            style:
+                                TextStyle(color: Colors.grey.shade600)),
+                      ],
+                    ),
+                  ),
+                  if (!_editing)
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: 'Edit',
+                      onPressed: () => setState(() => _editing = true),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(height: 24),
+              _DetailRow(
+                  'Amount', 'PKR ${d.totalAmount.toStringAsFixed(2)}'),
+              const SizedBox(height: 10),
+              _DetailRow(
+                  'Date',
+                  '${d.paidDate.day}/${d.paidDate.month}/${d.paidDate.year}'),
+              if (!_editing) ...[
+                const SizedBox(height: 10),
+                _DetailRow(
+                    'Payment Method', d.paymentMethod.toUpperCase()),
+                if (d.accountNo?.isNotEmpty == true) ...[
+                  const SizedBox(height: 10),
+                  _DetailRow('Account No.', d.accountNo!),
+                ],
+                if (d.category?.isNotEmpty == true) ...[
+                  const SizedBox(height: 10),
+                  _DetailRow('Category', d.category!),
+                ],
+                if (d.remarks?.isNotEmpty == true) ...[
+                  const SizedBox(height: 10),
+                  _DetailRow('Remarks', d.remarks!),
+                ],
+              ] else ...[
+                const Divider(),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: _paymentMethod,
+                  decoration: const InputDecoration(
+                      labelText: 'Payment Method',
+                      border: OutlineInputBorder()),
+                  items: methods
+                      .map((m) => DropdownMenuItem(
+                          value: m, child: Text(m.toUpperCase())))
+                      .toList(),
+                  onChanged: (v) => setState(
+                      () => _paymentMethod = v ?? _paymentMethod),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _accountNoCtrl,
+                  decoration: const InputDecoration(
+                      labelText: 'Account No.',
+                      border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _categoryCtrl,
+                  decoration: const InputDecoration(
+                      labelText: 'Category',
+                      border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _remarksCtrl,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                      labelText: 'Remarks',
+                      border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.calendar_today, size: 16),
+                  label: Text(
+                      'Date: ${_paidDate.day}/${_paidDate.month}/${_paidDate.year}'),
+                  onPressed: () async {
+                    final p = await showDatePicker(
+                      context: context,
+                      initialDate: _paidDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (p != null) setState(() => _paidDate = p);
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: _saving
+                          ? null
+                          : () => setState(() => _editing = false),
+                      child: const Text('Cancel'),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: _saving ? null : _save,
+                      child: _saving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white))
+                          : const Text('Save'),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Shared detail row helper ──────────────────────────────────────────────────
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _DetailRow(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 130,
+          child: Text(
+            label,
+            style: TextStyle(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
     );
   }
 }

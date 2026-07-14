@@ -5,5 +5,5 @@ abstract class InvoiceRepository {
   Future<void> updateInvoiceStatus(int id, String status, {DateTime? dispatchDate});
   Future<InvoiceEntity> getInvoiceById(int id);
   Future<List<InvoiceEntity>> getInvoices();
-  Future<String> getNextInvoiceNumber();
+  Future<String> getNextInvoiceNumber({int? clientId, String? clientInitials});
 }

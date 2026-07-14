@@ -5,6 +5,8 @@ import 'package:ledgerly/features/products/domain/entities/product_set_entity.da
 import 'package:ledgerly/features/products/domain/entities/product_set_item_entity.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:ledgerly/core/widgets/searchable_dropdown.dart';
+import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
 
 class AddProductsetDialog extends ConsumerStatefulWidget {
   const AddProductsetDialog({super.key});
@@ -110,34 +112,33 @@ class _AddProductsetDialogState extends ConsumerState<AddProductsetDialog> {
                               padding: const EdgeInsets.only(bottom: 8),
                               child: Row(
                                 children: [
-                                  Expanded(
-                                    child: DropdownButtonFormField<int>(
-                                      initialValue: _draftProducts[index].id,
-                                      decoration: InputDecoration(
-                                        labelText: 'Product ${index + 1}',
-                                      ),
-                                      items: products.map((product) {
-                                        return DropdownMenuItem<int>(
-                                          value: product.id,
-                                          child: Text(product.name),
-                                        );
-                                      }).toList(),
-                                      onChanged: _isSubmitting
-                                          ? null
-                                          : (value) {
+                                    Expanded(
+                                      child: Builder(
+                                        builder: (context) {
+                                          ProductEntity? currentSelected;
+                                          try {
+                                            if (_draftProducts[index].id != null) {
+                                              currentSelected = products.firstWhere(
+                                                (p) => p.id == _draftProducts[index].id,
+                                              );
+                                            }
+                                          } catch (_) {}
+
+                                          return SearchableDropdown<ProductEntity>(
+                                            items: products,
+                                            labelText: 'Product ${index + 1}',
+                                            initialText: currentSelected?.name,
+                                            enabled: !_isSubmitting,
+                                            displayStringForOption: (product) => product.name,
+                                            onSelected: (product) {
                                               setState(() {
-                                                _draftProducts[index].id =
-                                                    value;
+                                                _draftProducts[index].id = product.id;
                                               });
                                             },
-                                      validator: (value) {
-                                        if (value == null) {
-                                          return 'Select a product';
-                                        }
-                                        return null;
-                                      },
+                                          );
+                                        },
+                                      ),
                                     ),
-                                  ),
                                   if (_draftProducts.length > 1)
                                     IconButton(
                                       icon: const Icon(Icons.delete),

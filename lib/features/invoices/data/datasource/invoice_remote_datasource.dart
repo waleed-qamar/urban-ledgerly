@@ -6,7 +6,8 @@ class InvoiceRemoteDatasource {
 
   static const String _invoiceSelect =
       'id, order_id, client_id, supplier_id, invoice_number, status, po, issue_date, sub_total, shipping_cost, tax_percent, tax_amount, grand_total, representative, created_at, dispatched_at, '
-      'items:invoice_items(id, invoice_id, order_item_id, product_id, set_id, is_set, quantity, unit_price, total_price)';
+      'supplier_name, supplier_address, supplier_strn, supplier_ntn, client_name, client_address, client_strn, client_ntn, advance_amount, balance_amount, invoice_type, supplier_style, '
+      'items:invoice_items(id, invoice_id, order_item_id, product_id, set_id, is_set, quantity, unit_price, total_price, description, unit_type)';
 
   InvoiceRemoteDatasource(this._client);
 
@@ -43,6 +44,18 @@ class InvoiceRemoteDatasource {
           'tax_amount': invoice.taxAmount,
           'grand_total': invoice.grandTotal,
           'representative': invoice.representative,
+          'supplier_name': invoice.supplierName,
+          'supplier_address': invoice.supplierAddress,
+          'supplier_strn': invoice.supplierStrn,
+          'supplier_ntn': invoice.supplierNtn,
+          'client_name': invoice.clientName,
+          'client_address': invoice.clientAddress,
+          'client_strn': invoice.clientStrn,
+          'client_ntn': invoice.clientNtn,
+          'advance_amount': invoice.advanceAmount,
+          'balance_amount': invoice.balanceAmount,
+          'invoice_type': invoice.invoiceType,
+          'supplier_style': invoice.supplierStyle,
         })
         .select('id')
         .single();
@@ -62,6 +75,8 @@ class InvoiceRemoteDatasource {
               'quantity': item.quantity,
               'unit_price': item.unitPrice,
               'total_price': item.totalPrice,
+              'description': item.description,
+              'unit_type': item.unitType,
             },
           )
           .toList();
@@ -71,19 +86,44 @@ class InvoiceRemoteDatasource {
       // Increment invoiced_quantity in order_items for each row
       // We process sequentially assuming few items per invoice
       for (var item in invoice.items) {
-        final currentOrderItem = await _client
-            .from('order_items')
-            .select('invoiced_quantity')
-            .eq('id', item.orderItemId)
-            .single();
-        final currentQty =
-            (currentOrderItem['invoiced_quantity'] as num?)?.toInt() ?? 0;
+        if (item.orderItemId != null && item.orderItemId! > 0) {
+          final currentOrderItem = await _client
+              .from('order_items')
+              .select('invoiced_quantity')
+              .eq('id', item.orderItemId!)
+              .single();
+          final currentQty =
+              (currentOrderItem['invoiced_quantity'] as num?)?.toInt() ?? 0;
 
-        await _client
-            .from('order_items')
-            .update({'invoiced_quantity': (currentQty + item.quantity).toInt()})
-            .eq('id', item.orderItemId);
+          await _client
+              .from('order_items')
+              .update({'invoiced_quantity': (currentQty + item.quantity).toInt()})
+              .eq('id', item.orderItemId!);
+        }
       }
+    }
+
+    // Insert Advance Payment Receipt if present
+    if (invoice.advanceAmount > 0 && invoice.clientId != null) {
+      final allocationPayload = [
+        {
+          'invoice_id': invoiceId,
+          'amount': invoice.advanceAmount,
+        }
+      ];
+      await _client.rpc(
+        'create_receipt',
+        params: {
+          'p_client_id': invoice.clientId,
+          'p_total_amount': invoice.advanceAmount,
+          'p_payment_method': 'cash',
+          'p_account_no': null,
+          'p_remarks': 'Advance payment for Invoice ${invoice.invoiceNumber}',
+          'p_received_date': DateTime.now().toIso8601String(),
+          'p_allocations': allocationPayload,
+          'p_account_id': null,
+        },
+      );
     }
   }
 
@@ -98,21 +138,26 @@ class InvoiceRemoteDatasource {
   }
 
   /// Always does a fresh DB query — never relies on cached provider data.
-  /// Reads all invoice_number values, parses the numeric suffix of INV-N,
-  /// and returns the next available number.
-  Future<String> getNextInvoiceNumber() async {
-    final rows = await _client.from('invoices').select('invoice_number');
+  /// Generates the invoice number format: IN{total_invoices_padded}_{client_initials}_{client_invoices_padded}
+  Future<String> getNextInvoiceNumber({int? clientId, String? clientInitials}) async {
+    final totalRows = await _client.from('invoices').select('id');
+    final totalCount = totalRows.length;
+    final totalInvoicePadded = (totalCount + 1).toString().padLeft(4, '0');
 
-    int maxNum = 0;
-    for (final row in (rows as List)) {
-      final invoiceNumber = (row['invoice_number'] as String?) ?? '';
-      final match = RegExp(r'INV-(\d+)').firstMatch(invoiceNumber);
-      if (match != null) {
-        final parsed = int.tryParse(match.group(1) ?? '') ?? 0;
-        if (parsed > maxNum) maxNum = parsed;
-      }
+    String initials = clientInitials ?? 'XX';
+    if (initials.isEmpty) initials = 'XX';
+
+    int clientInvoiceCount = 0;
+    if (clientId != null && clientId > 0) {
+      final clientRows = await _client
+          .from('invoices')
+          .select('id')
+          .eq('client_id', clientId);
+      clientInvoiceCount = clientRows.length;
     }
-    return 'INV-${maxNum + 1}';
+    final clientInvoicePadded = (clientInvoiceCount + 1).toString().padLeft(3, '0');
+
+    return 'IN${totalInvoicePadded}_${initials}_$clientInvoicePadded';
   }
 
   Future<InvoiceEntity> getInvoiceById(int id) async {
@@ -143,11 +188,11 @@ class InvoiceRemoteDatasource {
 
     normalized['id'] = normalized['id'] ?? 0;
     normalized['orderId'] =
-        normalized['orderId'] ?? normalized['order_id'] ?? 0;
+        normalized['orderId'] ?? normalized['order_id'];
     normalized['clientId'] =
-        normalized['clientId'] ?? normalized['client_id'] ?? 0;
+        normalized['clientId'] ?? normalized['client_id'];
     normalized['supplierId'] =
-        normalized['supplierId'] ?? normalized['supplier_id'] ?? 0;
+        normalized['supplierId'] ?? normalized['supplier_id'];
     normalized['invoiceNumber'] =
         (normalized['invoiceNumber'] ?? normalized['invoice_number'] ?? '')
             .toString();
@@ -173,6 +218,22 @@ class InvoiceRemoteDatasource {
     normalized['grandTotal'] = grandTotal;
     normalized['representative'] = (normalized['representative'] ?? '')
         .toString();
+    
+    normalized['supplierName'] = normalized['supplierName'] ?? normalized['supplier_name'];
+    normalized['supplierAddress'] = normalized['supplierAddress'] ?? normalized['supplier_address'];
+    normalized['supplierStrn'] = normalized['supplierStrn'] ?? normalized['supplier_strn'];
+    normalized['supplierNtn'] = normalized['supplierNtn'] ?? normalized['supplier_ntn'];
+    
+    normalized['clientName'] = normalized['clientName'] ?? normalized['client_name'];
+    normalized['clientAddress'] = normalized['clientAddress'] ?? normalized['client_address'];
+    normalized['clientStrn'] = normalized['clientStrn'] ?? normalized['client_strn'];
+    normalized['clientNtn'] = normalized['clientNtn'] ?? normalized['client_ntn'];
+    
+    normalized['advanceAmount'] = (normalized['advanceAmount'] ?? normalized['advance_amount'] ?? 0.0).toDouble();
+    normalized['balanceAmount'] = (normalized['balanceAmount'] ?? normalized['balance_amount'] ?? 0.0).toDouble();
+    normalized['invoiceType'] = normalized['invoiceType'] ?? normalized['invoice_type'] ?? 'sales_tax';
+    normalized['supplierStyle'] = normalized['supplierStyle'] ?? normalized['supplier_style'] ?? 'style_1';
+
     // paidAmount/remainingAmount are no longer tracked on the invoice.
     normalized['paidAmount'] = 0.0;
     normalized['remainingAmount'] = 0.0;
@@ -200,9 +261,9 @@ class InvoiceRemoteDatasource {
     normalized['invoiceId'] =
         normalized['invoiceId'] ?? normalized['invoice_id'] ?? 0;
     normalized['orderItemId'] =
-        normalized['orderItemId'] ?? normalized['order_item_id'] ?? 0;
+        normalized['orderItemId'] ?? normalized['order_item_id'];
     normalized['productId'] =
-        normalized['productId'] ?? normalized['product_id'] ?? 0;
+        normalized['productId'] ?? normalized['product_id'];
     normalized['quantity'] = (normalized['quantity'] ?? 0).toDouble();
     normalized['unitPrice'] =
         (normalized['unitPrice'] ?? normalized['unit_price'] ?? 0).toDouble();
@@ -211,6 +272,8 @@ class InvoiceRemoteDatasource {
     normalized['setId'] = normalized['setId'] ?? normalized['set_id'];
     normalized['isSet'] =
         (normalized['isSet'] ?? normalized['is_set'] ?? false) as bool;
+    normalized['description'] = normalized['description'];
+    normalized['unitType'] = normalized['unitType'] ?? normalized['unit_type'] ?? 'Each';
 
     return normalized;
   }

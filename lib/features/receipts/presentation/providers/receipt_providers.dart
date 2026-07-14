@@ -43,3 +43,43 @@ Future<void> deleteReceipt(Ref ref, int id) {
 final getAllDisbursementsProvider = FutureProvider<List<DisbursementRecord>>(
   (ref) => ref.watch(receiptRepositoryProvider).getDisbursements(),
 );
+
+// ── Update providers ──────────────────────────────────────────────────────────
+
+@riverpod
+Future<void> updateReceipt(
+  Ref ref, {
+  required int id,
+  required String paymentMethod,
+  String? accountNo,
+  String? remarks,
+  required DateTime receivedDate,
+}) {
+  return ref.watch(receiptRepositoryProvider).updateReceipt(
+    id: id,
+    paymentMethod: paymentMethod,
+    accountNo: accountNo,
+    remarks: remarks,
+    receivedDate: receivedDate,
+  );
+}
+
+@riverpod
+Future<void> updateDisbursement(
+  Ref ref, {
+  required int id,
+  required String paymentMethod,
+  String? accountNo,
+  String? category,
+  String? remarks,
+  required DateTime paidDate,
+}) {
+  return ref.watch(receiptRepositoryProvider).updateDisbursement(
+    id: id,
+    paymentMethod: paymentMethod,
+    accountNo: accountNo,
+    category: category,
+    remarks: remarks,
+    paidDate: paidDate,
+  );
+}

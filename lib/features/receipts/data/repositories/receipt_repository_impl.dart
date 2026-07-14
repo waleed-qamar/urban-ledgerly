@@ -55,4 +55,40 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
   Future<List<ReceiptEntity>> getReceipts() {
     return _datasource.getReceipts();
   }
+
+  @override
+  Future<void> updateReceipt({
+    required int id,
+    required String paymentMethod,
+    String? accountNo,
+    String? remarks,
+    required DateTime receivedDate,
+  }) {
+    return _datasource.updateReceipt(
+      id: id,
+      paymentMethod: paymentMethod,
+      accountNo: accountNo,
+      remarks: remarks,
+      receivedDate: receivedDate,
+    );
+  }
+
+  @override
+  Future<void> updateDisbursement({
+    required int id,
+    required String paymentMethod,
+    String? accountNo,
+    String? category,
+    String? remarks,
+    required DateTime paidDate,
+  }) {
+    return _datasource.updateDisbursement(
+      id: id,
+      paymentMethod: paymentMethod,
+      accountNo: accountNo,
+      category: category,
+      remarks: remarks,
+      paidDate: paidDate,
+    );
+  }
 }
