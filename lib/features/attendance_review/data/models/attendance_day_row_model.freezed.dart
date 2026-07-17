@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AttendanceDayRowModel {
 
- int get operatorId; DateTime get attendanceDate; DateTime? get inAt; DateTime? get outAt; int? get shiftRoleId; String? get shiftRoleName; int? get otRoleId; String? get otRoleName; int? get shiftMinutes; int? get otMinutes; bool? get isAbsent; double? get salaryAmount; double? get overtimeAmount; double? get takeHomeAmount; String? get calculationStatus; String? get existingAdjustmentReason;
+@JsonKey(name: 'operator_id') int get operatorId;@JsonKey(name: 'attendance_date') DateTime get attendanceDate;@JsonKey(name: 'in_at') DateTime? get inAt;@JsonKey(name: 'out_at') DateTime? get outAt;@JsonKey(name: 'shift_role_id') int? get shiftRoleId;@JsonKey(name: 'shift_role_name') String? get shiftRoleName;@JsonKey(name: 'ot_role_id') int? get otRoleId;@JsonKey(name: 'ot_role_name') String? get otRoleName;@JsonKey(name: 'shift_minutes') int? get shiftMinutes;@JsonKey(name: 'ot_minutes') int? get otMinutes;@JsonKey(name: 'is_absent') bool? get isAbsent;@JsonKey(name: 'salary_amount') double? get salaryAmount;@JsonKey(name: 'overtime_amount') double? get overtimeAmount;@JsonKey(name: 'take_home_amount') double? get takeHomeAmount;@JsonKey(name: 'calculation_status') String? get calculationStatus;@JsonKey(name: 'existing_adjustment_reason') String? get existingAdjustmentReason;
 /// Create a copy of AttendanceDayRowModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $AttendanceDayRowModelCopyWith<$Res>  {
   factory $AttendanceDayRowModelCopyWith(AttendanceDayRowModel value, $Res Function(AttendanceDayRowModel) _then) = _$AttendanceDayRowModelCopyWithImpl;
 @useResult
 $Res call({
- int operatorId, DateTime attendanceDate, DateTime? inAt, DateTime? outAt, int? shiftRoleId, String? shiftRoleName, int? otRoleId, String? otRoleName, int? shiftMinutes, int? otMinutes, bool? isAbsent, double? salaryAmount, double? overtimeAmount, double? takeHomeAmount, String? calculationStatus, String? existingAdjustmentReason
+@JsonKey(name: 'operator_id') int operatorId,@JsonKey(name: 'attendance_date') DateTime attendanceDate,@JsonKey(name: 'in_at') DateTime? inAt,@JsonKey(name: 'out_at') DateTime? outAt,@JsonKey(name: 'shift_role_id') int? shiftRoleId,@JsonKey(name: 'shift_role_name') String? shiftRoleName,@JsonKey(name: 'ot_role_id') int? otRoleId,@JsonKey(name: 'ot_role_name') String? otRoleName,@JsonKey(name: 'shift_minutes') int? shiftMinutes,@JsonKey(name: 'ot_minutes') int? otMinutes,@JsonKey(name: 'is_absent') bool? isAbsent,@JsonKey(name: 'salary_amount') double? salaryAmount,@JsonKey(name: 'overtime_amount') double? overtimeAmount,@JsonKey(name: 'take_home_amount') double? takeHomeAmount,@JsonKey(name: 'calculation_status') String? calculationStatus,@JsonKey(name: 'existing_adjustment_reason') String? existingAdjustmentReason
 });
 
 
@@ -168,7 +168,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int operatorId,  DateTime attendanceDate,  DateTime? inAt,  DateTime? outAt,  int? shiftRoleId,  String? shiftRoleName,  int? otRoleId,  String? otRoleName,  int? shiftMinutes,  int? otMinutes,  bool? isAbsent,  double? salaryAmount,  double? overtimeAmount,  double? takeHomeAmount,  String? calculationStatus,  String? existingAdjustmentReason)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'operator_id')  int operatorId, @JsonKey(name: 'attendance_date')  DateTime attendanceDate, @JsonKey(name: 'in_at')  DateTime? inAt, @JsonKey(name: 'out_at')  DateTime? outAt, @JsonKey(name: 'shift_role_id')  int? shiftRoleId, @JsonKey(name: 'shift_role_name')  String? shiftRoleName, @JsonKey(name: 'ot_role_id')  int? otRoleId, @JsonKey(name: 'ot_role_name')  String? otRoleName, @JsonKey(name: 'shift_minutes')  int? shiftMinutes, @JsonKey(name: 'ot_minutes')  int? otMinutes, @JsonKey(name: 'is_absent')  bool? isAbsent, @JsonKey(name: 'salary_amount')  double? salaryAmount, @JsonKey(name: 'overtime_amount')  double? overtimeAmount, @JsonKey(name: 'take_home_amount')  double? takeHomeAmount, @JsonKey(name: 'calculation_status')  String? calculationStatus, @JsonKey(name: 'existing_adjustment_reason')  String? existingAdjustmentReason)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AttendanceDayRowModel() when $default != null:
 return $default(_that.operatorId,_that.attendanceDate,_that.inAt,_that.outAt,_that.shiftRoleId,_that.shiftRoleName,_that.otRoleId,_that.otRoleName,_that.shiftMinutes,_that.otMinutes,_that.isAbsent,_that.salaryAmount,_that.overtimeAmount,_that.takeHomeAmount,_that.calculationStatus,_that.existingAdjustmentReason);case _:
@@ -189,7 +189,7 @@ return $default(_that.operatorId,_that.attendanceDate,_that.inAt,_that.outAt,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int operatorId,  DateTime attendanceDate,  DateTime? inAt,  DateTime? outAt,  int? shiftRoleId,  String? shiftRoleName,  int? otRoleId,  String? otRoleName,  int? shiftMinutes,  int? otMinutes,  bool? isAbsent,  double? salaryAmount,  double? overtimeAmount,  double? takeHomeAmount,  String? calculationStatus,  String? existingAdjustmentReason)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'operator_id')  int operatorId, @JsonKey(name: 'attendance_date')  DateTime attendanceDate, @JsonKey(name: 'in_at')  DateTime? inAt, @JsonKey(name: 'out_at')  DateTime? outAt, @JsonKey(name: 'shift_role_id')  int? shiftRoleId, @JsonKey(name: 'shift_role_name')  String? shiftRoleName, @JsonKey(name: 'ot_role_id')  int? otRoleId, @JsonKey(name: 'ot_role_name')  String? otRoleName, @JsonKey(name: 'shift_minutes')  int? shiftMinutes, @JsonKey(name: 'ot_minutes')  int? otMinutes, @JsonKey(name: 'is_absent')  bool? isAbsent, @JsonKey(name: 'salary_amount')  double? salaryAmount, @JsonKey(name: 'overtime_amount')  double? overtimeAmount, @JsonKey(name: 'take_home_amount')  double? takeHomeAmount, @JsonKey(name: 'calculation_status')  String? calculationStatus, @JsonKey(name: 'existing_adjustment_reason')  String? existingAdjustmentReason)  $default,) {final _that = this;
 switch (_that) {
 case _AttendanceDayRowModel():
 return $default(_that.operatorId,_that.attendanceDate,_that.inAt,_that.outAt,_that.shiftRoleId,_that.shiftRoleName,_that.otRoleId,_that.otRoleName,_that.shiftMinutes,_that.otMinutes,_that.isAbsent,_that.salaryAmount,_that.overtimeAmount,_that.takeHomeAmount,_that.calculationStatus,_that.existingAdjustmentReason);case _:
@@ -209,7 +209,7 @@ return $default(_that.operatorId,_that.attendanceDate,_that.inAt,_that.outAt,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int operatorId,  DateTime attendanceDate,  DateTime? inAt,  DateTime? outAt,  int? shiftRoleId,  String? shiftRoleName,  int? otRoleId,  String? otRoleName,  int? shiftMinutes,  int? otMinutes,  bool? isAbsent,  double? salaryAmount,  double? overtimeAmount,  double? takeHomeAmount,  String? calculationStatus,  String? existingAdjustmentReason)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'operator_id')  int operatorId, @JsonKey(name: 'attendance_date')  DateTime attendanceDate, @JsonKey(name: 'in_at')  DateTime? inAt, @JsonKey(name: 'out_at')  DateTime? outAt, @JsonKey(name: 'shift_role_id')  int? shiftRoleId, @JsonKey(name: 'shift_role_name')  String? shiftRoleName, @JsonKey(name: 'ot_role_id')  int? otRoleId, @JsonKey(name: 'ot_role_name')  String? otRoleName, @JsonKey(name: 'shift_minutes')  int? shiftMinutes, @JsonKey(name: 'ot_minutes')  int? otMinutes, @JsonKey(name: 'is_absent')  bool? isAbsent, @JsonKey(name: 'salary_amount')  double? salaryAmount, @JsonKey(name: 'overtime_amount')  double? overtimeAmount, @JsonKey(name: 'take_home_amount')  double? takeHomeAmount, @JsonKey(name: 'calculation_status')  String? calculationStatus, @JsonKey(name: 'existing_adjustment_reason')  String? existingAdjustmentReason)?  $default,) {final _that = this;
 switch (_that) {
 case _AttendanceDayRowModel() when $default != null:
 return $default(_that.operatorId,_that.attendanceDate,_that.inAt,_that.outAt,_that.shiftRoleId,_that.shiftRoleName,_that.otRoleId,_that.otRoleName,_that.shiftMinutes,_that.otMinutes,_that.isAbsent,_that.salaryAmount,_that.overtimeAmount,_that.takeHomeAmount,_that.calculationStatus,_that.existingAdjustmentReason);case _:
@@ -224,25 +224,25 @@ return $default(_that.operatorId,_that.attendanceDate,_that.inAt,_that.outAt,_th
 @JsonSerializable()
 
 class _AttendanceDayRowModel extends AttendanceDayRowModel {
-  const _AttendanceDayRowModel({required this.operatorId, required this.attendanceDate, this.inAt, this.outAt, this.shiftRoleId, this.shiftRoleName, this.otRoleId, this.otRoleName, this.shiftMinutes, this.otMinutes, this.isAbsent, this.salaryAmount, this.overtimeAmount, this.takeHomeAmount, this.calculationStatus, this.existingAdjustmentReason}): super._();
+  const _AttendanceDayRowModel({@JsonKey(name: 'operator_id') required this.operatorId, @JsonKey(name: 'attendance_date') required this.attendanceDate, @JsonKey(name: 'in_at') this.inAt, @JsonKey(name: 'out_at') this.outAt, @JsonKey(name: 'shift_role_id') this.shiftRoleId, @JsonKey(name: 'shift_role_name') this.shiftRoleName, @JsonKey(name: 'ot_role_id') this.otRoleId, @JsonKey(name: 'ot_role_name') this.otRoleName, @JsonKey(name: 'shift_minutes') this.shiftMinutes, @JsonKey(name: 'ot_minutes') this.otMinutes, @JsonKey(name: 'is_absent') this.isAbsent, @JsonKey(name: 'salary_amount') this.salaryAmount, @JsonKey(name: 'overtime_amount') this.overtimeAmount, @JsonKey(name: 'take_home_amount') this.takeHomeAmount, @JsonKey(name: 'calculation_status') this.calculationStatus, @JsonKey(name: 'existing_adjustment_reason') this.existingAdjustmentReason}): super._();
   factory _AttendanceDayRowModel.fromJson(Map<String, dynamic> json) => _$AttendanceDayRowModelFromJson(json);
 
-@override final  int operatorId;
-@override final  DateTime attendanceDate;
-@override final  DateTime? inAt;
-@override final  DateTime? outAt;
-@override final  int? shiftRoleId;
-@override final  String? shiftRoleName;
-@override final  int? otRoleId;
-@override final  String? otRoleName;
-@override final  int? shiftMinutes;
-@override final  int? otMinutes;
-@override final  bool? isAbsent;
-@override final  double? salaryAmount;
-@override final  double? overtimeAmount;
-@override final  double? takeHomeAmount;
-@override final  String? calculationStatus;
-@override final  String? existingAdjustmentReason;
+@override@JsonKey(name: 'operator_id') final  int operatorId;
+@override@JsonKey(name: 'attendance_date') final  DateTime attendanceDate;
+@override@JsonKey(name: 'in_at') final  DateTime? inAt;
+@override@JsonKey(name: 'out_at') final  DateTime? outAt;
+@override@JsonKey(name: 'shift_role_id') final  int? shiftRoleId;
+@override@JsonKey(name: 'shift_role_name') final  String? shiftRoleName;
+@override@JsonKey(name: 'ot_role_id') final  int? otRoleId;
+@override@JsonKey(name: 'ot_role_name') final  String? otRoleName;
+@override@JsonKey(name: 'shift_minutes') final  int? shiftMinutes;
+@override@JsonKey(name: 'ot_minutes') final  int? otMinutes;
+@override@JsonKey(name: 'is_absent') final  bool? isAbsent;
+@override@JsonKey(name: 'salary_amount') final  double? salaryAmount;
+@override@JsonKey(name: 'overtime_amount') final  double? overtimeAmount;
+@override@JsonKey(name: 'take_home_amount') final  double? takeHomeAmount;
+@override@JsonKey(name: 'calculation_status') final  String? calculationStatus;
+@override@JsonKey(name: 'existing_adjustment_reason') final  String? existingAdjustmentReason;
 
 /// Create a copy of AttendanceDayRowModel
 /// with the given fields replaced by the non-null parameter values.
@@ -277,7 +277,7 @@ abstract mixin class _$AttendanceDayRowModelCopyWith<$Res> implements $Attendanc
   factory _$AttendanceDayRowModelCopyWith(_AttendanceDayRowModel value, $Res Function(_AttendanceDayRowModel) _then) = __$AttendanceDayRowModelCopyWithImpl;
 @override @useResult
 $Res call({
- int operatorId, DateTime attendanceDate, DateTime? inAt, DateTime? outAt, int? shiftRoleId, String? shiftRoleName, int? otRoleId, String? otRoleName, int? shiftMinutes, int? otMinutes, bool? isAbsent, double? salaryAmount, double? overtimeAmount, double? takeHomeAmount, String? calculationStatus, String? existingAdjustmentReason
+@JsonKey(name: 'operator_id') int operatorId,@JsonKey(name: 'attendance_date') DateTime attendanceDate,@JsonKey(name: 'in_at') DateTime? inAt,@JsonKey(name: 'out_at') DateTime? outAt,@JsonKey(name: 'shift_role_id') int? shiftRoleId,@JsonKey(name: 'shift_role_name') String? shiftRoleName,@JsonKey(name: 'ot_role_id') int? otRoleId,@JsonKey(name: 'ot_role_name') String? otRoleName,@JsonKey(name: 'shift_minutes') int? shiftMinutes,@JsonKey(name: 'ot_minutes') int? otMinutes,@JsonKey(name: 'is_absent') bool? isAbsent,@JsonKey(name: 'salary_amount') double? salaryAmount,@JsonKey(name: 'overtime_amount') double? overtimeAmount,@JsonKey(name: 'take_home_amount') double? takeHomeAmount,@JsonKey(name: 'calculation_status') String? calculationStatus,@JsonKey(name: 'existing_adjustment_reason') String? existingAdjustmentReason
 });
 
 

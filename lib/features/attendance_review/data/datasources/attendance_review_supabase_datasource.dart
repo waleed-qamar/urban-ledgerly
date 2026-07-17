@@ -49,7 +49,7 @@ class AttendanceReviewSupabaseDatasource {
     }).maybeSingle();
 
     if (response == null) return null;
-    return OperatorWageRateModel.fromJson(response as Map<String, dynamic>);
+    return OperatorWageRateModel.fromJson(response);
   }
 
   Future<void> saveAdjustments(List<AttendanceAdjustmentDraft> drafts) async {
@@ -57,6 +57,7 @@ class AttendanceReviewSupabaseDatasource {
       return {
         'operatorId': d.operatorId,
         'date': d.date.toIso8601String().split('T')[0],
+        'adjustedInAt': d.adjustedInAt?.toIso8601String(),
         'adjustedOutAt': d.adjustedOutAt?.toIso8601String(),
         'adjustedOtMinutes': d.adjustedOtMinutes,
         'shiftRoleId': d.shiftRoleId,
@@ -67,6 +68,28 @@ class AttendanceReviewSupabaseDatasource {
 
     await _client.rpc('save_attendance_adjustments', params: {
       'p_payload': payload,
+    });
+  }
+
+  Future<void> recalculate({
+    required DateTime from,
+    required DateTime to,
+    int? operatorId,
+  }) async {
+    await _client.rpc('recalculate_attendance_daily', params: {
+      'p_from_date': from.toIso8601String().split('T')[0],
+      'p_to_date': to.toIso8601String().split('T')[0],
+      if (operatorId != null) 'p_operator_id': operatorId,
+    });
+  }
+
+  Future<void> finalizeWeek({
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    await _client.rpc('finalize_attendance_week', params: {
+      'p_from_date': from.toIso8601String().split('T')[0],
+      'p_to_date': to.toIso8601String().split('T')[0],
     });
   }
 

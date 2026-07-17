@@ -20,6 +20,8 @@ _OperatorEntity _$OperatorEntityFromJson(Map<String, dynamic> json) =>
       workGroupId: (json['work_group_id'] as num?)?.toInt(),
       defaultWageRoleId: (json['default_wage_role_id'] as num?)?.toInt(),
       overtimeEnabled: json['overtime_enabled'] as bool? ?? true,
+      monthlySalary: (json['monthly_salary'] as num?)?.toDouble(),
+      deviceEmployeeCode: json['device_employee_code'] as String?,
     );
 
 Map<String, dynamic> _$OperatorEntityToJson(_OperatorEntity instance) =>
@@ -34,4 +36,6 @@ Map<String, dynamic> _$OperatorEntityToJson(_OperatorEntity instance) =>
       'work_group_id': instance.workGroupId,
       'default_wage_role_id': instance.defaultWageRoleId,
       'overtime_enabled': instance.overtimeEnabled,
+      'monthly_salary': instance.monthlySalary,
+      'device_employee_code': instance.deviceEmployeeCode,
     };

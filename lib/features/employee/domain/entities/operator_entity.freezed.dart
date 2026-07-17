@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OperatorEntity {
 
- int get id; String get name; String get phone; String? get cnic;@JsonKey(name: 'joining_date') DateTime get joiningDate;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'work_group_id') int? get workGroupId;@JsonKey(name: 'default_wage_role_id') int? get defaultWageRoleId;@JsonKey(name: 'overtime_enabled') bool get overtimeEnabled;
+ int get id; String get name; String get phone; String? get cnic;@JsonKey(name: 'joining_date') DateTime get joiningDate;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'work_group_id') int? get workGroupId;@JsonKey(name: 'default_wage_role_id') int? get defaultWageRoleId;@JsonKey(name: 'overtime_enabled') bool get overtimeEnabled;// Rate fields — stored directly on operators for salary, and via operator_role_rates for hourly
+@JsonKey(name: 'monthly_salary') double? get monthlySalary;@JsonKey(name: 'device_employee_code') String? get deviceEmployeeCode;@JsonKey(includeFromJson: false, includeToJson: false) Map<int, double> get hourlyRates;
 /// Create a copy of OperatorEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $OperatorEntityCopyWith<OperatorEntity> get copyWith => _$OperatorEntityCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OperatorEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.cnic, cnic) || other.cnic == cnic)&&(identical(other.joiningDate, joiningDate) || other.joiningDate == joiningDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.workGroupId, workGroupId) || other.workGroupId == workGroupId)&&(identical(other.defaultWageRoleId, defaultWageRoleId) || other.defaultWageRoleId == defaultWageRoleId)&&(identical(other.overtimeEnabled, overtimeEnabled) || other.overtimeEnabled == overtimeEnabled));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OperatorEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.cnic, cnic) || other.cnic == cnic)&&(identical(other.joiningDate, joiningDate) || other.joiningDate == joiningDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.workGroupId, workGroupId) || other.workGroupId == workGroupId)&&(identical(other.defaultWageRoleId, defaultWageRoleId) || other.defaultWageRoleId == defaultWageRoleId)&&(identical(other.overtimeEnabled, overtimeEnabled) || other.overtimeEnabled == overtimeEnabled)&&(identical(other.monthlySalary, monthlySalary) || other.monthlySalary == monthlySalary)&&(identical(other.deviceEmployeeCode, deviceEmployeeCode) || other.deviceEmployeeCode == deviceEmployeeCode)&&const DeepCollectionEquality().equals(other.hourlyRates, hourlyRates));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,phone,cnic,joiningDate,isActive,createdAt,workGroupId,defaultWageRoleId,overtimeEnabled);
+int get hashCode => Object.hash(runtimeType,id,name,phone,cnic,joiningDate,isActive,createdAt,workGroupId,defaultWageRoleId,overtimeEnabled,monthlySalary,deviceEmployeeCode,const DeepCollectionEquality().hash(hourlyRates));
 
 @override
 String toString() {
-  return 'OperatorEntity(id: $id, name: $name, phone: $phone, cnic: $cnic, joiningDate: $joiningDate, isActive: $isActive, createdAt: $createdAt, workGroupId: $workGroupId, defaultWageRoleId: $defaultWageRoleId, overtimeEnabled: $overtimeEnabled)';
+  return 'OperatorEntity(id: $id, name: $name, phone: $phone, cnic: $cnic, joiningDate: $joiningDate, isActive: $isActive, createdAt: $createdAt, workGroupId: $workGroupId, defaultWageRoleId: $defaultWageRoleId, overtimeEnabled: $overtimeEnabled, monthlySalary: $monthlySalary, deviceEmployeeCode: $deviceEmployeeCode, hourlyRates: $hourlyRates)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $OperatorEntityCopyWith<$Res>  {
   factory $OperatorEntityCopyWith(OperatorEntity value, $Res Function(OperatorEntity) _then) = _$OperatorEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String phone, String? cnic,@JsonKey(name: 'joining_date') DateTime joiningDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'work_group_id') int? workGroupId,@JsonKey(name: 'default_wage_role_id') int? defaultWageRoleId,@JsonKey(name: 'overtime_enabled') bool overtimeEnabled
+ int id, String name, String phone, String? cnic,@JsonKey(name: 'joining_date') DateTime joiningDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'work_group_id') int? workGroupId,@JsonKey(name: 'default_wage_role_id') int? defaultWageRoleId,@JsonKey(name: 'overtime_enabled') bool overtimeEnabled,@JsonKey(name: 'monthly_salary') double? monthlySalary,@JsonKey(name: 'device_employee_code') String? deviceEmployeeCode,@JsonKey(includeFromJson: false, includeToJson: false) Map<int, double> hourlyRates
 });
 
 
@@ -65,7 +66,7 @@ class _$OperatorEntityCopyWithImpl<$Res>
 
 /// Create a copy of OperatorEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? phone = null,Object? cnic = freezed,Object? joiningDate = null,Object? isActive = null,Object? createdAt = freezed,Object? workGroupId = freezed,Object? defaultWageRoleId = freezed,Object? overtimeEnabled = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? phone = null,Object? cnic = freezed,Object? joiningDate = null,Object? isActive = null,Object? createdAt = freezed,Object? workGroupId = freezed,Object? defaultWageRoleId = freezed,Object? overtimeEnabled = null,Object? monthlySalary = freezed,Object? deviceEmployeeCode = freezed,Object? hourlyRates = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -77,7 +78,10 @@ as bool,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore:
 as DateTime?,workGroupId: freezed == workGroupId ? _self.workGroupId : workGroupId // ignore: cast_nullable_to_non_nullable
 as int?,defaultWageRoleId: freezed == defaultWageRoleId ? _self.defaultWageRoleId : defaultWageRoleId // ignore: cast_nullable_to_non_nullable
 as int?,overtimeEnabled: null == overtimeEnabled ? _self.overtimeEnabled : overtimeEnabled // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,monthlySalary: freezed == monthlySalary ? _self.monthlySalary : monthlySalary // ignore: cast_nullable_to_non_nullable
+as double?,deviceEmployeeCode: freezed == deviceEmployeeCode ? _self.deviceEmployeeCode : deviceEmployeeCode // ignore: cast_nullable_to_non_nullable
+as String?,hourlyRates: null == hourlyRates ? _self.hourlyRates : hourlyRates // ignore: cast_nullable_to_non_nullable
+as Map<int, double>,
   ));
 }
 
@@ -162,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String phone,  String? cnic, @JsonKey(name: 'joining_date')  DateTime joiningDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'work_group_id')  int? workGroupId, @JsonKey(name: 'default_wage_role_id')  int? defaultWageRoleId, @JsonKey(name: 'overtime_enabled')  bool overtimeEnabled)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String phone,  String? cnic, @JsonKey(name: 'joining_date')  DateTime joiningDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'work_group_id')  int? workGroupId, @JsonKey(name: 'default_wage_role_id')  int? defaultWageRoleId, @JsonKey(name: 'overtime_enabled')  bool overtimeEnabled, @JsonKey(name: 'monthly_salary')  double? monthlySalary, @JsonKey(name: 'device_employee_code')  String? deviceEmployeeCode, @JsonKey(includeFromJson: false, includeToJson: false)  Map<int, double> hourlyRates)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OperatorEntity() when $default != null:
-return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.createdAt,_that.workGroupId,_that.defaultWageRoleId,_that.overtimeEnabled);case _:
+return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.createdAt,_that.workGroupId,_that.defaultWageRoleId,_that.overtimeEnabled,_that.monthlySalary,_that.deviceEmployeeCode,_that.hourlyRates);case _:
   return orElse();
 
 }
@@ -183,10 +187,10 @@ return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String phone,  String? cnic, @JsonKey(name: 'joining_date')  DateTime joiningDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'work_group_id')  int? workGroupId, @JsonKey(name: 'default_wage_role_id')  int? defaultWageRoleId, @JsonKey(name: 'overtime_enabled')  bool overtimeEnabled)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String phone,  String? cnic, @JsonKey(name: 'joining_date')  DateTime joiningDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'work_group_id')  int? workGroupId, @JsonKey(name: 'default_wage_role_id')  int? defaultWageRoleId, @JsonKey(name: 'overtime_enabled')  bool overtimeEnabled, @JsonKey(name: 'monthly_salary')  double? monthlySalary, @JsonKey(name: 'device_employee_code')  String? deviceEmployeeCode, @JsonKey(includeFromJson: false, includeToJson: false)  Map<int, double> hourlyRates)  $default,) {final _that = this;
 switch (_that) {
 case _OperatorEntity():
-return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.createdAt,_that.workGroupId,_that.defaultWageRoleId,_that.overtimeEnabled);case _:
+return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.createdAt,_that.workGroupId,_that.defaultWageRoleId,_that.overtimeEnabled,_that.monthlySalary,_that.deviceEmployeeCode,_that.hourlyRates);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +207,10 @@ return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String phone,  String? cnic, @JsonKey(name: 'joining_date')  DateTime joiningDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'work_group_id')  int? workGroupId, @JsonKey(name: 'default_wage_role_id')  int? defaultWageRoleId, @JsonKey(name: 'overtime_enabled')  bool overtimeEnabled)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String phone,  String? cnic, @JsonKey(name: 'joining_date')  DateTime joiningDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'work_group_id')  int? workGroupId, @JsonKey(name: 'default_wage_role_id')  int? defaultWageRoleId, @JsonKey(name: 'overtime_enabled')  bool overtimeEnabled, @JsonKey(name: 'monthly_salary')  double? monthlySalary, @JsonKey(name: 'device_employee_code')  String? deviceEmployeeCode, @JsonKey(includeFromJson: false, includeToJson: false)  Map<int, double> hourlyRates)?  $default,) {final _that = this;
 switch (_that) {
 case _OperatorEntity() when $default != null:
-return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.createdAt,_that.workGroupId,_that.defaultWageRoleId,_that.overtimeEnabled);case _:
+return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_that.isActive,_that.createdAt,_that.workGroupId,_that.defaultWageRoleId,_that.overtimeEnabled,_that.monthlySalary,_that.deviceEmployeeCode,_that.hourlyRates);case _:
   return null;
 
 }
@@ -218,7 +222,7 @@ return $default(_that.id,_that.name,_that.phone,_that.cnic,_that.joiningDate,_th
 @JsonSerializable()
 
 class _OperatorEntity implements OperatorEntity {
-  const _OperatorEntity({required this.id, required this.name, required this.phone, this.cnic, @JsonKey(name: 'joining_date') required this.joiningDate, @JsonKey(name: 'is_active') required this.isActive, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'work_group_id') this.workGroupId, @JsonKey(name: 'default_wage_role_id') this.defaultWageRoleId, @JsonKey(name: 'overtime_enabled') this.overtimeEnabled = true});
+  const _OperatorEntity({required this.id, required this.name, required this.phone, this.cnic, @JsonKey(name: 'joining_date') required this.joiningDate, @JsonKey(name: 'is_active') required this.isActive, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'work_group_id') this.workGroupId, @JsonKey(name: 'default_wage_role_id') this.defaultWageRoleId, @JsonKey(name: 'overtime_enabled') this.overtimeEnabled = true, @JsonKey(name: 'monthly_salary') this.monthlySalary, @JsonKey(name: 'device_employee_code') this.deviceEmployeeCode, @JsonKey(includeFromJson: false, includeToJson: false) final  Map<int, double> hourlyRates = const {}}): _hourlyRates = hourlyRates;
   factory _OperatorEntity.fromJson(Map<String, dynamic> json) => _$OperatorEntityFromJson(json);
 
 @override final  int id;
@@ -231,6 +235,16 @@ class _OperatorEntity implements OperatorEntity {
 @override@JsonKey(name: 'work_group_id') final  int? workGroupId;
 @override@JsonKey(name: 'default_wage_role_id') final  int? defaultWageRoleId;
 @override@JsonKey(name: 'overtime_enabled') final  bool overtimeEnabled;
+// Rate fields — stored directly on operators for salary, and via operator_role_rates for hourly
+@override@JsonKey(name: 'monthly_salary') final  double? monthlySalary;
+@override@JsonKey(name: 'device_employee_code') final  String? deviceEmployeeCode;
+ final  Map<int, double> _hourlyRates;
+@override@JsonKey(includeFromJson: false, includeToJson: false) Map<int, double> get hourlyRates {
+  if (_hourlyRates is EqualUnmodifiableMapView) return _hourlyRates;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_hourlyRates);
+}
+
 
 /// Create a copy of OperatorEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -245,16 +259,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OperatorEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.cnic, cnic) || other.cnic == cnic)&&(identical(other.joiningDate, joiningDate) || other.joiningDate == joiningDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.workGroupId, workGroupId) || other.workGroupId == workGroupId)&&(identical(other.defaultWageRoleId, defaultWageRoleId) || other.defaultWageRoleId == defaultWageRoleId)&&(identical(other.overtimeEnabled, overtimeEnabled) || other.overtimeEnabled == overtimeEnabled));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OperatorEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.cnic, cnic) || other.cnic == cnic)&&(identical(other.joiningDate, joiningDate) || other.joiningDate == joiningDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.workGroupId, workGroupId) || other.workGroupId == workGroupId)&&(identical(other.defaultWageRoleId, defaultWageRoleId) || other.defaultWageRoleId == defaultWageRoleId)&&(identical(other.overtimeEnabled, overtimeEnabled) || other.overtimeEnabled == overtimeEnabled)&&(identical(other.monthlySalary, monthlySalary) || other.monthlySalary == monthlySalary)&&(identical(other.deviceEmployeeCode, deviceEmployeeCode) || other.deviceEmployeeCode == deviceEmployeeCode)&&const DeepCollectionEquality().equals(other._hourlyRates, _hourlyRates));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,phone,cnic,joiningDate,isActive,createdAt,workGroupId,defaultWageRoleId,overtimeEnabled);
+int get hashCode => Object.hash(runtimeType,id,name,phone,cnic,joiningDate,isActive,createdAt,workGroupId,defaultWageRoleId,overtimeEnabled,monthlySalary,deviceEmployeeCode,const DeepCollectionEquality().hash(_hourlyRates));
 
 @override
 String toString() {
-  return 'OperatorEntity(id: $id, name: $name, phone: $phone, cnic: $cnic, joiningDate: $joiningDate, isActive: $isActive, createdAt: $createdAt, workGroupId: $workGroupId, defaultWageRoleId: $defaultWageRoleId, overtimeEnabled: $overtimeEnabled)';
+  return 'OperatorEntity(id: $id, name: $name, phone: $phone, cnic: $cnic, joiningDate: $joiningDate, isActive: $isActive, createdAt: $createdAt, workGroupId: $workGroupId, defaultWageRoleId: $defaultWageRoleId, overtimeEnabled: $overtimeEnabled, monthlySalary: $monthlySalary, deviceEmployeeCode: $deviceEmployeeCode, hourlyRates: $hourlyRates)';
 }
 
 
@@ -265,7 +279,7 @@ abstract mixin class _$OperatorEntityCopyWith<$Res> implements $OperatorEntityCo
   factory _$OperatorEntityCopyWith(_OperatorEntity value, $Res Function(_OperatorEntity) _then) = __$OperatorEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String phone, String? cnic,@JsonKey(name: 'joining_date') DateTime joiningDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'work_group_id') int? workGroupId,@JsonKey(name: 'default_wage_role_id') int? defaultWageRoleId,@JsonKey(name: 'overtime_enabled') bool overtimeEnabled
+ int id, String name, String phone, String? cnic,@JsonKey(name: 'joining_date') DateTime joiningDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'work_group_id') int? workGroupId,@JsonKey(name: 'default_wage_role_id') int? defaultWageRoleId,@JsonKey(name: 'overtime_enabled') bool overtimeEnabled,@JsonKey(name: 'monthly_salary') double? monthlySalary,@JsonKey(name: 'device_employee_code') String? deviceEmployeeCode,@JsonKey(includeFromJson: false, includeToJson: false) Map<int, double> hourlyRates
 });
 
 
@@ -282,7 +296,7 @@ class __$OperatorEntityCopyWithImpl<$Res>
 
 /// Create a copy of OperatorEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? phone = null,Object? cnic = freezed,Object? joiningDate = null,Object? isActive = null,Object? createdAt = freezed,Object? workGroupId = freezed,Object? defaultWageRoleId = freezed,Object? overtimeEnabled = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? phone = null,Object? cnic = freezed,Object? joiningDate = null,Object? isActive = null,Object? createdAt = freezed,Object? workGroupId = freezed,Object? defaultWageRoleId = freezed,Object? overtimeEnabled = null,Object? monthlySalary = freezed,Object? deviceEmployeeCode = freezed,Object? hourlyRates = null,}) {
   return _then(_OperatorEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -294,7 +308,10 @@ as bool,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore:
 as DateTime?,workGroupId: freezed == workGroupId ? _self.workGroupId : workGroupId // ignore: cast_nullable_to_non_nullable
 as int?,defaultWageRoleId: freezed == defaultWageRoleId ? _self.defaultWageRoleId : defaultWageRoleId // ignore: cast_nullable_to_non_nullable
 as int?,overtimeEnabled: null == overtimeEnabled ? _self.overtimeEnabled : overtimeEnabled // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,monthlySalary: freezed == monthlySalary ? _self.monthlySalary : monthlySalary // ignore: cast_nullable_to_non_nullable
+as double?,deviceEmployeeCode: freezed == deviceEmployeeCode ? _self.deviceEmployeeCode : deviceEmployeeCode // ignore: cast_nullable_to_non_nullable
+as String?,hourlyRates: null == hourlyRates ? _self._hourlyRates : hourlyRates // ignore: cast_nullable_to_non_nullable
+as Map<int, double>,
   ));
 }
 

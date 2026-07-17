@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AttendanceAdjustmentDraft {
 
- int get operatorId; DateTime get date; DateTime? get adjustedOutAt; int? get adjustedOtMinutes; int? get shiftRoleId; int? get otRoleId; String get reason;
+ int get operatorId; DateTime get date; DateTime? get adjustedInAt; DateTime? get adjustedOutAt; int? get adjustedOtMinutes; int? get shiftRoleId; int? get otRoleId; String get reason;
 /// Create a copy of AttendanceAdjustmentDraft
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $AttendanceAdjustmentDraftCopyWith<AttendanceAdjustmentDraft> get copyWith => _$
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AttendanceAdjustmentDraft&&(identical(other.operatorId, operatorId) || other.operatorId == operatorId)&&(identical(other.date, date) || other.date == date)&&(identical(other.adjustedOutAt, adjustedOutAt) || other.adjustedOutAt == adjustedOutAt)&&(identical(other.adjustedOtMinutes, adjustedOtMinutes) || other.adjustedOtMinutes == adjustedOtMinutes)&&(identical(other.shiftRoleId, shiftRoleId) || other.shiftRoleId == shiftRoleId)&&(identical(other.otRoleId, otRoleId) || other.otRoleId == otRoleId)&&(identical(other.reason, reason) || other.reason == reason));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AttendanceAdjustmentDraft&&(identical(other.operatorId, operatorId) || other.operatorId == operatorId)&&(identical(other.date, date) || other.date == date)&&(identical(other.adjustedInAt, adjustedInAt) || other.adjustedInAt == adjustedInAt)&&(identical(other.adjustedOutAt, adjustedOutAt) || other.adjustedOutAt == adjustedOutAt)&&(identical(other.adjustedOtMinutes, adjustedOtMinutes) || other.adjustedOtMinutes == adjustedOtMinutes)&&(identical(other.shiftRoleId, shiftRoleId) || other.shiftRoleId == shiftRoleId)&&(identical(other.otRoleId, otRoleId) || other.otRoleId == otRoleId)&&(identical(other.reason, reason) || other.reason == reason));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,operatorId,date,adjustedOutAt,adjustedOtMinutes,shiftRoleId,otRoleId,reason);
+int get hashCode => Object.hash(runtimeType,operatorId,date,adjustedInAt,adjustedOutAt,adjustedOtMinutes,shiftRoleId,otRoleId,reason);
 
 @override
 String toString() {
-  return 'AttendanceAdjustmentDraft(operatorId: $operatorId, date: $date, adjustedOutAt: $adjustedOutAt, adjustedOtMinutes: $adjustedOtMinutes, shiftRoleId: $shiftRoleId, otRoleId: $otRoleId, reason: $reason)';
+  return 'AttendanceAdjustmentDraft(operatorId: $operatorId, date: $date, adjustedInAt: $adjustedInAt, adjustedOutAt: $adjustedOutAt, adjustedOtMinutes: $adjustedOtMinutes, shiftRoleId: $shiftRoleId, otRoleId: $otRoleId, reason: $reason)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $AttendanceAdjustmentDraftCopyWith<$Res>  {
   factory $AttendanceAdjustmentDraftCopyWith(AttendanceAdjustmentDraft value, $Res Function(AttendanceAdjustmentDraft) _then) = _$AttendanceAdjustmentDraftCopyWithImpl;
 @useResult
 $Res call({
- int operatorId, DateTime date, DateTime? adjustedOutAt, int? adjustedOtMinutes, int? shiftRoleId, int? otRoleId, String reason
+ int operatorId, DateTime date, DateTime? adjustedInAt, DateTime? adjustedOutAt, int? adjustedOtMinutes, int? shiftRoleId, int? otRoleId, String reason
 });
 
 
@@ -62,11 +62,12 @@ class _$AttendanceAdjustmentDraftCopyWithImpl<$Res>
 
 /// Create a copy of AttendanceAdjustmentDraft
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? operatorId = null,Object? date = null,Object? adjustedOutAt = freezed,Object? adjustedOtMinutes = freezed,Object? shiftRoleId = freezed,Object? otRoleId = freezed,Object? reason = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? operatorId = null,Object? date = null,Object? adjustedInAt = freezed,Object? adjustedOutAt = freezed,Object? adjustedOtMinutes = freezed,Object? shiftRoleId = freezed,Object? otRoleId = freezed,Object? reason = null,}) {
   return _then(_self.copyWith(
 operatorId: null == operatorId ? _self.operatorId : operatorId // ignore: cast_nullable_to_non_nullable
 as int,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as DateTime,adjustedOutAt: freezed == adjustedOutAt ? _self.adjustedOutAt : adjustedOutAt // ignore: cast_nullable_to_non_nullable
+as DateTime,adjustedInAt: freezed == adjustedInAt ? _self.adjustedInAt : adjustedInAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,adjustedOutAt: freezed == adjustedOutAt ? _self.adjustedOutAt : adjustedOutAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,adjustedOtMinutes: freezed == adjustedOtMinutes ? _self.adjustedOtMinutes : adjustedOtMinutes // ignore: cast_nullable_to_non_nullable
 as int?,shiftRoleId: freezed == shiftRoleId ? _self.shiftRoleId : shiftRoleId // ignore: cast_nullable_to_non_nullable
 as int?,otRoleId: freezed == otRoleId ? _self.otRoleId : otRoleId // ignore: cast_nullable_to_non_nullable
@@ -156,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int operatorId,  DateTime date,  DateTime? adjustedOutAt,  int? adjustedOtMinutes,  int? shiftRoleId,  int? otRoleId,  String reason)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int operatorId,  DateTime date,  DateTime? adjustedInAt,  DateTime? adjustedOutAt,  int? adjustedOtMinutes,  int? shiftRoleId,  int? otRoleId,  String reason)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AttendanceAdjustmentDraft() when $default != null:
-return $default(_that.operatorId,_that.date,_that.adjustedOutAt,_that.adjustedOtMinutes,_that.shiftRoleId,_that.otRoleId,_that.reason);case _:
+return $default(_that.operatorId,_that.date,_that.adjustedInAt,_that.adjustedOutAt,_that.adjustedOtMinutes,_that.shiftRoleId,_that.otRoleId,_that.reason);case _:
   return orElse();
 
 }
@@ -177,10 +178,10 @@ return $default(_that.operatorId,_that.date,_that.adjustedOutAt,_that.adjustedOt
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int operatorId,  DateTime date,  DateTime? adjustedOutAt,  int? adjustedOtMinutes,  int? shiftRoleId,  int? otRoleId,  String reason)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int operatorId,  DateTime date,  DateTime? adjustedInAt,  DateTime? adjustedOutAt,  int? adjustedOtMinutes,  int? shiftRoleId,  int? otRoleId,  String reason)  $default,) {final _that = this;
 switch (_that) {
 case _AttendanceAdjustmentDraft():
-return $default(_that.operatorId,_that.date,_that.adjustedOutAt,_that.adjustedOtMinutes,_that.shiftRoleId,_that.otRoleId,_that.reason);case _:
+return $default(_that.operatorId,_that.date,_that.adjustedInAt,_that.adjustedOutAt,_that.adjustedOtMinutes,_that.shiftRoleId,_that.otRoleId,_that.reason);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +198,10 @@ return $default(_that.operatorId,_that.date,_that.adjustedOutAt,_that.adjustedOt
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int operatorId,  DateTime date,  DateTime? adjustedOutAt,  int? adjustedOtMinutes,  int? shiftRoleId,  int? otRoleId,  String reason)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int operatorId,  DateTime date,  DateTime? adjustedInAt,  DateTime? adjustedOutAt,  int? adjustedOtMinutes,  int? shiftRoleId,  int? otRoleId,  String reason)?  $default,) {final _that = this;
 switch (_that) {
 case _AttendanceAdjustmentDraft() when $default != null:
-return $default(_that.operatorId,_that.date,_that.adjustedOutAt,_that.adjustedOtMinutes,_that.shiftRoleId,_that.otRoleId,_that.reason);case _:
+return $default(_that.operatorId,_that.date,_that.adjustedInAt,_that.adjustedOutAt,_that.adjustedOtMinutes,_that.shiftRoleId,_that.otRoleId,_that.reason);case _:
   return null;
 
 }
@@ -212,11 +213,12 @@ return $default(_that.operatorId,_that.date,_that.adjustedOutAt,_that.adjustedOt
 
 
 class _AttendanceAdjustmentDraft implements AttendanceAdjustmentDraft {
-  const _AttendanceAdjustmentDraft({required this.operatorId, required this.date, this.adjustedOutAt, this.adjustedOtMinutes, this.shiftRoleId, this.otRoleId, required this.reason});
+  const _AttendanceAdjustmentDraft({required this.operatorId, required this.date, this.adjustedInAt, this.adjustedOutAt, this.adjustedOtMinutes, this.shiftRoleId, this.otRoleId, required this.reason});
   
 
 @override final  int operatorId;
 @override final  DateTime date;
+@override final  DateTime? adjustedInAt;
 @override final  DateTime? adjustedOutAt;
 @override final  int? adjustedOtMinutes;
 @override final  int? shiftRoleId;
@@ -233,16 +235,16 @@ _$AttendanceAdjustmentDraftCopyWith<_AttendanceAdjustmentDraft> get copyWith => 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AttendanceAdjustmentDraft&&(identical(other.operatorId, operatorId) || other.operatorId == operatorId)&&(identical(other.date, date) || other.date == date)&&(identical(other.adjustedOutAt, adjustedOutAt) || other.adjustedOutAt == adjustedOutAt)&&(identical(other.adjustedOtMinutes, adjustedOtMinutes) || other.adjustedOtMinutes == adjustedOtMinutes)&&(identical(other.shiftRoleId, shiftRoleId) || other.shiftRoleId == shiftRoleId)&&(identical(other.otRoleId, otRoleId) || other.otRoleId == otRoleId)&&(identical(other.reason, reason) || other.reason == reason));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AttendanceAdjustmentDraft&&(identical(other.operatorId, operatorId) || other.operatorId == operatorId)&&(identical(other.date, date) || other.date == date)&&(identical(other.adjustedInAt, adjustedInAt) || other.adjustedInAt == adjustedInAt)&&(identical(other.adjustedOutAt, adjustedOutAt) || other.adjustedOutAt == adjustedOutAt)&&(identical(other.adjustedOtMinutes, adjustedOtMinutes) || other.adjustedOtMinutes == adjustedOtMinutes)&&(identical(other.shiftRoleId, shiftRoleId) || other.shiftRoleId == shiftRoleId)&&(identical(other.otRoleId, otRoleId) || other.otRoleId == otRoleId)&&(identical(other.reason, reason) || other.reason == reason));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,operatorId,date,adjustedOutAt,adjustedOtMinutes,shiftRoleId,otRoleId,reason);
+int get hashCode => Object.hash(runtimeType,operatorId,date,adjustedInAt,adjustedOutAt,adjustedOtMinutes,shiftRoleId,otRoleId,reason);
 
 @override
 String toString() {
-  return 'AttendanceAdjustmentDraft(operatorId: $operatorId, date: $date, adjustedOutAt: $adjustedOutAt, adjustedOtMinutes: $adjustedOtMinutes, shiftRoleId: $shiftRoleId, otRoleId: $otRoleId, reason: $reason)';
+  return 'AttendanceAdjustmentDraft(operatorId: $operatorId, date: $date, adjustedInAt: $adjustedInAt, adjustedOutAt: $adjustedOutAt, adjustedOtMinutes: $adjustedOtMinutes, shiftRoleId: $shiftRoleId, otRoleId: $otRoleId, reason: $reason)';
 }
 
 
@@ -253,7 +255,7 @@ abstract mixin class _$AttendanceAdjustmentDraftCopyWith<$Res> implements $Atten
   factory _$AttendanceAdjustmentDraftCopyWith(_AttendanceAdjustmentDraft value, $Res Function(_AttendanceAdjustmentDraft) _then) = __$AttendanceAdjustmentDraftCopyWithImpl;
 @override @useResult
 $Res call({
- int operatorId, DateTime date, DateTime? adjustedOutAt, int? adjustedOtMinutes, int? shiftRoleId, int? otRoleId, String reason
+ int operatorId, DateTime date, DateTime? adjustedInAt, DateTime? adjustedOutAt, int? adjustedOtMinutes, int? shiftRoleId, int? otRoleId, String reason
 });
 
 
@@ -270,11 +272,12 @@ class __$AttendanceAdjustmentDraftCopyWithImpl<$Res>
 
 /// Create a copy of AttendanceAdjustmentDraft
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? operatorId = null,Object? date = null,Object? adjustedOutAt = freezed,Object? adjustedOtMinutes = freezed,Object? shiftRoleId = freezed,Object? otRoleId = freezed,Object? reason = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? operatorId = null,Object? date = null,Object? adjustedInAt = freezed,Object? adjustedOutAt = freezed,Object? adjustedOtMinutes = freezed,Object? shiftRoleId = freezed,Object? otRoleId = freezed,Object? reason = null,}) {
   return _then(_AttendanceAdjustmentDraft(
 operatorId: null == operatorId ? _self.operatorId : operatorId // ignore: cast_nullable_to_non_nullable
 as int,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as DateTime,adjustedOutAt: freezed == adjustedOutAt ? _self.adjustedOutAt : adjustedOutAt // ignore: cast_nullable_to_non_nullable
+as DateTime,adjustedInAt: freezed == adjustedInAt ? _self.adjustedInAt : adjustedInAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,adjustedOutAt: freezed == adjustedOutAt ? _self.adjustedOutAt : adjustedOutAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,adjustedOtMinutes: freezed == adjustedOtMinutes ? _self.adjustedOtMinutes : adjustedOtMinutes // ignore: cast_nullable_to_non_nullable
 as int?,shiftRoleId: freezed == shiftRoleId ? _self.shiftRoleId : shiftRoleId // ignore: cast_nullable_to_non_nullable
 as int?,otRoleId: freezed == otRoleId ? _self.otRoleId : otRoleId // ignore: cast_nullable_to_non_nullable

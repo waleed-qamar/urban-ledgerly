@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ledgerly/features/attendance_review/presentation/providers/attendance_review_providers.dart';
 
 import '../../../domain/entities/attendance_day_row.dart';
 import '../../providers/attendance_edit_state_provider.dart';
@@ -18,7 +19,18 @@ class EditableDurationCell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final draft = ref.watch(attendanceEditDraftsProvider(operatorId))[row.date];
     final isDirty = draft?.adjustedOtMinutes != null;
-    final effectiveOt = draft?.adjustedOtMinutes ?? row.otMinutes;
+
+    final livePay = ref.watch(liveAttendanceCalculationProvider(operatorId, row));
+
+    int effectiveOt = row.otMinutes;
+    bool isComputed = false;
+
+    if (draft?.adjustedOtMinutes != null) {
+      effectiveOt = draft!.adjustedOtMinutes!;
+    } else {
+      effectiveOt = (livePay.otHrs * 60).round();
+      isComputed = (draft?.adjustedInAt != null || draft?.adjustedOutAt != null);
+    }
 
     final hours = effectiveOt ~/ 60;
     final mins = effectiveOt % 60;
@@ -64,11 +76,18 @@ class EditableDurationCell extends ConsumerWidget {
       },
       child: Container(
         padding: const EdgeInsets.all(8),
-        color: isDirty ? Theme.of(context).colorScheme.tertiaryContainer : null,
+        color: (isDirty || isComputed)
+            ? Theme.of(context).colorScheme.tertiaryContainer.withValues(
+                alpha: isComputed ? 0.4 : 1.0,
+              )
+            : null,
         child: Text(
           durationStr,
           style: TextStyle(
-            fontWeight: isDirty ? FontWeight.bold : FontWeight.normal,
+            fontWeight: (isDirty || isComputed)
+                ? FontWeight.bold
+                : FontWeight.normal,
+            fontStyle: isComputed ? FontStyle.italic : FontStyle.normal,
           ),
         ),
       ),

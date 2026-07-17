@@ -7,22 +7,22 @@ part 'attendance_day_row_model.g.dart';
 @freezed
 abstract class AttendanceDayRowModel with _$AttendanceDayRowModel {
   const factory AttendanceDayRowModel({
-    required int operatorId,
-    required DateTime attendanceDate,
-    DateTime? inAt,
-    DateTime? outAt,
-    int? shiftRoleId,
-    String? shiftRoleName,
-    int? otRoleId,
-    String? otRoleName,
-    int? shiftMinutes,
-    int? otMinutes,
-    bool? isAbsent,
-    double? salaryAmount,
-    double? overtimeAmount,
-    double? takeHomeAmount,
-    String? calculationStatus,
-    String? existingAdjustmentReason,
+    @JsonKey(name: 'operator_id') required int operatorId,
+    @JsonKey(name: 'attendance_date') required DateTime attendanceDate,
+    @JsonKey(name: 'in_at') DateTime? inAt,
+    @JsonKey(name: 'out_at') DateTime? outAt,
+    @JsonKey(name: 'shift_role_id') int? shiftRoleId,
+    @JsonKey(name: 'shift_role_name') String? shiftRoleName,
+    @JsonKey(name: 'ot_role_id') int? otRoleId,
+    @JsonKey(name: 'ot_role_name') String? otRoleName,
+    @JsonKey(name: 'shift_minutes') int? shiftMinutes,
+    @JsonKey(name: 'ot_minutes') int? otMinutes,
+    @JsonKey(name: 'is_absent') bool? isAbsent,
+    @JsonKey(name: 'salary_amount') double? salaryAmount,
+    @JsonKey(name: 'overtime_amount') double? overtimeAmount,
+    @JsonKey(name: 'take_home_amount') double? takeHomeAmount,
+    @JsonKey(name: 'calculation_status') String? calculationStatus,
+    @JsonKey(name: 'existing_adjustment_reason') String? existingAdjustmentReason,
   }) = _AttendanceDayRowModel;
 
   factory AttendanceDayRowModel.fromJson(Map<String, dynamic> json) =>
@@ -53,6 +53,8 @@ abstract class AttendanceDayRowModel with _$AttendanceDayRowModel {
 
   CalculationStatus _parseStatus(String? status) {
     switch (status) {
+      case 'calculated':
+        return CalculationStatus.draft;
       case 'estimated':
         return CalculationStatus.estimated;
       case 'manager_approved':

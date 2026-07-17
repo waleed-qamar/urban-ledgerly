@@ -64,7 +64,7 @@ final class AttendanceEditDraftsProvider
 }
 
 String _$attendanceEditDraftsHash() =>
-    r'97e417dd653f6c8286993aecd89bf4c934c35abb';
+    r'8bce7eff0f9595bdd2f39b2e6a275436c798cc32';
 
 final class AttendanceEditDraftsFamily extends $Family
     with
@@ -246,7 +246,7 @@ final class SaveAttendanceAdjustmentsProvider
 }
 
 String _$saveAttendanceAdjustmentsHash() =>
-    r'9b31ee0a6be55cf44e356bf0d194502e372c8984';
+    r'abb62e36b792e8d4fa68fc283c81f0efe08549bf';
 
 abstract class _$SaveAttendanceAdjustments extends $AsyncNotifier<void> {
   FutureOr<void> build();

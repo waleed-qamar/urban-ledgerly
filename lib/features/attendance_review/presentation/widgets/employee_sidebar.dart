@@ -3,71 +3,113 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/attendance_review_providers.dart';
 import '../providers/attendance_edit_state_provider.dart';
 
-class EmployeeSidebar extends ConsumerWidget {
-  const EmployeeSidebar({Key? key}) : super(key: key);
+class EmployeeSidebar extends ConsumerStatefulWidget {
+  const EmployeeSidebar({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EmployeeSidebar> createState() => _EmployeeSidebarState();
+}
+
+class _EmployeeSidebarState extends ConsumerState<EmployeeSidebar> {
+  String _search = '';
+
+  @override
+  Widget build(BuildContext context) {
     final filter = ref.watch(attendanceReviewFilterProvider);
-    
-    // In a real app, this would fetch from a provider that returns the list 
-    // of operators, potentially filtered by search/workgroup, and indicating 
-    // if they have 'needsReview' status for the current date range.
-    // We'll mock this for now.
-    final mockOperators = [
-      {'id': 1, 'name': 'John Doe', 'needsReview': true},
-      {'id': 2, 'name': 'Jane Smith', 'needsReview': false},
-      {'id': 3, 'name': 'Mike Johnson', 'needsReview': false},
-    ];
+    final operatorsAsync = ref.watch(attendanceOperatorsProvider);
 
     return Container(
-      width: 220,
+      width: 230,
       decoration: BoxDecoration(
         border: Border(right: BorderSide(color: Colors.grey.shade300)),
       ),
       child: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
             child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search employee...',
+              decoration: const InputDecoration(
+                hintText: 'Search operator...',
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
+              onChanged: (v) => setState(() => _search = v.toLowerCase()),
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: mockOperators.length,
-              itemBuilder: (context, index) {
-                final op = mockOperators[index];
-                final id = op['id'] as int;
-                final isSelected = filter.operatorId == id;
-                final needsReview = op['needsReview'] as bool;
+            child: operatorsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Text('Error loading operators: $err',
+                      style: const TextStyle(color: Colors.red)),
+                ),
+              ),
+              data: (operators) {
+                final filtered = _search.isEmpty
+                    ? operators
+                    : operators
+                        .where((o) => o.name.toLowerCase().contains(_search))
+                        .toList();
 
-                return ListTile(
-                  title: Text(op['name'] as String),
-                  selected: isSelected,
-                  selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
-                  trailing: needsReview 
-                      ? const Icon(Icons.warning, color: Colors.orange, size: 16)
-                      : null,
-                  onTap: () async {
-                    if (isSelected) return;
-                    
-                    // Check for unsaved drafts if switching away from current
-                    if (filter.operatorId != null) {
-                      final drafts = ref.read(attendanceEditDraftsProvider(filter.operatorId!));
-                      if (drafts.isNotEmpty) {
-                        final discard = await _showDiscardDialog(context);
-                        if (discard != true) return;
-                        ref.read(attendanceEditDraftsProvider(filter.operatorId!).notifier).clearAll();
-                      }
-                    }
-                    
-                    ref.read(attendanceReviewFilterProvider.notifier).selectOperator(id);
+                if (filtered.isEmpty) {
+                  return const Center(child: Text('No operators found.'));
+                }
+
+                return ListView.builder(
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final op = filtered[index];
+                    final isSelected = filter.operatorId == op.id;
+                    final draftsForOp =
+                        ref.watch(attendanceEditDraftsProvider(op.id));
+                    final hasDraft = draftsForOp.isNotEmpty;
+
+                    return ListTile(
+                      dense: true,
+                      title: Text(
+                        op.name,
+                        style: TextStyle(
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedTileColor:
+                          Theme.of(context).colorScheme.primaryContainer,
+                      trailing: hasDraft
+                          ? const Tooltip(
+                              message: 'Unsaved changes',
+                              child: Icon(Icons.edit,
+                                  color: Colors.orange, size: 16),
+                            )
+                          : null,
+                      onTap: () async {
+                        if (isSelected) return;
+
+                        // Warn about unsaved drafts before switching
+                        if (filter.operatorId != null) {
+                          final drafts = ref.read(
+                              attendanceEditDraftsProvider(filter.operatorId!));
+                          if (drafts.isNotEmpty) {
+                            final discard = await _showDiscardDialog(context);
+                            if (discard != true) return;
+                            ref
+                                .read(attendanceEditDraftsProvider(
+                                        filter.operatorId!)
+                                    .notifier)
+                                .clearAll();
+                          }
+                        }
+
+                        ref
+                            .read(attendanceReviewFilterProvider.notifier)
+                            .selectOperator(op.id);
+                      },
+                    );
                   },
                 );
               },
@@ -91,7 +133,8 @@ class EmployeeSidebar extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Discard', style: TextStyle(color: Colors.red)),
+            child:
+                const Text('Discard', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

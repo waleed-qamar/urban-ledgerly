@@ -33,4 +33,17 @@ abstract class AttendanceReviewRepository {
     required DateTime from,
     required DateTime to,
   });
+
+  Future<Either<AttendanceReviewFailure, Unit>> recalculate({
+    required DateTime from,
+    required DateTime to,
+    int? operatorId,
+  });
+
+  /// Locks all calculated/estimated rows in the period — prevents future drift.
+  Future<Either<AttendanceReviewFailure, Unit>> finalizeWeek({
+    required DateTime from,
+    required DateTime to,
+  });
 }
+

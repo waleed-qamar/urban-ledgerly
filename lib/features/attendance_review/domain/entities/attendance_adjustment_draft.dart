@@ -7,6 +7,7 @@ abstract class AttendanceAdjustmentDraft with _$AttendanceAdjustmentDraft {
   const factory AttendanceAdjustmentDraft({
     required int operatorId,
     required DateTime date,
+    DateTime? adjustedInAt,
     DateTime? adjustedOutAt,
     int? adjustedOtMinutes,
     int? shiftRoleId,

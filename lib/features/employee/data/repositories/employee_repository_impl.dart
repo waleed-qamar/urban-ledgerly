@@ -12,8 +12,11 @@ class EmployeeRepositoryImpl implements EmployeeRepository {
   // Machine Operators (Kept Intact)
   // ----------------------------------------------------
   @override
-  Future<void> addEmployee(OperatorEntity employee) =>
+  Future<int> addEmployee(OperatorEntity employee) =>
       _dataSource.addOperator(employee);
+
+  // setOperatorWage removed — rate fields are columns on operators.
+  // DB trigger sync_operator_rate_history archives history automatically.
 
   @override
   Future<void> deleteEmployee(int employeeId) =>

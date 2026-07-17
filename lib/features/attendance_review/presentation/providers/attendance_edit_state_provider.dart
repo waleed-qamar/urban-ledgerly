@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/attendance_adjustment_draft.dart';
-import '../../domain/failures/attendance_review_failure.dart';
 import 'attendance_review_providers.dart';
 
 part 'attendance_edit_state_provider.g.dart';
@@ -21,6 +20,18 @@ class AttendanceEditDrafts extends _$AttendanceEditDrafts {
       time.minute,
     );
     state = {...state, date: draft.copyWith(adjustedOutAt: adjustedOutAt)};
+  }
+
+  void setInTime(DateTime date, TimeOfDay time) {
+    final draft = state[date] ?? _emptyDraft(date);
+    final adjustedInAt = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+    state = {...state, date: draft.copyWith(adjustedInAt: adjustedInAt)};
   }
 
   void setOtMinutes(DateTime date, int minutes) {
@@ -83,27 +94,39 @@ class SaveAttendanceAdjustments extends _$SaveAttendanceAdjustments {
     final drafts = ref
         .read(attendanceEditDraftsProvider(operatorId))
         .values
+        .map((d) => d.reason.trim().isEmpty ? d.copyWith(reason: 'manager updated it') : d)
         .toList();
 
-    // guard: every draft MUST have a non-empty reason
-    if (drafts.any((d) => d.reason.trim().isEmpty)) {
-      state = AsyncError(
-        const AttendanceReviewFailure.missingReason(),
-        StackTrace.current,
+    state = const AsyncLoading();
+    final repo = ref.read(attendanceReviewRepositoryProvider);
+
+    // Step 1: persist adjustments
+    final saveResult = await repo.saveAdjustments(drafts);
+    if (saveResult.isLeft()) {
+      state = saveResult.fold(
+        (f) => AsyncError(f, StackTrace.current),
+        (_) => const AsyncData(null),
       );
       return;
     }
 
-    state = const AsyncLoading();
-    final repo = ref.read(attendanceReviewRepositoryProvider);
-    final result = await repo.saveAdjustments(drafts);
+    // Step 2: auto-recalculate — single source of truth
+    final filter = ref.read(attendanceReviewFilterProvider);
+    final recalcResult = await repo.recalculate(
+      from: filter.from,
+      to: filter.to,
+      operatorId: operatorId,
+    );
 
-    state = result.fold((f) => AsyncError(f, StackTrace.current), (_) {
-      ref.read(attendanceEditDraftsProvider(operatorId).notifier).clearAll();
-      // Invalidate day rows and summary to refetch
-      ref.invalidate(attendanceDayRowsProvider);
-      ref.invalidate(payrollPeriodSummaryProvider);
-      return const AsyncData(null);
-    });
+    state = recalcResult.fold(
+      (f) => AsyncError(f, StackTrace.current),
+      (_) {
+        ref.read(attendanceEditDraftsProvider(operatorId).notifier).clearAll();
+        // Invalidate so UI reflects the recalculated data
+        ref.invalidate(attendanceDayRowsProvider);
+        ref.invalidate(payrollPeriodSummaryProvider);
+        return const AsyncData(null);
+      },
+    );
   }
 }

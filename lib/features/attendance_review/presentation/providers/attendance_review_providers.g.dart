@@ -150,6 +150,48 @@ final class AttendanceReviewRepositoryProvider
 String _$attendanceReviewRepositoryHash() =>
     r'9899a742c0afe5a09b3f16b3ef71522efa55375a';
 
+@ProviderFor(attendanceOperators)
+const attendanceOperatorsProvider = AttendanceOperatorsProvider._();
+
+final class AttendanceOperatorsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<OperatorEntity>>,
+          List<OperatorEntity>,
+          FutureOr<List<OperatorEntity>>
+        >
+    with
+        $FutureModifier<List<OperatorEntity>>,
+        $FutureProvider<List<OperatorEntity>> {
+  const AttendanceOperatorsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'attendanceOperatorsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$attendanceOperatorsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<OperatorEntity>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<OperatorEntity>> create(Ref ref) {
+    return attendanceOperators(ref);
+  }
+}
+
+String _$attendanceOperatorsHash() =>
+    r'f642fe91163ff585970b8231cc31eb20da4c364c';
+
 @ProviderFor(AttendanceReviewFilter)
 const attendanceReviewFilterProvider = AttendanceReviewFilterProvider._();
 
@@ -162,7 +204,7 @@ final class AttendanceReviewFilterProvider
         argument: null,
         retry: null,
         name: r'attendanceReviewFilterProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -184,7 +226,7 @@ final class AttendanceReviewFilterProvider
 }
 
 String _$attendanceReviewFilterHash() =>
-    r'3bf5ac7ee8bc6e6372f512f96948bb2ca342857b';
+    r'f2288e1a0d4d9231e67f58f60df94b2d91c34b7a';
 
 abstract class _$AttendanceReviewFilter
     extends $Notifier<AttendanceReviewFilterState> {
@@ -563,4 +605,134 @@ final class PayrollPeriodSummaryFamily extends $Family
 
   @override
   String toString() => r'payrollPeriodSummaryProvider';
+}
+
+@ProviderFor(FinalizeAttendancePeriod)
+const finalizeAttendancePeriodProvider = FinalizeAttendancePeriodProvider._();
+
+final class FinalizeAttendancePeriodProvider
+    extends $AsyncNotifierProvider<FinalizeAttendancePeriod, void> {
+  const FinalizeAttendancePeriodProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'finalizeAttendancePeriodProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$finalizeAttendancePeriodHash();
+
+  @$internal
+  @override
+  FinalizeAttendancePeriod create() => FinalizeAttendancePeriod();
+}
+
+String _$finalizeAttendancePeriodHash() =>
+    r'7d7eaa0c85e299535fd5992030f0ceb9d36a799a';
+
+abstract class _$FinalizeAttendancePeriod extends $AsyncNotifier<void> {
+  FutureOr<void> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    build();
+    final ref = this.ref as $Ref<AsyncValue<void>, void>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, void>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, null);
+  }
+}
+
+@ProviderFor(liveAttendanceCalculation)
+const liveAttendanceCalculationProvider = LiveAttendanceCalculationFamily._();
+
+final class LiveAttendanceCalculationProvider
+    extends $FunctionalProvider<CalculatedPay, CalculatedPay, CalculatedPay>
+    with $Provider<CalculatedPay> {
+  const LiveAttendanceCalculationProvider._({
+    required LiveAttendanceCalculationFamily super.from,
+    required (int, AttendanceDayRow) super.argument,
+  }) : super(
+         retry: null,
+         name: r'liveAttendanceCalculationProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$liveAttendanceCalculationHash();
+
+  @override
+  String toString() {
+    return r'liveAttendanceCalculationProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<CalculatedPay> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  CalculatedPay create(Ref ref) {
+    final argument = this.argument as (int, AttendanceDayRow);
+    return liveAttendanceCalculation(ref, argument.$1, argument.$2);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CalculatedPay value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CalculatedPay>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is LiveAttendanceCalculationProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$liveAttendanceCalculationHash() =>
+    r'98e9eac083748a7c8e3eafc923cbb2a838ab918e';
+
+final class LiveAttendanceCalculationFamily extends $Family
+    with $FunctionalFamilyOverride<CalculatedPay, (int, AttendanceDayRow)> {
+  const LiveAttendanceCalculationFamily._()
+    : super(
+        retry: null,
+        name: r'liveAttendanceCalculationProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  LiveAttendanceCalculationProvider call(
+    int operatorId,
+    AttendanceDayRow row,
+  ) => LiveAttendanceCalculationProvider._(
+    argument: (operatorId, row),
+    from: this,
+  );
+
+  @override
+  String toString() => r'liveAttendanceCalculationProvider';
 }

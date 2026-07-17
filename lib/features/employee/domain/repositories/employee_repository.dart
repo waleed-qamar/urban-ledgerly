@@ -4,9 +4,11 @@ import 'package:ledgerly/features/employee/domain/entities/operator_entity.dart'
 abstract class EmployeeRepository {
   // Existing machine operator methods (kept intact)
   Future<List<OperatorEntity>> getEmployees();
-  Future<void> addEmployee(OperatorEntity employee);
+  Future<int> addEmployee(OperatorEntity employee);
   Future<void> updateEmployee(OperatorEntity employee);
   Future<void> deleteEmployee(int employeeId);
+  // setOperatorWage removed — rates are now columns on operators.
+  // The DB trigger (sync_operator_rate_history) auto-archives to operator_wage_rates.
 
   // New company employees methods
   Future<List<EmployeeEntity>> fetchCompanyEmployees();

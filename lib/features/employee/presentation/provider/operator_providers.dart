@@ -84,7 +84,7 @@ Future<List<Map<String, dynamic>>> getRolePermissions(Ref ref) {
 @riverpod
 Future<List<Map<String, dynamic>>> getAllWorkGroups(Ref ref) async {
   final client = ref.watch(supabaseClientProvider);
-  final response = await client.from('work_groups').select('id, name');
+  final response = await client.from('work_groups').select('id, name, default_shift_start, default_shift_end');
   return List<Map<String, dynamic>>.from(response);
 }
 

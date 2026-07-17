@@ -12,21 +12,76 @@ class EmployeeRemoteDatasource {
   // Machine Operators (For DPS Sheets)
   // ----------------------------------------------------
   Future<List<OperatorEntity>> getOperators() async {
-    final response = await _client.from('operators').select();
-    return response.map((json) => OperatorEntity.fromJson(json)).toList();
+    final response = await _client.from('operators').select('*, operator_role_rates(wage_role_id, hourly_rate)');
+    return response.map((json) {
+      final rates = <int, double>{};
+      final ratesList = json['operator_role_rates'] as List<dynamic>?;
+      if (ratesList != null) {
+        for (final rate in ratesList) {
+          rates[rate['wage_role_id'] as int] = (rate['hourly_rate'] as num).toDouble();
+        }
+      }
+      final entity = OperatorEntity.fromJson(json);
+      return entity.copyWith(hourlyRates: rates);
+    }).toList();
   }
 
-  Future<void> addOperator(OperatorEntity operator) async {
-    await supabaseSafeCall(() async {
-      final payload = operator.toJson()..remove('id');
-      await _client.from('operators').insert(payload);
+  Future<int> addOperator(OperatorEntity operator) async {
+    return await supabaseSafeCall(() async {
+      final payload = operator.toJson()
+        ..remove('id')
+        ..remove('created_at');
+      final res = await _client
+          .from('operators')
+          .insert(payload)
+          .select('id')
+          .single();
+      
+      final operatorId = res['id'] as int;
+      
+      if (operator.hourlyRates.isNotEmpty) {
+        final ratesPayload = operator.hourlyRates.entries.map((e) => {
+          'operator_id': operatorId,
+          'wage_role_id': e.key,
+          'hourly_rate': e.value,
+        }).toList();
+        await _client.from('operator_role_rates').insert(ratesPayload);
+      }
+      if (operator.deviceEmployeeCode != null && operator.deviceEmployeeCode!.isNotEmpty) {
+        await _client.from('operator_device_mappings').upsert({
+          'attendance_device_id': 1,
+          'device_employee_code': operator.deviceEmployeeCode,
+          'operator_id': operatorId,
+        }, onConflict: 'attendance_device_id, device_employee_code');
+      }
+      
+      return operatorId;
     });
   }
 
   Future<void> updateOperator(OperatorEntity operator) async {
     await supabaseSafeCall(() async {
-      final payload = operator.toJson()..remove('id');
+      final payload = operator.toJson()
+        ..remove('id')
+        ..remove('created_at');
       await _client.from('operators').update(payload).eq('id', operator.id);
+      
+      if (operator.hourlyRates.isNotEmpty) {
+        final ratesPayload = operator.hourlyRates.entries.map((e) => {
+          'operator_id': operator.id,
+          'wage_role_id': e.key,
+          'hourly_rate': e.value,
+        }).toList();
+        await _client.from('operator_role_rates').upsert(ratesPayload, onConflict: 'operator_id, wage_role_id');
+      }
+
+      if (operator.deviceEmployeeCode != null && operator.deviceEmployeeCode!.isNotEmpty) {
+        await _client.from('operator_device_mappings').upsert({
+          'attendance_device_id': 1,
+          'device_employee_code': operator.deviceEmployeeCode,
+          'operator_id': operator.id,
+        }, onConflict: 'attendance_device_id, device_employee_code');
+      }
     });
   }
 

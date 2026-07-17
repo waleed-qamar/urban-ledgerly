@@ -21,13 +21,13 @@ class EditableTimeCell extends ConsumerWidget {
     final displayTime = draft?.adjustedOutAt ?? row.outAt;
 
     final timeStr = displayTime != null
-        ? TimeOfDay.fromDateTime(displayTime).format(context)
+        ? TimeOfDay.fromDateTime(displayTime.toLocal()).format(context)
         : '--:--';
 
     return InkWell(
       onTap: () async {
         final initialTime = displayTime != null
-            ? TimeOfDay.fromDateTime(displayTime)
+            ? TimeOfDay.fromDateTime(displayTime.toLocal())
             : const TimeOfDay(hour: 17, minute: 0);
 
         final selectedTime = await showTimePicker(
@@ -48,6 +48,9 @@ class EditableTimeCell extends ConsumerWidget {
           timeStr,
           style: TextStyle(
             fontWeight: isDirty ? FontWeight.bold : FontWeight.normal,
+            color: (displayTime == null)
+                ? Theme.of(context).colorScheme.error
+                : null,
           ),
         ),
       ),

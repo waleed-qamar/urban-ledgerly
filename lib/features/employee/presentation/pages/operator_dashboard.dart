@@ -265,7 +265,7 @@ class _OperatorDashboardState extends ConsumerState<OperatorDashboard> {
                                         showDialog(
                                           context: context,
                                           builder: (_) => AddEmployeeDialog(
-                                            clientToEdit: emp,
+                                            clientToEdit: semp,
                                           ),
                                         );
                                       } else if (val == 'mark_inactive') {

@@ -101,4 +101,31 @@ class AttendanceReviewRepositoryImpl implements AttendanceReviewRepository {
       return left(AttendanceReviewFailure.server(e.toString()));
     }
   }
+
+  @override
+  Future<Either<AttendanceReviewFailure, Unit>> recalculate({
+    required DateTime from,
+    required DateTime to,
+    int? operatorId,
+  }) async {
+    try {
+      await _datasource.recalculate(from: from, to: to, operatorId: operatorId);
+      return right(unit);
+    } catch (e) {
+      return left(AttendanceReviewFailure.server(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<AttendanceReviewFailure, Unit>> finalizeWeek({
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    try {
+      await _datasource.finalizeWeek(from: from, to: to);
+      return right(unit);
+    } catch (e) {
+      return left(AttendanceReviewFailure.server(e.toString()));
+    }
+  }
 }

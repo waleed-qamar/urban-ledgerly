@@ -665,7 +665,7 @@ final class GetAllWorkGroupsProvider
   }
 }
 
-String _$getAllWorkGroupsHash() => r'5f973f609e41c469b4bed144b27a60f1765665d5';
+String _$getAllWorkGroupsHash() => r'ef512ce3fbb10c4f08443378ab70e84e15bdaf20';
 
 @ProviderFor(getAllWageRoles)
 const getAllWageRolesProvider = GetAllWageRolesProvider._();

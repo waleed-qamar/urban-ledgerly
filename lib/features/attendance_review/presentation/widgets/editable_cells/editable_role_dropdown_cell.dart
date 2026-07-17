@@ -21,24 +21,7 @@ class EditableRoleDropdownCell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // If it's the OT role cell, check if it's enabled
-    if (isOvertime) {
-      final isEnabled = ref.watch(
-        isOtRoleCellEnabledProvider(
-          operatorId: operatorId,
-          date: row.date,
-          loadedOtMinutes: row.otMinutes,
-        ),
-      );
-      if (!isEnabled) {
-        return const Opacity(
-          opacity: 0.5,
-          child: IgnorePointer(
-            child: Padding(padding: EdgeInsets.all(8.0), child: Text('N/A')),
-          ),
-        );
-      }
-    }
+
 
     final draft = ref.watch(attendanceEditDraftsProvider(operatorId))[row.date];
     final selectedRoleId = isOvertime
