@@ -48,6 +48,7 @@ _DpsProductionLog _$DpsProductionLogFromJson(Map<String, dynamic> json) =>
       machineId: (json['machine_id'] as num).toInt(),
       productId: (json['product_id'] as num).toInt(),
       quantity: (json['quantity'] as num).toDouble(),
+      unitWeight: (json['unit_weight'] as num?)?.toDouble(),
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
@@ -60,6 +61,7 @@ Map<String, dynamic> _$DpsProductionLogToJson(_DpsProductionLog instance) =>
       'machine_id': instance.machineId,
       'product_id': instance.productId,
       'quantity': instance.quantity,
+      'unit_weight': instance.unitWeight,
       'created_at': instance.createdAt?.toIso8601String(),
     };
 
@@ -69,6 +71,7 @@ _DpsConsumptionLog _$DpsConsumptionLogFromJson(Map<String, dynamic> json) =>
       reportId: (json['report_id'] as num?)?.toInt(),
       rawMaterialId: (json['raw_material_id'] as num).toInt(),
       quantity: (json['quantity'] as num).toDouble(),
+      unitPrice: (json['unit_price'] as num?)?.toDouble(),
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
@@ -80,6 +83,7 @@ Map<String, dynamic> _$DpsConsumptionLogToJson(_DpsConsumptionLog instance) =>
       'report_id': instance.reportId,
       'raw_material_id': instance.rawMaterialId,
       'quantity': instance.quantity,
+      'unit_price': instance.unitPrice,
       'created_at': instance.createdAt?.toIso8601String(),
     };
 
@@ -91,6 +95,8 @@ _DpsDamageLog _$DpsDamageLogFromJson(Map<String, dynamic> json) =>
       itemType: json['item_type'] as String,
       itemId: (json['item_id'] as num).toInt(),
       quantity: (json['quantity'] as num).toDouble(),
+      unitWeight: (json['unit_weight'] as num?)?.toDouble(),
+      unitPrice: (json['unit_price'] as num?)?.toDouble(),
       reason: json['reason'] as String?,
       createdAt: json['created_at'] == null
           ? null
@@ -105,6 +111,8 @@ Map<String, dynamic> _$DpsDamageLogToJson(_DpsDamageLog instance) =>
       'item_type': instance.itemType,
       'item_id': instance.itemId,
       'quantity': instance.quantity,
+      'unit_weight': instance.unitWeight,
+      'unit_price': instance.unitPrice,
       'reason': instance.reason,
       'created_at': instance.createdAt?.toIso8601String(),
     };

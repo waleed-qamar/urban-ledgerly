@@ -42,7 +42,7 @@ final class DpsSummaryFilterNotifierProvider
 }
 
 String _$dpsSummaryFilterNotifierHash() =>
-    r'904be6418f347bad7e37441916df73520a893ee4';
+    r'0ade8f69b4ef0a5a074cd811c1c8e80719aa6f6d';
 
 abstract class _$DpsSummaryFilterNotifier extends $Notifier<DpsSummaryFilter> {
   DpsSummaryFilter build();
@@ -63,17 +63,57 @@ abstract class _$DpsSummaryFilterNotifier extends $Notifier<DpsSummaryFilter> {
   }
 }
 
+@ProviderFor(dpsRawReportData)
+const dpsRawReportDataProvider = DpsRawReportDataProvider._();
+
+final class DpsRawReportDataProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<DpsRawData>,
+          DpsRawData,
+          FutureOr<DpsRawData>
+        >
+    with $FutureModifier<DpsRawData>, $FutureProvider<DpsRawData> {
+  const DpsRawReportDataProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dpsRawReportDataProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$dpsRawReportDataHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<DpsRawData> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<DpsRawData> create(Ref ref) {
+    return dpsRawReportData(ref);
+  }
+}
+
+String _$dpsRawReportDataHash() => r'd220d1d8e480d79eb56c08a32fffcac048f1f194';
+
 @ProviderFor(dpsSummary)
 const dpsSummaryProvider = DpsSummaryProvider._();
 
 final class DpsSummaryProvider
     extends
         $FunctionalProvider<
-          AsyncValue<DpsSummaryResult>,
-          DpsSummaryResult,
-          FutureOr<DpsSummaryResult>
+          AsyncValue<DpsMatrixReportData>,
+          DpsMatrixReportData,
+          FutureOr<DpsMatrixReportData>
         >
-    with $FutureModifier<DpsSummaryResult>, $FutureProvider<DpsSummaryResult> {
+    with
+        $FutureModifier<DpsMatrixReportData>,
+        $FutureProvider<DpsMatrixReportData> {
   const DpsSummaryProvider._()
     : super(
         from: null,
@@ -90,14 +130,14 @@ final class DpsSummaryProvider
 
   @$internal
   @override
-  $FutureProviderElement<DpsSummaryResult> $createElement(
+  $FutureProviderElement<DpsMatrixReportData> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<DpsSummaryResult> create(Ref ref) {
+  FutureOr<DpsMatrixReportData> create(Ref ref) {
     return dpsSummary(ref);
   }
 }
 
-String _$dpsSummaryHash() => r'048f4f27c521d2c2a67bbf1ae3db7ef394e64b96';
+String _$dpsSummaryHash() => r'eb6d030d5a06bd1ebf0059ebd2bb3932b2087636';

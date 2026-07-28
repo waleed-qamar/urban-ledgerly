@@ -562,7 +562,7 @@ as DateTime?,
 /// @nodoc
 mixin _$DpsProductionLog {
 
- int? get id;@JsonKey(name: 'report_id') int? get reportId;@JsonKey(name: 'machine_id') int get machineId;@JsonKey(name: 'product_id') int get productId; double get quantity;@JsonKey(name: 'created_at') DateTime? get createdAt;
+ int? get id;@JsonKey(name: 'report_id') int? get reportId;@JsonKey(name: 'machine_id') int get machineId;@JsonKey(name: 'product_id') int get productId; double get quantity;@JsonKey(name: 'unit_weight') double? get unitWeight;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of DpsProductionLog
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -575,16 +575,16 @@ $DpsProductionLogCopyWith<DpsProductionLog> get copyWith => _$DpsProductionLogCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DpsProductionLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.machineId, machineId) || other.machineId == machineId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DpsProductionLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.machineId, machineId) || other.machineId == machineId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitWeight, unitWeight) || other.unitWeight == unitWeight)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,reportId,machineId,productId,quantity,createdAt);
+int get hashCode => Object.hash(runtimeType,id,reportId,machineId,productId,quantity,unitWeight,createdAt);
 
 @override
 String toString() {
-  return 'DpsProductionLog(id: $id, reportId: $reportId, machineId: $machineId, productId: $productId, quantity: $quantity, createdAt: $createdAt)';
+  return 'DpsProductionLog(id: $id, reportId: $reportId, machineId: $machineId, productId: $productId, quantity: $quantity, unitWeight: $unitWeight, createdAt: $createdAt)';
 }
 
 
@@ -595,7 +595,7 @@ abstract mixin class $DpsProductionLogCopyWith<$Res>  {
   factory $DpsProductionLogCopyWith(DpsProductionLog value, $Res Function(DpsProductionLog) _then) = _$DpsProductionLogCopyWithImpl;
 @useResult
 $Res call({
- int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'machine_id') int machineId,@JsonKey(name: 'product_id') int productId, double quantity,@JsonKey(name: 'created_at') DateTime? createdAt
+ int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'machine_id') int machineId,@JsonKey(name: 'product_id') int productId, double quantity,@JsonKey(name: 'unit_weight') double? unitWeight,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -612,14 +612,15 @@ class _$DpsProductionLogCopyWithImpl<$Res>
 
 /// Create a copy of DpsProductionLog
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? reportId = freezed,Object? machineId = null,Object? productId = null,Object? quantity = null,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? reportId = freezed,Object? machineId = null,Object? productId = null,Object? quantity = null,Object? unitWeight = freezed,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,reportId: freezed == reportId ? _self.reportId : reportId // ignore: cast_nullable_to_non_nullable
 as int?,machineId: null == machineId ? _self.machineId : machineId // ignore: cast_nullable_to_non_nullable
 as int,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as double,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as double,unitWeight: freezed == unitWeight ? _self.unitWeight : unitWeight // ignore: cast_nullable_to_non_nullable
+as double?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }
@@ -705,10 +706,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'product_id')  int productId,  double quantity, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'product_id')  int productId,  double quantity, @JsonKey(name: 'unit_weight')  double? unitWeight, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DpsProductionLog() when $default != null:
-return $default(_that.id,_that.reportId,_that.machineId,_that.productId,_that.quantity,_that.createdAt);case _:
+return $default(_that.id,_that.reportId,_that.machineId,_that.productId,_that.quantity,_that.unitWeight,_that.createdAt);case _:
   return orElse();
 
 }
@@ -726,10 +727,10 @@ return $default(_that.id,_that.reportId,_that.machineId,_that.productId,_that.qu
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'product_id')  int productId,  double quantity, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'product_id')  int productId,  double quantity, @JsonKey(name: 'unit_weight')  double? unitWeight, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _DpsProductionLog():
-return $default(_that.id,_that.reportId,_that.machineId,_that.productId,_that.quantity,_that.createdAt);case _:
+return $default(_that.id,_that.reportId,_that.machineId,_that.productId,_that.quantity,_that.unitWeight,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -746,10 +747,10 @@ return $default(_that.id,_that.reportId,_that.machineId,_that.productId,_that.qu
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'product_id')  int productId,  double quantity, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'product_id')  int productId,  double quantity, @JsonKey(name: 'unit_weight')  double? unitWeight, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _DpsProductionLog() when $default != null:
-return $default(_that.id,_that.reportId,_that.machineId,_that.productId,_that.quantity,_that.createdAt);case _:
+return $default(_that.id,_that.reportId,_that.machineId,_that.productId,_that.quantity,_that.unitWeight,_that.createdAt);case _:
   return null;
 
 }
@@ -761,7 +762,7 @@ return $default(_that.id,_that.reportId,_that.machineId,_that.productId,_that.qu
 @JsonSerializable()
 
 class _DpsProductionLog implements DpsProductionLog {
-  const _DpsProductionLog({this.id, @JsonKey(name: 'report_id') this.reportId, @JsonKey(name: 'machine_id') required this.machineId, @JsonKey(name: 'product_id') required this.productId, required this.quantity, @JsonKey(name: 'created_at') this.createdAt});
+  const _DpsProductionLog({this.id, @JsonKey(name: 'report_id') this.reportId, @JsonKey(name: 'machine_id') required this.machineId, @JsonKey(name: 'product_id') required this.productId, required this.quantity, @JsonKey(name: 'unit_weight') this.unitWeight, @JsonKey(name: 'created_at') this.createdAt});
   factory _DpsProductionLog.fromJson(Map<String, dynamic> json) => _$DpsProductionLogFromJson(json);
 
 @override final  int? id;
@@ -769,6 +770,7 @@ class _DpsProductionLog implements DpsProductionLog {
 @override@JsonKey(name: 'machine_id') final  int machineId;
 @override@JsonKey(name: 'product_id') final  int productId;
 @override final  double quantity;
+@override@JsonKey(name: 'unit_weight') final  double? unitWeight;
 @override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 
 /// Create a copy of DpsProductionLog
@@ -784,16 +786,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DpsProductionLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.machineId, machineId) || other.machineId == machineId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DpsProductionLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.machineId, machineId) || other.machineId == machineId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitWeight, unitWeight) || other.unitWeight == unitWeight)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,reportId,machineId,productId,quantity,createdAt);
+int get hashCode => Object.hash(runtimeType,id,reportId,machineId,productId,quantity,unitWeight,createdAt);
 
 @override
 String toString() {
-  return 'DpsProductionLog(id: $id, reportId: $reportId, machineId: $machineId, productId: $productId, quantity: $quantity, createdAt: $createdAt)';
+  return 'DpsProductionLog(id: $id, reportId: $reportId, machineId: $machineId, productId: $productId, quantity: $quantity, unitWeight: $unitWeight, createdAt: $createdAt)';
 }
 
 
@@ -804,7 +806,7 @@ abstract mixin class _$DpsProductionLogCopyWith<$Res> implements $DpsProductionL
   factory _$DpsProductionLogCopyWith(_DpsProductionLog value, $Res Function(_DpsProductionLog) _then) = __$DpsProductionLogCopyWithImpl;
 @override @useResult
 $Res call({
- int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'machine_id') int machineId,@JsonKey(name: 'product_id') int productId, double quantity,@JsonKey(name: 'created_at') DateTime? createdAt
+ int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'machine_id') int machineId,@JsonKey(name: 'product_id') int productId, double quantity,@JsonKey(name: 'unit_weight') double? unitWeight,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -821,14 +823,15 @@ class __$DpsProductionLogCopyWithImpl<$Res>
 
 /// Create a copy of DpsProductionLog
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? reportId = freezed,Object? machineId = null,Object? productId = null,Object? quantity = null,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? reportId = freezed,Object? machineId = null,Object? productId = null,Object? quantity = null,Object? unitWeight = freezed,Object? createdAt = freezed,}) {
   return _then(_DpsProductionLog(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,reportId: freezed == reportId ? _self.reportId : reportId // ignore: cast_nullable_to_non_nullable
 as int?,machineId: null == machineId ? _self.machineId : machineId // ignore: cast_nullable_to_non_nullable
 as int,productId: null == productId ? _self.productId : productId // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as double,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as double,unitWeight: freezed == unitWeight ? _self.unitWeight : unitWeight // ignore: cast_nullable_to_non_nullable
+as double?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }
@@ -840,7 +843,7 @@ as DateTime?,
 /// @nodoc
 mixin _$DpsConsumptionLog {
 
- int? get id;@JsonKey(name: 'report_id') int? get reportId;@JsonKey(name: 'raw_material_id') int get rawMaterialId; double get quantity;@JsonKey(name: 'created_at') DateTime? get createdAt;
+ int? get id;@JsonKey(name: 'report_id') int? get reportId;@JsonKey(name: 'raw_material_id') int get rawMaterialId; double get quantity;@JsonKey(name: 'unit_price') double? get unitPrice;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of DpsConsumptionLog
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -853,16 +856,16 @@ $DpsConsumptionLogCopyWith<DpsConsumptionLog> get copyWith => _$DpsConsumptionLo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DpsConsumptionLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.rawMaterialId, rawMaterialId) || other.rawMaterialId == rawMaterialId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DpsConsumptionLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.rawMaterialId, rawMaterialId) || other.rawMaterialId == rawMaterialId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,reportId,rawMaterialId,quantity,createdAt);
+int get hashCode => Object.hash(runtimeType,id,reportId,rawMaterialId,quantity,unitPrice,createdAt);
 
 @override
 String toString() {
-  return 'DpsConsumptionLog(id: $id, reportId: $reportId, rawMaterialId: $rawMaterialId, quantity: $quantity, createdAt: $createdAt)';
+  return 'DpsConsumptionLog(id: $id, reportId: $reportId, rawMaterialId: $rawMaterialId, quantity: $quantity, unitPrice: $unitPrice, createdAt: $createdAt)';
 }
 
 
@@ -873,7 +876,7 @@ abstract mixin class $DpsConsumptionLogCopyWith<$Res>  {
   factory $DpsConsumptionLogCopyWith(DpsConsumptionLog value, $Res Function(DpsConsumptionLog) _then) = _$DpsConsumptionLogCopyWithImpl;
 @useResult
 $Res call({
- int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'raw_material_id') int rawMaterialId, double quantity,@JsonKey(name: 'created_at') DateTime? createdAt
+ int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'raw_material_id') int rawMaterialId, double quantity,@JsonKey(name: 'unit_price') double? unitPrice,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -890,13 +893,14 @@ class _$DpsConsumptionLogCopyWithImpl<$Res>
 
 /// Create a copy of DpsConsumptionLog
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? reportId = freezed,Object? rawMaterialId = null,Object? quantity = null,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? reportId = freezed,Object? rawMaterialId = null,Object? quantity = null,Object? unitPrice = freezed,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,reportId: freezed == reportId ? _self.reportId : reportId // ignore: cast_nullable_to_non_nullable
 as int?,rawMaterialId: null == rawMaterialId ? _self.rawMaterialId : rawMaterialId // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as double,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as double,unitPrice: freezed == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
+as double?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }
@@ -982,10 +986,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'raw_material_id')  int rawMaterialId,  double quantity, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'raw_material_id')  int rawMaterialId,  double quantity, @JsonKey(name: 'unit_price')  double? unitPrice, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DpsConsumptionLog() when $default != null:
-return $default(_that.id,_that.reportId,_that.rawMaterialId,_that.quantity,_that.createdAt);case _:
+return $default(_that.id,_that.reportId,_that.rawMaterialId,_that.quantity,_that.unitPrice,_that.createdAt);case _:
   return orElse();
 
 }
@@ -1003,10 +1007,10 @@ return $default(_that.id,_that.reportId,_that.rawMaterialId,_that.quantity,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'raw_material_id')  int rawMaterialId,  double quantity, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'raw_material_id')  int rawMaterialId,  double quantity, @JsonKey(name: 'unit_price')  double? unitPrice, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _DpsConsumptionLog():
-return $default(_that.id,_that.reportId,_that.rawMaterialId,_that.quantity,_that.createdAt);case _:
+return $default(_that.id,_that.reportId,_that.rawMaterialId,_that.quantity,_that.unitPrice,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1023,10 +1027,10 @@ return $default(_that.id,_that.reportId,_that.rawMaterialId,_that.quantity,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'raw_material_id')  int rawMaterialId,  double quantity, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'raw_material_id')  int rawMaterialId,  double quantity, @JsonKey(name: 'unit_price')  double? unitPrice, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _DpsConsumptionLog() when $default != null:
-return $default(_that.id,_that.reportId,_that.rawMaterialId,_that.quantity,_that.createdAt);case _:
+return $default(_that.id,_that.reportId,_that.rawMaterialId,_that.quantity,_that.unitPrice,_that.createdAt);case _:
   return null;
 
 }
@@ -1038,13 +1042,14 @@ return $default(_that.id,_that.reportId,_that.rawMaterialId,_that.quantity,_that
 @JsonSerializable()
 
 class _DpsConsumptionLog implements DpsConsumptionLog {
-  const _DpsConsumptionLog({this.id, @JsonKey(name: 'report_id') this.reportId, @JsonKey(name: 'raw_material_id') required this.rawMaterialId, required this.quantity, @JsonKey(name: 'created_at') this.createdAt});
+  const _DpsConsumptionLog({this.id, @JsonKey(name: 'report_id') this.reportId, @JsonKey(name: 'raw_material_id') required this.rawMaterialId, required this.quantity, @JsonKey(name: 'unit_price') this.unitPrice, @JsonKey(name: 'created_at') this.createdAt});
   factory _DpsConsumptionLog.fromJson(Map<String, dynamic> json) => _$DpsConsumptionLogFromJson(json);
 
 @override final  int? id;
 @override@JsonKey(name: 'report_id') final  int? reportId;
 @override@JsonKey(name: 'raw_material_id') final  int rawMaterialId;
 @override final  double quantity;
+@override@JsonKey(name: 'unit_price') final  double? unitPrice;
 @override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 
 /// Create a copy of DpsConsumptionLog
@@ -1060,16 +1065,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DpsConsumptionLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.rawMaterialId, rawMaterialId) || other.rawMaterialId == rawMaterialId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DpsConsumptionLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.rawMaterialId, rawMaterialId) || other.rawMaterialId == rawMaterialId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,reportId,rawMaterialId,quantity,createdAt);
+int get hashCode => Object.hash(runtimeType,id,reportId,rawMaterialId,quantity,unitPrice,createdAt);
 
 @override
 String toString() {
-  return 'DpsConsumptionLog(id: $id, reportId: $reportId, rawMaterialId: $rawMaterialId, quantity: $quantity, createdAt: $createdAt)';
+  return 'DpsConsumptionLog(id: $id, reportId: $reportId, rawMaterialId: $rawMaterialId, quantity: $quantity, unitPrice: $unitPrice, createdAt: $createdAt)';
 }
 
 
@@ -1080,7 +1085,7 @@ abstract mixin class _$DpsConsumptionLogCopyWith<$Res> implements $DpsConsumptio
   factory _$DpsConsumptionLogCopyWith(_DpsConsumptionLog value, $Res Function(_DpsConsumptionLog) _then) = __$DpsConsumptionLogCopyWithImpl;
 @override @useResult
 $Res call({
- int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'raw_material_id') int rawMaterialId, double quantity,@JsonKey(name: 'created_at') DateTime? createdAt
+ int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'raw_material_id') int rawMaterialId, double quantity,@JsonKey(name: 'unit_price') double? unitPrice,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -1097,13 +1102,14 @@ class __$DpsConsumptionLogCopyWithImpl<$Res>
 
 /// Create a copy of DpsConsumptionLog
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? reportId = freezed,Object? rawMaterialId = null,Object? quantity = null,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? reportId = freezed,Object? rawMaterialId = null,Object? quantity = null,Object? unitPrice = freezed,Object? createdAt = freezed,}) {
   return _then(_DpsConsumptionLog(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,reportId: freezed == reportId ? _self.reportId : reportId // ignore: cast_nullable_to_non_nullable
 as int?,rawMaterialId: null == rawMaterialId ? _self.rawMaterialId : rawMaterialId // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as double,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as double,unitPrice: freezed == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
+as double?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }
@@ -1116,7 +1122,7 @@ as DateTime?,
 mixin _$DpsDamageLog {
 
  int? get id;@JsonKey(name: 'report_id') int? get reportId;@JsonKey(name: 'machine_id') int get machineId;@JsonKey(name: 'item_type') String get itemType;// 'product' or 'raw_material'
-@JsonKey(name: 'item_id') int get itemId; double get quantity; String? get reason;@JsonKey(name: 'created_at') DateTime? get createdAt;
+@JsonKey(name: 'item_id') int get itemId; double get quantity;@JsonKey(name: 'unit_weight') double? get unitWeight;@JsonKey(name: 'unit_price') double? get unitPrice; String? get reason;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of DpsDamageLog
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1129,16 +1135,16 @@ $DpsDamageLogCopyWith<DpsDamageLog> get copyWith => _$DpsDamageLogCopyWithImpl<D
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DpsDamageLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.machineId, machineId) || other.machineId == machineId)&&(identical(other.itemType, itemType) || other.itemType == itemType)&&(identical(other.itemId, itemId) || other.itemId == itemId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DpsDamageLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.machineId, machineId) || other.machineId == machineId)&&(identical(other.itemType, itemType) || other.itemType == itemType)&&(identical(other.itemId, itemId) || other.itemId == itemId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitWeight, unitWeight) || other.unitWeight == unitWeight)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,reportId,machineId,itemType,itemId,quantity,reason,createdAt);
+int get hashCode => Object.hash(runtimeType,id,reportId,machineId,itemType,itemId,quantity,unitWeight,unitPrice,reason,createdAt);
 
 @override
 String toString() {
-  return 'DpsDamageLog(id: $id, reportId: $reportId, machineId: $machineId, itemType: $itemType, itemId: $itemId, quantity: $quantity, reason: $reason, createdAt: $createdAt)';
+  return 'DpsDamageLog(id: $id, reportId: $reportId, machineId: $machineId, itemType: $itemType, itemId: $itemId, quantity: $quantity, unitWeight: $unitWeight, unitPrice: $unitPrice, reason: $reason, createdAt: $createdAt)';
 }
 
 
@@ -1149,7 +1155,7 @@ abstract mixin class $DpsDamageLogCopyWith<$Res>  {
   factory $DpsDamageLogCopyWith(DpsDamageLog value, $Res Function(DpsDamageLog) _then) = _$DpsDamageLogCopyWithImpl;
 @useResult
 $Res call({
- int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'machine_id') int machineId,@JsonKey(name: 'item_type') String itemType,@JsonKey(name: 'item_id') int itemId, double quantity, String? reason,@JsonKey(name: 'created_at') DateTime? createdAt
+ int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'machine_id') int machineId,@JsonKey(name: 'item_type') String itemType,@JsonKey(name: 'item_id') int itemId, double quantity,@JsonKey(name: 'unit_weight') double? unitWeight,@JsonKey(name: 'unit_price') double? unitPrice, String? reason,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -1166,7 +1172,7 @@ class _$DpsDamageLogCopyWithImpl<$Res>
 
 /// Create a copy of DpsDamageLog
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? reportId = freezed,Object? machineId = null,Object? itemType = null,Object? itemId = null,Object? quantity = null,Object? reason = freezed,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? reportId = freezed,Object? machineId = null,Object? itemType = null,Object? itemId = null,Object? quantity = null,Object? unitWeight = freezed,Object? unitPrice = freezed,Object? reason = freezed,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,reportId: freezed == reportId ? _self.reportId : reportId // ignore: cast_nullable_to_non_nullable
@@ -1174,7 +1180,9 @@ as int?,machineId: null == machineId ? _self.machineId : machineId // ignore: ca
 as int,itemType: null == itemType ? _self.itemType : itemType // ignore: cast_nullable_to_non_nullable
 as String,itemId: null == itemId ? _self.itemId : itemId // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as double,reason: freezed == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
+as double,unitWeight: freezed == unitWeight ? _self.unitWeight : unitWeight // ignore: cast_nullable_to_non_nullable
+as double?,unitPrice: freezed == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
+as double?,reason: freezed == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
@@ -1261,10 +1269,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'item_type')  String itemType, @JsonKey(name: 'item_id')  int itemId,  double quantity,  String? reason, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'item_type')  String itemType, @JsonKey(name: 'item_id')  int itemId,  double quantity, @JsonKey(name: 'unit_weight')  double? unitWeight, @JsonKey(name: 'unit_price')  double? unitPrice,  String? reason, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DpsDamageLog() when $default != null:
-return $default(_that.id,_that.reportId,_that.machineId,_that.itemType,_that.itemId,_that.quantity,_that.reason,_that.createdAt);case _:
+return $default(_that.id,_that.reportId,_that.machineId,_that.itemType,_that.itemId,_that.quantity,_that.unitWeight,_that.unitPrice,_that.reason,_that.createdAt);case _:
   return orElse();
 
 }
@@ -1282,10 +1290,10 @@ return $default(_that.id,_that.reportId,_that.machineId,_that.itemType,_that.ite
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'item_type')  String itemType, @JsonKey(name: 'item_id')  int itemId,  double quantity,  String? reason, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'item_type')  String itemType, @JsonKey(name: 'item_id')  int itemId,  double quantity, @JsonKey(name: 'unit_weight')  double? unitWeight, @JsonKey(name: 'unit_price')  double? unitPrice,  String? reason, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _DpsDamageLog():
-return $default(_that.id,_that.reportId,_that.machineId,_that.itemType,_that.itemId,_that.quantity,_that.reason,_that.createdAt);case _:
+return $default(_that.id,_that.reportId,_that.machineId,_that.itemType,_that.itemId,_that.quantity,_that.unitWeight,_that.unitPrice,_that.reason,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1302,10 +1310,10 @@ return $default(_that.id,_that.reportId,_that.machineId,_that.itemType,_that.ite
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'item_type')  String itemType, @JsonKey(name: 'item_id')  int itemId,  double quantity,  String? reason, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(name: 'report_id')  int? reportId, @JsonKey(name: 'machine_id')  int machineId, @JsonKey(name: 'item_type')  String itemType, @JsonKey(name: 'item_id')  int itemId,  double quantity, @JsonKey(name: 'unit_weight')  double? unitWeight, @JsonKey(name: 'unit_price')  double? unitPrice,  String? reason, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _DpsDamageLog() when $default != null:
-return $default(_that.id,_that.reportId,_that.machineId,_that.itemType,_that.itemId,_that.quantity,_that.reason,_that.createdAt);case _:
+return $default(_that.id,_that.reportId,_that.machineId,_that.itemType,_that.itemId,_that.quantity,_that.unitWeight,_that.unitPrice,_that.reason,_that.createdAt);case _:
   return null;
 
 }
@@ -1317,7 +1325,7 @@ return $default(_that.id,_that.reportId,_that.machineId,_that.itemType,_that.ite
 @JsonSerializable()
 
 class _DpsDamageLog implements DpsDamageLog {
-  const _DpsDamageLog({this.id, @JsonKey(name: 'report_id') this.reportId, @JsonKey(name: 'machine_id') required this.machineId, @JsonKey(name: 'item_type') required this.itemType, @JsonKey(name: 'item_id') required this.itemId, required this.quantity, this.reason, @JsonKey(name: 'created_at') this.createdAt});
+  const _DpsDamageLog({this.id, @JsonKey(name: 'report_id') this.reportId, @JsonKey(name: 'machine_id') required this.machineId, @JsonKey(name: 'item_type') required this.itemType, @JsonKey(name: 'item_id') required this.itemId, required this.quantity, @JsonKey(name: 'unit_weight') this.unitWeight, @JsonKey(name: 'unit_price') this.unitPrice, this.reason, @JsonKey(name: 'created_at') this.createdAt});
   factory _DpsDamageLog.fromJson(Map<String, dynamic> json) => _$DpsDamageLogFromJson(json);
 
 @override final  int? id;
@@ -1327,6 +1335,8 @@ class _DpsDamageLog implements DpsDamageLog {
 // 'product' or 'raw_material'
 @override@JsonKey(name: 'item_id') final  int itemId;
 @override final  double quantity;
+@override@JsonKey(name: 'unit_weight') final  double? unitWeight;
+@override@JsonKey(name: 'unit_price') final  double? unitPrice;
 @override final  String? reason;
 @override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 
@@ -1343,16 +1353,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DpsDamageLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.machineId, machineId) || other.machineId == machineId)&&(identical(other.itemType, itemType) || other.itemType == itemType)&&(identical(other.itemId, itemId) || other.itemId == itemId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DpsDamageLog&&(identical(other.id, id) || other.id == id)&&(identical(other.reportId, reportId) || other.reportId == reportId)&&(identical(other.machineId, machineId) || other.machineId == machineId)&&(identical(other.itemType, itemType) || other.itemType == itemType)&&(identical(other.itemId, itemId) || other.itemId == itemId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitWeight, unitWeight) || other.unitWeight == unitWeight)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,reportId,machineId,itemType,itemId,quantity,reason,createdAt);
+int get hashCode => Object.hash(runtimeType,id,reportId,machineId,itemType,itemId,quantity,unitWeight,unitPrice,reason,createdAt);
 
 @override
 String toString() {
-  return 'DpsDamageLog(id: $id, reportId: $reportId, machineId: $machineId, itemType: $itemType, itemId: $itemId, quantity: $quantity, reason: $reason, createdAt: $createdAt)';
+  return 'DpsDamageLog(id: $id, reportId: $reportId, machineId: $machineId, itemType: $itemType, itemId: $itemId, quantity: $quantity, unitWeight: $unitWeight, unitPrice: $unitPrice, reason: $reason, createdAt: $createdAt)';
 }
 
 
@@ -1363,7 +1373,7 @@ abstract mixin class _$DpsDamageLogCopyWith<$Res> implements $DpsDamageLogCopyWi
   factory _$DpsDamageLogCopyWith(_DpsDamageLog value, $Res Function(_DpsDamageLog) _then) = __$DpsDamageLogCopyWithImpl;
 @override @useResult
 $Res call({
- int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'machine_id') int machineId,@JsonKey(name: 'item_type') String itemType,@JsonKey(name: 'item_id') int itemId, double quantity, String? reason,@JsonKey(name: 'created_at') DateTime? createdAt
+ int? id,@JsonKey(name: 'report_id') int? reportId,@JsonKey(name: 'machine_id') int machineId,@JsonKey(name: 'item_type') String itemType,@JsonKey(name: 'item_id') int itemId, double quantity,@JsonKey(name: 'unit_weight') double? unitWeight,@JsonKey(name: 'unit_price') double? unitPrice, String? reason,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -1380,7 +1390,7 @@ class __$DpsDamageLogCopyWithImpl<$Res>
 
 /// Create a copy of DpsDamageLog
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? reportId = freezed,Object? machineId = null,Object? itemType = null,Object? itemId = null,Object? quantity = null,Object? reason = freezed,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? reportId = freezed,Object? machineId = null,Object? itemType = null,Object? itemId = null,Object? quantity = null,Object? unitWeight = freezed,Object? unitPrice = freezed,Object? reason = freezed,Object? createdAt = freezed,}) {
   return _then(_DpsDamageLog(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,reportId: freezed == reportId ? _self.reportId : reportId // ignore: cast_nullable_to_non_nullable
@@ -1388,7 +1398,9 @@ as int?,machineId: null == machineId ? _self.machineId : machineId // ignore: ca
 as int,itemType: null == itemType ? _self.itemType : itemType // ignore: cast_nullable_to_non_nullable
 as String,itemId: null == itemId ? _self.itemId : itemId // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
-as double,reason: freezed == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
+as double,unitWeight: freezed == unitWeight ? _self.unitWeight : unitWeight // ignore: cast_nullable_to_non_nullable
+as double?,unitPrice: freezed == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
+as double?,reason: freezed == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));

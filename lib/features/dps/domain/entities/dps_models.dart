@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'dps_models.freezed.dart';
@@ -12,7 +14,8 @@ abstract class Machine with _$Machine {
     @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _Machine;
 
-  factory Machine.fromJson(Map<String, dynamic> json) => _$MachineFromJson(json);
+  factory Machine.fromJson(Map<String, dynamic> json) =>
+      _$MachineFromJson(json);
 }
 
 @freezed
@@ -25,10 +28,9 @@ abstract class DpsReport with _$DpsReport {
     @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _DpsReport;
 
-  factory DpsReport.fromJson(Map<String, dynamic> json) => _$DpsReportFromJson(json);
+  factory DpsReport.fromJson(Map<String, dynamic> json) =>
+      _$DpsReportFromJson(json);
 }
-
-
 
 @freezed
 abstract class DpsProductionLog with _$DpsProductionLog {
@@ -38,10 +40,12 @@ abstract class DpsProductionLog with _$DpsProductionLog {
     @JsonKey(name: 'machine_id') required int machineId,
     @JsonKey(name: 'product_id') required int productId,
     required double quantity,
+    @JsonKey(name: 'unit_weight') double? unitWeight,
     @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _DpsProductionLog;
 
-  factory DpsProductionLog.fromJson(Map<String, dynamic> json) => _$DpsProductionLogFromJson(json);
+  factory DpsProductionLog.fromJson(Map<String, dynamic> json) =>
+      _$DpsProductionLogFromJson(json);
 }
 
 @freezed
@@ -51,10 +55,12 @@ abstract class DpsConsumptionLog with _$DpsConsumptionLog {
     @JsonKey(name: 'report_id') int? reportId,
     @JsonKey(name: 'raw_material_id') required int rawMaterialId,
     required double quantity,
+    @JsonKey(name: 'unit_price') double? unitPrice,
     @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _DpsConsumptionLog;
 
-  factory DpsConsumptionLog.fromJson(Map<String, dynamic> json) => _$DpsConsumptionLogFromJson(json);
+  factory DpsConsumptionLog.fromJson(Map<String, dynamic> json) =>
+      _$DpsConsumptionLogFromJson(json);
 }
 
 @freezed
@@ -63,12 +69,16 @@ abstract class DpsDamageLog with _$DpsDamageLog {
     int? id,
     @JsonKey(name: 'report_id') int? reportId,
     @JsonKey(name: 'machine_id') required int machineId,
-    @JsonKey(name: 'item_type') required String itemType, // 'product' or 'raw_material'
+    @JsonKey(name: 'item_type')
+    required String itemType, // 'product' or 'raw_material'
     @JsonKey(name: 'item_id') required int itemId,
     required double quantity,
+    @JsonKey(name: 'unit_weight') double? unitWeight,
+    @JsonKey(name: 'unit_price') double? unitPrice,
     String? reason,
     @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _DpsDamageLog;
 
-  factory DpsDamageLog.fromJson(Map<String, dynamic> json) => _$DpsDamageLogFromJson(json);
+  factory DpsDamageLog.fromJson(Map<String, dynamic> json) =>
+      _$DpsDamageLogFromJson(json);
 }
