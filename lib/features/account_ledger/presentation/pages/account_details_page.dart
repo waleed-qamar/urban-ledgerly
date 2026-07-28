@@ -6,8 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'package:ledgerly/core/widgets/audit_log_list_widget.dart';
+import 'package:ledgerly/features/account_ledger/domain/entities/account_entity.dart';
 
 import '../../../../core/theme/app_colors.dart';
+// import '../../../../core/widgets/pdf_button.dart';
+import '../../../../core/widgets/searchable_dropdown.dart';
 import '../provider/account_ledger_providers.dart';
 
 class AccountDetailsPage extends ConsumerStatefulWidget {
@@ -280,6 +283,14 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
                                           ),
                                         ),
                                       ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Actions',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                     rows: transactions.map((tx) {
                                       final isCredit =
@@ -365,6 +376,23 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
                                                 fontWeight: FontWeight.w800,
                                               ),
                                             ),
+                                          ),
+                                          DataCell(
+                                            tx.referenceType == 'transfer' && tx.referenceId != null
+                                                ? IconButton(
+                                                    icon: const Icon(Icons.edit, size: 20, color: AppColors.primary),
+                                                    onPressed: () {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (ctx) => _EditTransferDialog(
+                                                          transferId: tx.referenceId!,
+                                                          accountId: widget.accountId,
+                                                        ),
+                                                      );
+                                                    },
+                                                    tooltip: 'Edit Transfer',
+                                                  )
+                                                : const SizedBox.shrink(),
                                           ),
                                         ],
                                       );
@@ -631,6 +659,7 @@ class _TransferMoneyDialogState extends ConsumerState<_TransferMoneyDialog> {
   final _descriptionController = TextEditingController();
   int? _selectedToAccountId;
   bool _isSubmitting = false;
+  DateTime _transactionDate = DateTime.now();
 
   @override
   void dispose() {
@@ -672,6 +701,7 @@ class _TransferMoneyDialogState extends ConsumerState<_TransferMoneyDialog> {
           description: _descriptionController.text.trim().isEmpty
               ? 'Transfer between accounts'
               : _descriptionController.text.trim(),
+          date: _transactionDate,
         ).future,
       );
 
@@ -774,35 +804,30 @@ class _TransferMoneyDialogState extends ConsumerState<_TransferMoneyDialog> {
                         .where((acc) => acc.id != widget.fromAccountId)
                         .toList();
 
-                    return DropdownButtonFormField<int>(
-                      initialValue: _selectedToAccountId,
-                      decoration: const InputDecoration(
-                        labelText: 'To Account *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.account_balance_outlined),
-                      ),
-                      items: [
-                        const DropdownMenuItem<int>(
-                          value: -1,
-                          child: Text('Select destination account'),
-                        ),
-                        ...otherAccounts.map(
-                          (account) => DropdownMenuItem<int>(
-                            value: account.id,
-                            child: Text(account.accountTitle),
-                          ),
-                        ),
-                      ],
-                      onChanged: _isSubmitting
-                          ? null
-                          : (value) {
-                              if (value != -1) {
-                                setState(() => _selectedToAccountId = value);
-                              } else {
-                                setState(() => _selectedToAccountId = null);
-                              }
-                            },
-                      validator: (value) => value == null || value == -1
+                    String formatAccount(AccountEntity a) {
+                      final parts = <String>[];
+                      if (a.bankName != null && a.bankName!.isNotEmpty) parts.add(a.bankName!);
+                      parts.add(a.accountTitle);
+                      if (a.accountNumber != null && a.accountNumber!.isNotEmpty) parts.add('(${a.accountNumber})');
+                      return parts.join(' - ');
+                    }
+
+                    final selectedAcc = _selectedToAccountId != null
+                        ? otherAccounts.where((acc) => acc.id == _selectedToAccountId).firstOrNull
+                        : null;
+
+                    return SearchableDropdown<AccountEntity>(
+                      initialText: selectedAcc != null ? formatAccount(selectedAcc) : null,
+                      labelText: 'To Account *',
+                      prefixIcon: const Icon(Icons.account_balance_outlined),
+                      items: otherAccounts,
+                      displayStringForOption: formatAccount,
+                      onSelected: (account) {
+                        setState(() {
+                          _selectedToAccountId = account.id;
+                        });
+                      },
+                      errorText: _selectedToAccountId == null || _selectedToAccountId == -1
                           ? 'Please select a destination account'
                           : null,
                     );
@@ -832,6 +857,35 @@ class _TransferMoneyDialogState extends ConsumerState<_TransferMoneyDialog> {
                     }
                     return null;
                   },
+                ),
+                const SizedBox(height: 16),
+
+                // Date Picker
+                InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: _transactionDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        _transactionDate = picked;
+                      });
+                    }
+                  },
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Transaction Date *',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.calendar_today_outlined),
+                    ),
+                    child: Text(
+                      DateFormat('dd MMM yyyy').format(_transactionDate),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -869,6 +923,207 @@ class _TransferMoneyDialogState extends ConsumerState<_TransferMoneyDialog> {
                 )
               : const Icon(Icons.compare_arrows),
           label: Text(_isSubmitting ? 'Transferring...' : 'Transfer'),
+        ),
+      ],
+    );
+  }
+}
+
+class _EditTransferDialog extends ConsumerStatefulWidget {
+  final int transferId;
+  final int accountId;
+  const _EditTransferDialog({required this.transferId, required this.accountId});
+
+  @override
+  ConsumerState<_EditTransferDialog> createState() => _EditTransferDialogState();
+}
+
+class _EditTransferDialogState extends ConsumerState<_EditTransferDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  int? _selectedFromAccountId;
+  int? _selectedToAccountId;
+  DateTime _transactionDate = DateTime.now();
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedFromAccountId == null || _selectedToAccountId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select accounts')),
+      );
+      return;
+    }
+
+    final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
+    if (amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a valid amount')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final navigator = Navigator.of(context);
+      final scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+
+      await ref.read(
+        updateTransferProvider(
+          transferId: widget.transferId,
+          fromAccountId: _selectedFromAccountId!,
+          toAccountId: _selectedToAccountId!,
+          amount: amount,
+          description: _descriptionController.text.trim(),
+          date: _transactionDate,
+        ).future,
+      );
+
+      ref.invalidate(getAccountTransactionsProvider(widget.accountId));
+      ref.invalidate(getAllAccountsProvider);
+
+      if (mounted) {
+        scaffoldMessenger?.showSnackBar(
+          const SnackBar(content: Text('Transfer updated successfully')),
+        );
+        navigator.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating transfer: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final allAccountsAsync = ref.watch(getAllAccountsProvider);
+    final transferDetailsAsync = ref.watch(getTransferDetailsProvider(widget.transferId));
+
+    return AlertDialog(
+      backgroundColor: AppColors.textWhite,
+      title: const Text('Edit Transfer', style: TextStyle(fontWeight: FontWeight.w800)),
+      content: SizedBox(
+        width: 480,
+        child: allAccountsAsync.when(
+          loading: () => const SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
+          error: (e, _) => Text('Error: $e'),
+          data: (accounts) => transferDetailsAsync.when(
+            loading: () => const SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
+            error: (e, _) => Text('Error: $e'),
+            data: (transfer) {
+              if (_selectedFromAccountId == null && _selectedToAccountId == null && _amountController.text.isEmpty) {
+                _selectedFromAccountId = transfer['from_account_id'] as int;
+                _selectedToAccountId = transfer['to_account_id'] as int;
+                _amountController.text = transfer['amount'].toString();
+                _descriptionController.text = transfer['description'] ?? '';
+                if (transfer['transfer_date'] != null) {
+                  _transactionDate = DateTime.parse(transfer['transfer_date'] as String);
+                }
+              }
+
+              String formatAccount(AccountEntity a) {
+                final parts = <String>[];
+                if (a.bankName != null && a.bankName!.isNotEmpty) parts.add(a.bankName!);
+                parts.add(a.accountTitle);
+                if (a.accountNumber != null && a.accountNumber!.isNotEmpty) parts.add('(${a.accountNumber})');
+                return parts.join(' - ');
+              }
+
+              final selectedFromAcc = accounts.where((a) => a.id == _selectedFromAccountId).firstOrNull;
+              final selectedToAcc = accounts.where((a) => a.id == _selectedToAccountId).firstOrNull;
+
+              return Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SearchableDropdown<AccountEntity>(
+                        initialText: selectedFromAcc != null ? formatAccount(selectedFromAcc) : null,
+                        labelText: 'From Account *',
+                        prefixIcon: const Icon(Icons.account_balance_outlined),
+                        items: accounts,
+                        displayStringForOption: formatAccount,
+                        onSelected: (acc) => setState(() => _selectedFromAccountId = acc.id),
+                        errorText: _selectedFromAccountId == null ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      SearchableDropdown<AccountEntity>(
+                        initialText: selectedToAcc != null ? formatAccount(selectedToAcc) : null,
+                        labelText: 'To Account *',
+                        prefixIcon: const Icon(Icons.account_balance_outlined),
+                        items: accounts,
+                        displayStringForOption: formatAccount,
+                        onSelected: (acc) => setState(() => _selectedToAccountId = acc.id),
+                        errorText: _selectedToAccountId == null ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _amountController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+                        decoration: const InputDecoration(labelText: 'Amount *', border: OutlineInputBorder(), prefixIcon: Icon(Icons.payments_outlined), prefixText: 'PKR '),
+                        validator: (val) {
+                          final amt = double.tryParse(val ?? '');
+                          if (amt == null || amt <= 0) return 'Invalid amount';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      InkWell(
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: _transactionDate,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+                          if (picked != null) setState(() => _transactionDate = picked);
+                        },
+                        child: InputDecorator(
+                          decoration: const InputDecoration(labelText: 'Transaction Date *', border: OutlineInputBorder(), prefixIcon: Icon(Icons.calendar_today_outlined)),
+                          child: Text(DateFormat('dd MMM yyyy').format(_transactionDate), style: const TextStyle(fontSize: 16)),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _descriptionController,
+                        maxLines: 2,
+                        decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder(), prefixIcon: Icon(Icons.notes_outlined), alignLabelWithHint: true),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton.icon(
+          onPressed: _isSubmitting ? null : _submit,
+          icon: _isSubmitting ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white))) : const Icon(Icons.save),
+          label: Text(_isSubmitting ? 'Saving...' : 'Save'),
         ),
       ],
     );

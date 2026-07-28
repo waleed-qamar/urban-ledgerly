@@ -39,12 +39,38 @@ class AccountLedgerRepositoryImpl implements AccountLedgerRepository {
     required int toAccountId,
     required double amount,
     required String description,
+    DateTime? date,
   }) {
     return _datasource.transferBetweenAccounts(
       fromAccountId: fromAccountId,
       toAccountId: toAccountId,
       amount: amount,
       description: description,
+      date: date,
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>> getTransferDetails(int transferId) {
+    return _datasource.getTransferDetails(transferId);
+  }
+
+  @override
+  Future<void> updateTransfer({
+    required int transferId,
+    required int fromAccountId,
+    required int toAccountId,
+    required double amount,
+    required String description,
+    required DateTime date,
+  }) {
+    return _datasource.updateTransfer(
+      transferId: transferId,
+      fromAccountId: fromAccountId,
+      toAccountId: toAccountId,
+      amount: amount,
+      description: description,
+      date: date,
     );
   }
 }

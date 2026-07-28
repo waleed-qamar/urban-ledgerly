@@ -167,6 +167,7 @@ class AccountLedgerRemoteDatasource {
     required int toAccountId,
     required double amount,
     required String description,
+    DateTime? date,
   }) async {
     try {
       // First, create the transfer record in account_transfers table
@@ -177,13 +178,13 @@ class AccountLedgerRemoteDatasource {
             'to_account_id': toAccountId,
             'amount': amount,
             'description': description,
+            if (date != null) 'transfer_date': date.toIso8601String(),
           })
           .select()
           .single();
 
       final transferId = transferResponse['id'] as int;
 
-      // Create debit transaction in source account
       await _client.from('account_transactions').insert({
         'account_id': fromAccountId,
         'amount': amount,
@@ -192,6 +193,7 @@ class AccountLedgerRemoteDatasource {
         'reference_id': transferId,
         'description': 'Transfer to another account: $description',
         'transfer_id': transferId,
+        if (date != null) 'transaction_date': date.toIso8601String(),
       });
 
       // Create credit transaction in destination account
@@ -203,9 +205,71 @@ class AccountLedgerRemoteDatasource {
         'reference_id': transferId,
         'description': 'Transfer from another account: $description',
         'transfer_id': transferId,
+        if (date != null) 'transaction_date': date.toIso8601String(),
       });
     } catch (e) {
       throw Exception('Failed to transfer between accounts: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getTransferDetails(int transferId) async {
+    try {
+      final response = await _client
+          .from('account_transfers')
+          .select()
+          .eq('id', transferId)
+          .single();
+      return response;
+    } catch (e) {
+      throw Exception('Failed to fetch transfer details: $e');
+    }
+  }
+
+  Future<void> updateTransfer({
+    required int transferId,
+    required int fromAccountId,
+    required int toAccountId,
+    required double amount,
+    required String description,
+    required DateTime date,
+  }) async {
+    try {
+      // 1. Update transfer record
+      await _client.from('account_transfers').update({
+        'from_account_id': fromAccountId,
+        'to_account_id': toAccountId,
+        'amount': amount,
+        'description': description,
+        'transfer_date': date.toIso8601String(),
+      }).eq('id', transferId);
+
+      // 2. Update debit transaction
+      await _client
+          .from('account_transactions')
+          .update({
+            'account_id': fromAccountId,
+            'amount': amount,
+            'description': 'Transfer to another account: $description',
+            'transaction_date': date.toIso8601String(),
+          })
+          .eq('reference_type', 'transfer')
+          .eq('reference_id', transferId)
+          .eq('transaction_type', 'debit');
+
+      // 3. Update credit transaction
+      await _client
+          .from('account_transactions')
+          .update({
+            'account_id': toAccountId,
+            'amount': amount,
+            'description': 'Transfer from another account: $description',
+            'transaction_date': date.toIso8601String(),
+          })
+          .eq('reference_type', 'transfer')
+          .eq('reference_id', transferId)
+          .eq('transaction_type', 'credit');
+    } catch (e) {
+      throw Exception('Failed to update transfer: $e');
     }
   }
 }

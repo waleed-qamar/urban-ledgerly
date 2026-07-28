@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/ledger_entity.dart';
 import '../providers/ledger_providers.dart';
+import '../../../../core/widgets/searchable_dropdown.dart';
+import '../../../client/domain/entities/client_entity.dart';
 import '../../../client/presentation/providers/client_providers.dart';
+import '../../../vender/domain/entities/vendor_entity.dart';
 import '../../../vender/presentation/providers/vendor_providers.dart';
 import 'package:flutter/services.dart';
 // import '../../../client/domain/entities/client_entity.dart';
@@ -125,36 +128,36 @@ class _AddLedgerEntryDialogState extends ConsumerState<AddLedgerEntryDialog> {
                 if (widget.initialPartyId == null) ...[
                   if (_selectedPartyType == PartyType.client)
                     clientsAsync.when(
-                      data: (clients) => DropdownButtonFormField<int>(
-                        initialValue: _selectedPartyId,
-                        decoration: const InputDecoration(labelText: 'Client'),
-                        items: clients.map((c) {
-                          return DropdownMenuItem(
-                            value: c.id,
-                            child: Text(c.clientName),
-                          );
-                        }).toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedPartyId = val),
-                        validator: (val) => val == null ? 'Required' : null,
+                      data: (clients) => SearchableDropdown<ClientEntity>(
+                        items: clients,
+                        displayStringForOption: (c) => c.clientName,
+                        onSelected: (val) => setState(() => _selectedPartyId = val.id),
+                        initialText: _selectedPartyId != null
+                            ? clients
+                                  .where((c) => c.id == _selectedPartyId)
+                                  .firstOrNull
+                                  ?.clientName
+                            : null,
+                        labelText: 'Client',
+                        errorText: _selectedPartyId == null ? 'Required' : null,
                       ),
                       loading: () => const CircularProgressIndicator(),
                       error: (_, _) => const Text('Error loading clients'),
                     )
                   else if (_selectedPartyType == PartyType.vendor)
                     vendorsAsync.when(
-                      data: (vendors) => DropdownButtonFormField<int>(
-                        initialValue: _selectedPartyId,
-                        decoration: const InputDecoration(labelText: 'Vendor'),
-                        items: vendors.map((v) {
-                          return DropdownMenuItem(
-                            value: v.id,
-                            child: Text(v.vendorName),
-                          );
-                        }).toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedPartyId = val),
-                        validator: (val) => val == null ? 'Required' : null,
+                      data: (vendors) => SearchableDropdown<VendorEntity>(
+                        items: vendors,
+                        displayStringForOption: (v) => v.vendorName,
+                        onSelected: (val) => setState(() => _selectedPartyId = val.id),
+                        initialText: _selectedPartyId != null
+                            ? vendors
+                                  .where((v) => v.id == _selectedPartyId)
+                                  .firstOrNull
+                                  ?.vendorName
+                            : null,
+                        labelText: 'Vendor',
+                        errorText: _selectedPartyId == null ? 'Required' : null,
                       ),
                       loading: () => const CircularProgressIndicator(),
                       error: (_, _) => const Text('Error loading vendors'),

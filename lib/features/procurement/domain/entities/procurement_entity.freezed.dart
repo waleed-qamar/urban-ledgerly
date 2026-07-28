@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProcurementEntity {
 
- int? get id;@JsonKey(name: 'vendor_id') int get vendorId;@JsonKey(name: 'procurement_date') String get procurementDate;@JsonKey(name: 'broker_id') int? get brokerId;@JsonKey(name: 'brokerage_price', readValue: _readDouble) double get brokeragePrice;@JsonKey(name: 'loading_charges', readValue: _readDouble) double get loadingCharges;@JsonKey(name: 'unloading_charges', readValue: _readDouble) double get unloadingCharges;@JsonKey(name: 'items_total', readValue: _readDouble) double get itemsTotal;@JsonKey(name: 'grand_total', readValue: _readDouble) double get total; String? get notes; List<ProcurementItemEntity> get items;
+ int? get id;@JsonKey(name: 'vendor_id') int get vendorId;@JsonKey(name: 'procurement_date') String get procurementDate;@JsonKey(name: 'broker_id') int? get brokerId;@JsonKey(name: 'brokerage_price', readValue: _readDouble) double get brokeragePrice;@JsonKey(name: 'loading_charges', readValue: _readDouble) double get loadingCharges;@JsonKey(name: 'unloading_charges', readValue: _readDouble) double get unloadingCharges;@JsonKey(name: 'rent_amount', readValue: _readDouble) double get rentAmount;@JsonKey(name: 'rent_expense_head_id') int? get rentExpenseHeadId;@JsonKey(name: 'rent_expense_id') int? get rentExpenseId;@JsonKey(name: 'items_total', readValue: _readDouble) double get itemsTotal;@JsonKey(name: 'grand_total', readValue: _readDouble) double get total; String? get notes; List<ProcurementItemEntity> get items;
 /// Create a copy of ProcurementEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ProcurementEntityCopyWith<ProcurementEntity> get copyWith => _$ProcurementEntit
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProcurementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.vendorId, vendorId) || other.vendorId == vendorId)&&(identical(other.procurementDate, procurementDate) || other.procurementDate == procurementDate)&&(identical(other.brokerId, brokerId) || other.brokerId == brokerId)&&(identical(other.brokeragePrice, brokeragePrice) || other.brokeragePrice == brokeragePrice)&&(identical(other.loadingCharges, loadingCharges) || other.loadingCharges == loadingCharges)&&(identical(other.unloadingCharges, unloadingCharges) || other.unloadingCharges == unloadingCharges)&&(identical(other.itemsTotal, itemsTotal) || other.itemsTotal == itemsTotal)&&(identical(other.total, total) || other.total == total)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other.items, items));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProcurementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.vendorId, vendorId) || other.vendorId == vendorId)&&(identical(other.procurementDate, procurementDate) || other.procurementDate == procurementDate)&&(identical(other.brokerId, brokerId) || other.brokerId == brokerId)&&(identical(other.brokeragePrice, brokeragePrice) || other.brokeragePrice == brokeragePrice)&&(identical(other.loadingCharges, loadingCharges) || other.loadingCharges == loadingCharges)&&(identical(other.unloadingCharges, unloadingCharges) || other.unloadingCharges == unloadingCharges)&&(identical(other.rentAmount, rentAmount) || other.rentAmount == rentAmount)&&(identical(other.rentExpenseHeadId, rentExpenseHeadId) || other.rentExpenseHeadId == rentExpenseHeadId)&&(identical(other.rentExpenseId, rentExpenseId) || other.rentExpenseId == rentExpenseId)&&(identical(other.itemsTotal, itemsTotal) || other.itemsTotal == itemsTotal)&&(identical(other.total, total) || other.total == total)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other.items, items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,vendorId,procurementDate,brokerId,brokeragePrice,loadingCharges,unloadingCharges,itemsTotal,total,notes,const DeepCollectionEquality().hash(items));
+int get hashCode => Object.hash(runtimeType,id,vendorId,procurementDate,brokerId,brokeragePrice,loadingCharges,unloadingCharges,rentAmount,rentExpenseHeadId,rentExpenseId,itemsTotal,total,notes,const DeepCollectionEquality().hash(items));
 
 @override
 String toString() {
-  return 'ProcurementEntity(id: $id, vendorId: $vendorId, procurementDate: $procurementDate, brokerId: $brokerId, brokeragePrice: $brokeragePrice, loadingCharges: $loadingCharges, unloadingCharges: $unloadingCharges, itemsTotal: $itemsTotal, total: $total, notes: $notes, items: $items)';
+  return 'ProcurementEntity(id: $id, vendorId: $vendorId, procurementDate: $procurementDate, brokerId: $brokerId, brokeragePrice: $brokeragePrice, loadingCharges: $loadingCharges, unloadingCharges: $unloadingCharges, rentAmount: $rentAmount, rentExpenseHeadId: $rentExpenseHeadId, rentExpenseId: $rentExpenseId, itemsTotal: $itemsTotal, total: $total, notes: $notes, items: $items)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ProcurementEntityCopyWith<$Res>  {
   factory $ProcurementEntityCopyWith(ProcurementEntity value, $Res Function(ProcurementEntity) _then) = _$ProcurementEntityCopyWithImpl;
 @useResult
 $Res call({
- int? id,@JsonKey(name: 'vendor_id') int vendorId,@JsonKey(name: 'procurement_date') String procurementDate,@JsonKey(name: 'broker_id') int? brokerId,@JsonKey(name: 'brokerage_price', readValue: _readDouble) double brokeragePrice,@JsonKey(name: 'loading_charges', readValue: _readDouble) double loadingCharges,@JsonKey(name: 'unloading_charges', readValue: _readDouble) double unloadingCharges,@JsonKey(name: 'items_total', readValue: _readDouble) double itemsTotal,@JsonKey(name: 'grand_total', readValue: _readDouble) double total, String? notes, List<ProcurementItemEntity> items
+ int? id,@JsonKey(name: 'vendor_id') int vendorId,@JsonKey(name: 'procurement_date') String procurementDate,@JsonKey(name: 'broker_id') int? brokerId,@JsonKey(name: 'brokerage_price', readValue: _readDouble) double brokeragePrice,@JsonKey(name: 'loading_charges', readValue: _readDouble) double loadingCharges,@JsonKey(name: 'unloading_charges', readValue: _readDouble) double unloadingCharges,@JsonKey(name: 'rent_amount', readValue: _readDouble) double rentAmount,@JsonKey(name: 'rent_expense_head_id') int? rentExpenseHeadId,@JsonKey(name: 'rent_expense_id') int? rentExpenseId,@JsonKey(name: 'items_total', readValue: _readDouble) double itemsTotal,@JsonKey(name: 'grand_total', readValue: _readDouble) double total, String? notes, List<ProcurementItemEntity> items
 });
 
 
@@ -65,7 +65,7 @@ class _$ProcurementEntityCopyWithImpl<$Res>
 
 /// Create a copy of ProcurementEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? vendorId = null,Object? procurementDate = null,Object? brokerId = freezed,Object? brokeragePrice = null,Object? loadingCharges = null,Object? unloadingCharges = null,Object? itemsTotal = null,Object? total = null,Object? notes = freezed,Object? items = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? vendorId = null,Object? procurementDate = null,Object? brokerId = freezed,Object? brokeragePrice = null,Object? loadingCharges = null,Object? unloadingCharges = null,Object? rentAmount = null,Object? rentExpenseHeadId = freezed,Object? rentExpenseId = freezed,Object? itemsTotal = null,Object? total = null,Object? notes = freezed,Object? items = null,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,vendorId: null == vendorId ? _self.vendorId : vendorId // ignore: cast_nullable_to_non_nullable
@@ -74,7 +74,10 @@ as String,brokerId: freezed == brokerId ? _self.brokerId : brokerId // ignore: c
 as int?,brokeragePrice: null == brokeragePrice ? _self.brokeragePrice : brokeragePrice // ignore: cast_nullable_to_non_nullable
 as double,loadingCharges: null == loadingCharges ? _self.loadingCharges : loadingCharges // ignore: cast_nullable_to_non_nullable
 as double,unloadingCharges: null == unloadingCharges ? _self.unloadingCharges : unloadingCharges // ignore: cast_nullable_to_non_nullable
-as double,itemsTotal: null == itemsTotal ? _self.itemsTotal : itemsTotal // ignore: cast_nullable_to_non_nullable
+as double,rentAmount: null == rentAmount ? _self.rentAmount : rentAmount // ignore: cast_nullable_to_non_nullable
+as double,rentExpenseHeadId: freezed == rentExpenseHeadId ? _self.rentExpenseHeadId : rentExpenseHeadId // ignore: cast_nullable_to_non_nullable
+as int?,rentExpenseId: freezed == rentExpenseId ? _self.rentExpenseId : rentExpenseId // ignore: cast_nullable_to_non_nullable
+as int?,itemsTotal: null == itemsTotal ? _self.itemsTotal : itemsTotal // ignore: cast_nullable_to_non_nullable
 as double,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
 as double,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
@@ -163,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'vendor_id')  int vendorId, @JsonKey(name: 'procurement_date')  String procurementDate, @JsonKey(name: 'broker_id')  int? brokerId, @JsonKey(name: 'brokerage_price', readValue: _readDouble)  double brokeragePrice, @JsonKey(name: 'loading_charges', readValue: _readDouble)  double loadingCharges, @JsonKey(name: 'unloading_charges', readValue: _readDouble)  double unloadingCharges, @JsonKey(name: 'items_total', readValue: _readDouble)  double itemsTotal, @JsonKey(name: 'grand_total', readValue: _readDouble)  double total,  String? notes,  List<ProcurementItemEntity> items)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'vendor_id')  int vendorId, @JsonKey(name: 'procurement_date')  String procurementDate, @JsonKey(name: 'broker_id')  int? brokerId, @JsonKey(name: 'brokerage_price', readValue: _readDouble)  double brokeragePrice, @JsonKey(name: 'loading_charges', readValue: _readDouble)  double loadingCharges, @JsonKey(name: 'unloading_charges', readValue: _readDouble)  double unloadingCharges, @JsonKey(name: 'rent_amount', readValue: _readDouble)  double rentAmount, @JsonKey(name: 'rent_expense_head_id')  int? rentExpenseHeadId, @JsonKey(name: 'rent_expense_id')  int? rentExpenseId, @JsonKey(name: 'items_total', readValue: _readDouble)  double itemsTotal, @JsonKey(name: 'grand_total', readValue: _readDouble)  double total,  String? notes,  List<ProcurementItemEntity> items)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProcurementEntity() when $default != null:
-return $default(_that.id,_that.vendorId,_that.procurementDate,_that.brokerId,_that.brokeragePrice,_that.loadingCharges,_that.unloadingCharges,_that.itemsTotal,_that.total,_that.notes,_that.items);case _:
+return $default(_that.id,_that.vendorId,_that.procurementDate,_that.brokerId,_that.brokeragePrice,_that.loadingCharges,_that.unloadingCharges,_that.rentAmount,_that.rentExpenseHeadId,_that.rentExpenseId,_that.itemsTotal,_that.total,_that.notes,_that.items);case _:
   return orElse();
 
 }
@@ -184,10 +187,10 @@ return $default(_that.id,_that.vendorId,_that.procurementDate,_that.brokerId,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'vendor_id')  int vendorId, @JsonKey(name: 'procurement_date')  String procurementDate, @JsonKey(name: 'broker_id')  int? brokerId, @JsonKey(name: 'brokerage_price', readValue: _readDouble)  double brokeragePrice, @JsonKey(name: 'loading_charges', readValue: _readDouble)  double loadingCharges, @JsonKey(name: 'unloading_charges', readValue: _readDouble)  double unloadingCharges, @JsonKey(name: 'items_total', readValue: _readDouble)  double itemsTotal, @JsonKey(name: 'grand_total', readValue: _readDouble)  double total,  String? notes,  List<ProcurementItemEntity> items)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(name: 'vendor_id')  int vendorId, @JsonKey(name: 'procurement_date')  String procurementDate, @JsonKey(name: 'broker_id')  int? brokerId, @JsonKey(name: 'brokerage_price', readValue: _readDouble)  double brokeragePrice, @JsonKey(name: 'loading_charges', readValue: _readDouble)  double loadingCharges, @JsonKey(name: 'unloading_charges', readValue: _readDouble)  double unloadingCharges, @JsonKey(name: 'rent_amount', readValue: _readDouble)  double rentAmount, @JsonKey(name: 'rent_expense_head_id')  int? rentExpenseHeadId, @JsonKey(name: 'rent_expense_id')  int? rentExpenseId, @JsonKey(name: 'items_total', readValue: _readDouble)  double itemsTotal, @JsonKey(name: 'grand_total', readValue: _readDouble)  double total,  String? notes,  List<ProcurementItemEntity> items)  $default,) {final _that = this;
 switch (_that) {
 case _ProcurementEntity():
-return $default(_that.id,_that.vendorId,_that.procurementDate,_that.brokerId,_that.brokeragePrice,_that.loadingCharges,_that.unloadingCharges,_that.itemsTotal,_that.total,_that.notes,_that.items);case _:
+return $default(_that.id,_that.vendorId,_that.procurementDate,_that.brokerId,_that.brokeragePrice,_that.loadingCharges,_that.unloadingCharges,_that.rentAmount,_that.rentExpenseHeadId,_that.rentExpenseId,_that.itemsTotal,_that.total,_that.notes,_that.items);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +207,10 @@ return $default(_that.id,_that.vendorId,_that.procurementDate,_that.brokerId,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(name: 'vendor_id')  int vendorId, @JsonKey(name: 'procurement_date')  String procurementDate, @JsonKey(name: 'broker_id')  int? brokerId, @JsonKey(name: 'brokerage_price', readValue: _readDouble)  double brokeragePrice, @JsonKey(name: 'loading_charges', readValue: _readDouble)  double loadingCharges, @JsonKey(name: 'unloading_charges', readValue: _readDouble)  double unloadingCharges, @JsonKey(name: 'items_total', readValue: _readDouble)  double itemsTotal, @JsonKey(name: 'grand_total', readValue: _readDouble)  double total,  String? notes,  List<ProcurementItemEntity> items)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(name: 'vendor_id')  int vendorId, @JsonKey(name: 'procurement_date')  String procurementDate, @JsonKey(name: 'broker_id')  int? brokerId, @JsonKey(name: 'brokerage_price', readValue: _readDouble)  double brokeragePrice, @JsonKey(name: 'loading_charges', readValue: _readDouble)  double loadingCharges, @JsonKey(name: 'unloading_charges', readValue: _readDouble)  double unloadingCharges, @JsonKey(name: 'rent_amount', readValue: _readDouble)  double rentAmount, @JsonKey(name: 'rent_expense_head_id')  int? rentExpenseHeadId, @JsonKey(name: 'rent_expense_id')  int? rentExpenseId, @JsonKey(name: 'items_total', readValue: _readDouble)  double itemsTotal, @JsonKey(name: 'grand_total', readValue: _readDouble)  double total,  String? notes,  List<ProcurementItemEntity> items)?  $default,) {final _that = this;
 switch (_that) {
 case _ProcurementEntity() when $default != null:
-return $default(_that.id,_that.vendorId,_that.procurementDate,_that.brokerId,_that.brokeragePrice,_that.loadingCharges,_that.unloadingCharges,_that.itemsTotal,_that.total,_that.notes,_that.items);case _:
+return $default(_that.id,_that.vendorId,_that.procurementDate,_that.brokerId,_that.brokeragePrice,_that.loadingCharges,_that.unloadingCharges,_that.rentAmount,_that.rentExpenseHeadId,_that.rentExpenseId,_that.itemsTotal,_that.total,_that.notes,_that.items);case _:
   return null;
 
 }
@@ -219,7 +222,7 @@ return $default(_that.id,_that.vendorId,_that.procurementDate,_that.brokerId,_th
 @JsonSerializable()
 
 class _ProcurementEntity implements ProcurementEntity {
-  const _ProcurementEntity({this.id, @JsonKey(name: 'vendor_id') required this.vendorId, @JsonKey(name: 'procurement_date') required this.procurementDate, @JsonKey(name: 'broker_id') this.brokerId, @JsonKey(name: 'brokerage_price', readValue: _readDouble) this.brokeragePrice = 0.0, @JsonKey(name: 'loading_charges', readValue: _readDouble) this.loadingCharges = 0.0, @JsonKey(name: 'unloading_charges', readValue: _readDouble) this.unloadingCharges = 0.0, @JsonKey(name: 'items_total', readValue: _readDouble) this.itemsTotal = 0.0, @JsonKey(name: 'grand_total', readValue: _readDouble) required this.total, this.notes, required final  List<ProcurementItemEntity> items}): _items = items;
+  const _ProcurementEntity({this.id, @JsonKey(name: 'vendor_id') required this.vendorId, @JsonKey(name: 'procurement_date') required this.procurementDate, @JsonKey(name: 'broker_id') this.brokerId, @JsonKey(name: 'brokerage_price', readValue: _readDouble) this.brokeragePrice = 0.0, @JsonKey(name: 'loading_charges', readValue: _readDouble) this.loadingCharges = 0.0, @JsonKey(name: 'unloading_charges', readValue: _readDouble) this.unloadingCharges = 0.0, @JsonKey(name: 'rent_amount', readValue: _readDouble) this.rentAmount = 0.0, @JsonKey(name: 'rent_expense_head_id') this.rentExpenseHeadId, @JsonKey(name: 'rent_expense_id') this.rentExpenseId, @JsonKey(name: 'items_total', readValue: _readDouble) this.itemsTotal = 0.0, @JsonKey(name: 'grand_total', readValue: _readDouble) required this.total, this.notes, required final  List<ProcurementItemEntity> items}): _items = items;
   factory _ProcurementEntity.fromJson(Map<String, dynamic> json) => _$ProcurementEntityFromJson(json);
 
 @override final  int? id;
@@ -229,6 +232,9 @@ class _ProcurementEntity implements ProcurementEntity {
 @override@JsonKey(name: 'brokerage_price', readValue: _readDouble) final  double brokeragePrice;
 @override@JsonKey(name: 'loading_charges', readValue: _readDouble) final  double loadingCharges;
 @override@JsonKey(name: 'unloading_charges', readValue: _readDouble) final  double unloadingCharges;
+@override@JsonKey(name: 'rent_amount', readValue: _readDouble) final  double rentAmount;
+@override@JsonKey(name: 'rent_expense_head_id') final  int? rentExpenseHeadId;
+@override@JsonKey(name: 'rent_expense_id') final  int? rentExpenseId;
 @override@JsonKey(name: 'items_total', readValue: _readDouble) final  double itemsTotal;
 @override@JsonKey(name: 'grand_total', readValue: _readDouble) final  double total;
 @override final  String? notes;
@@ -253,16 +259,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProcurementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.vendorId, vendorId) || other.vendorId == vendorId)&&(identical(other.procurementDate, procurementDate) || other.procurementDate == procurementDate)&&(identical(other.brokerId, brokerId) || other.brokerId == brokerId)&&(identical(other.brokeragePrice, brokeragePrice) || other.brokeragePrice == brokeragePrice)&&(identical(other.loadingCharges, loadingCharges) || other.loadingCharges == loadingCharges)&&(identical(other.unloadingCharges, unloadingCharges) || other.unloadingCharges == unloadingCharges)&&(identical(other.itemsTotal, itemsTotal) || other.itemsTotal == itemsTotal)&&(identical(other.total, total) || other.total == total)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other._items, _items));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProcurementEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.vendorId, vendorId) || other.vendorId == vendorId)&&(identical(other.procurementDate, procurementDate) || other.procurementDate == procurementDate)&&(identical(other.brokerId, brokerId) || other.brokerId == brokerId)&&(identical(other.brokeragePrice, brokeragePrice) || other.brokeragePrice == brokeragePrice)&&(identical(other.loadingCharges, loadingCharges) || other.loadingCharges == loadingCharges)&&(identical(other.unloadingCharges, unloadingCharges) || other.unloadingCharges == unloadingCharges)&&(identical(other.rentAmount, rentAmount) || other.rentAmount == rentAmount)&&(identical(other.rentExpenseHeadId, rentExpenseHeadId) || other.rentExpenseHeadId == rentExpenseHeadId)&&(identical(other.rentExpenseId, rentExpenseId) || other.rentExpenseId == rentExpenseId)&&(identical(other.itemsTotal, itemsTotal) || other.itemsTotal == itemsTotal)&&(identical(other.total, total) || other.total == total)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other._items, _items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,vendorId,procurementDate,brokerId,brokeragePrice,loadingCharges,unloadingCharges,itemsTotal,total,notes,const DeepCollectionEquality().hash(_items));
+int get hashCode => Object.hash(runtimeType,id,vendorId,procurementDate,brokerId,brokeragePrice,loadingCharges,unloadingCharges,rentAmount,rentExpenseHeadId,rentExpenseId,itemsTotal,total,notes,const DeepCollectionEquality().hash(_items));
 
 @override
 String toString() {
-  return 'ProcurementEntity(id: $id, vendorId: $vendorId, procurementDate: $procurementDate, brokerId: $brokerId, brokeragePrice: $brokeragePrice, loadingCharges: $loadingCharges, unloadingCharges: $unloadingCharges, itemsTotal: $itemsTotal, total: $total, notes: $notes, items: $items)';
+  return 'ProcurementEntity(id: $id, vendorId: $vendorId, procurementDate: $procurementDate, brokerId: $brokerId, brokeragePrice: $brokeragePrice, loadingCharges: $loadingCharges, unloadingCharges: $unloadingCharges, rentAmount: $rentAmount, rentExpenseHeadId: $rentExpenseHeadId, rentExpenseId: $rentExpenseId, itemsTotal: $itemsTotal, total: $total, notes: $notes, items: $items)';
 }
 
 
@@ -273,7 +279,7 @@ abstract mixin class _$ProcurementEntityCopyWith<$Res> implements $ProcurementEn
   factory _$ProcurementEntityCopyWith(_ProcurementEntity value, $Res Function(_ProcurementEntity) _then) = __$ProcurementEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int? id,@JsonKey(name: 'vendor_id') int vendorId,@JsonKey(name: 'procurement_date') String procurementDate,@JsonKey(name: 'broker_id') int? brokerId,@JsonKey(name: 'brokerage_price', readValue: _readDouble) double brokeragePrice,@JsonKey(name: 'loading_charges', readValue: _readDouble) double loadingCharges,@JsonKey(name: 'unloading_charges', readValue: _readDouble) double unloadingCharges,@JsonKey(name: 'items_total', readValue: _readDouble) double itemsTotal,@JsonKey(name: 'grand_total', readValue: _readDouble) double total, String? notes, List<ProcurementItemEntity> items
+ int? id,@JsonKey(name: 'vendor_id') int vendorId,@JsonKey(name: 'procurement_date') String procurementDate,@JsonKey(name: 'broker_id') int? brokerId,@JsonKey(name: 'brokerage_price', readValue: _readDouble) double brokeragePrice,@JsonKey(name: 'loading_charges', readValue: _readDouble) double loadingCharges,@JsonKey(name: 'unloading_charges', readValue: _readDouble) double unloadingCharges,@JsonKey(name: 'rent_amount', readValue: _readDouble) double rentAmount,@JsonKey(name: 'rent_expense_head_id') int? rentExpenseHeadId,@JsonKey(name: 'rent_expense_id') int? rentExpenseId,@JsonKey(name: 'items_total', readValue: _readDouble) double itemsTotal,@JsonKey(name: 'grand_total', readValue: _readDouble) double total, String? notes, List<ProcurementItemEntity> items
 });
 
 
@@ -290,7 +296,7 @@ class __$ProcurementEntityCopyWithImpl<$Res>
 
 /// Create a copy of ProcurementEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? vendorId = null,Object? procurementDate = null,Object? brokerId = freezed,Object? brokeragePrice = null,Object? loadingCharges = null,Object? unloadingCharges = null,Object? itemsTotal = null,Object? total = null,Object? notes = freezed,Object? items = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? vendorId = null,Object? procurementDate = null,Object? brokerId = freezed,Object? brokeragePrice = null,Object? loadingCharges = null,Object? unloadingCharges = null,Object? rentAmount = null,Object? rentExpenseHeadId = freezed,Object? rentExpenseId = freezed,Object? itemsTotal = null,Object? total = null,Object? notes = freezed,Object? items = null,}) {
   return _then(_ProcurementEntity(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,vendorId: null == vendorId ? _self.vendorId : vendorId // ignore: cast_nullable_to_non_nullable
@@ -299,7 +305,10 @@ as String,brokerId: freezed == brokerId ? _self.brokerId : brokerId // ignore: c
 as int?,brokeragePrice: null == brokeragePrice ? _self.brokeragePrice : brokeragePrice // ignore: cast_nullable_to_non_nullable
 as double,loadingCharges: null == loadingCharges ? _self.loadingCharges : loadingCharges // ignore: cast_nullable_to_non_nullable
 as double,unloadingCharges: null == unloadingCharges ? _self.unloadingCharges : unloadingCharges // ignore: cast_nullable_to_non_nullable
-as double,itemsTotal: null == itemsTotal ? _self.itemsTotal : itemsTotal // ignore: cast_nullable_to_non_nullable
+as double,rentAmount: null == rentAmount ? _self.rentAmount : rentAmount // ignore: cast_nullable_to_non_nullable
+as double,rentExpenseHeadId: freezed == rentExpenseHeadId ? _self.rentExpenseHeadId : rentExpenseHeadId // ignore: cast_nullable_to_non_nullable
+as int?,rentExpenseId: freezed == rentExpenseId ? _self.rentExpenseId : rentExpenseId // ignore: cast_nullable_to_non_nullable
+as int?,itemsTotal: null == itemsTotal ? _self.itemsTotal : itemsTotal // ignore: cast_nullable_to_non_nullable
 as double,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
 as double,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable

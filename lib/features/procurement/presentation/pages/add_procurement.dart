@@ -13,6 +13,8 @@ import '../../../vender/presentation/providers/vendor_providers.dart';
 import '../../domain/entities/procurement_entity.dart';
 import '../../domain/entities/procurement_item_entity.dart';
 import '../providers/procurement_providers.dart';
+import '../../../../features/expense/domain/entities/expense_head.dart';
+import '../../../../features/expense/presentation/providers/expense_providers.dart';
 
 class _DraftProcurementLine {
   int? rawMaterialId;
@@ -47,6 +49,8 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
   final _brokerageController = TextEditingController(text: '0');
   final _loadingController = TextEditingController(text: '0');
   final _unloadingController = TextEditingController(text: '0');
+  final _rentController = TextEditingController(text: '0');
+  int? _selectedRentExpenseHeadId;
 
   bool _isSaving = false;
 
@@ -66,6 +70,8 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
       _brokerageController.text = p.brokeragePrice.toStringAsFixed(2);
       _loadingController.text = p.loadingCharges.toStringAsFixed(2);
       _unloadingController.text = p.unloadingCharges.toStringAsFixed(2);
+      _rentController.text = p.rentAmount.toStringAsFixed(2);
+      _selectedRentExpenseHeadId = p.rentExpenseHeadId;
       
       _lines.clear();
       for (final item in p.items) {
@@ -86,6 +92,7 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
     _brokerageController.dispose();
     _loadingController.dispose();
     _unloadingController.dispose();
+    _rentController.dispose();
     super.dispose();
   }
 
@@ -154,6 +161,7 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
     final brokerage = double.tryParse(_brokerageController.text) ?? 0;
     final loading = double.tryParse(_loadingController.text) ?? 0;
     final unloading = double.tryParse(_unloadingController.text) ?? 0;
+    final rentAmount = double.tryParse(_rentController.text) ?? 0;
 
     final procurement = ProcurementEntity(
       id: widget.procurementToEdit?.id,
@@ -163,6 +171,8 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
       brokeragePrice: brokerage,
       loadingCharges: loading,
       unloadingCharges: unloading,
+      rentAmount: rentAmount,
+      rentExpenseHeadId: _selectedRentExpenseHeadId,
       itemsTotal: itemsTotal,
       total: grandTotal,
       notes: _notesController.text.trim().isEmpty
@@ -229,6 +239,7 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
     final rawMaterialsAsync = ref.watch(getAllRawMaterialsProvider);
     final vendorsAsync = ref.watch(getAllvendorsProvider);
     final procurementsAsync = ref.watch(getAllProcurementsProvider);
+    final expenseHeadsAsync = ref.watch(expenseHeadsProvider);
 
     return AlertDialog(
       backgroundColor: AppColors.textWhite,
@@ -508,6 +519,74 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
                                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                   decoration: const InputDecoration(
                                     labelText: 'Unloading Charges',
+                                    border: OutlineInputBorder(),
+                                    prefixText: 'Rs. ',
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: expenseHeadsAsync.when(
+                                  loading: () => const LinearProgressIndicator(minHeight: 2),
+                                  error: (error, _) => Text(
+                                    'Failed to load expense heads: $error',
+                                    style: const TextStyle(color: AppColors.errorText),
+                                  ),
+                                  data: (heads) {
+                                    // Auto-select first 'rent' head if none selected and there is a 'rent' head
+                                    if (_selectedRentExpenseHeadId == null && widget.procurementToEdit == null) {
+                                      final rentHead = heads.where((h) => h.name.toLowerCase().contains('rent')).firstOrNull;
+                                      if (rentHead != null) {
+                                        // Update state safely after build
+                                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                                          if (mounted && _selectedRentExpenseHeadId == null) {
+                                            setState(() {
+                                              _selectedRentExpenseHeadId = rentHead.id;
+                                            });
+                                          }
+                                        });
+                                      }
+                                    }
+
+                                    return FormField<int>(
+                                      initialValue: _selectedRentExpenseHeadId,
+                                      builder: (fieldState) {
+                                        final selectedHead = heads
+                                            .where((h) => h.id == _selectedRentExpenseHeadId)
+                                            .firstOrNull;
+
+                                        return SearchableDropdown<ExpenseHead>(
+                                          items: heads,
+                                          displayStringForOption: (h) => h.name,
+                                          labelText: 'Rent Expense Head (Optional)',
+                                          errorText: fieldState.errorText,
+                                          enabled: !_isSaving,
+                                          initialText: selectedHead?.name,
+                                          onSelected: (selected) {
+                                            setState(() {
+                                              _selectedRentExpenseHeadId = selected.id;
+                                            });
+                                            fieldState.didChange(selected.id);
+                                          },
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _rentController,
+                                  enabled: !_isSaving,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  decoration: const InputDecoration(
+                                    labelText: 'Rent Amount',
                                     border: OutlineInputBorder(),
                                     prefixText: 'Rs. ',
                                   ),

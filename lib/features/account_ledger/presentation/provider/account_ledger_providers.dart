@@ -64,6 +64,7 @@ Future<void> transferBetweenAccounts(
   required int toAccountId,
   required double amount,
   required String description,
+  DateTime? date,
 }) {
   return ref
       .watch(accountLedgerRepositoryProvider)
@@ -72,5 +73,31 @@ Future<void> transferBetweenAccounts(
         toAccountId: toAccountId,
         amount: amount,
         description: description,
+        date: date,
+      );
+}
+
+@riverpod
+Future<Map<String, dynamic>> getTransferDetails(Ref ref, int transferId) {
+  return ref.watch(accountLedgerRepositoryProvider).getTransferDetails(transferId);
+}
+
+@riverpod
+Future<void> updateTransfer(
+  Ref ref, {
+  required int transferId,
+  required int fromAccountId,
+  required int toAccountId,
+  required double amount,
+  required String description,
+  required DateTime date,
+}) {
+  return ref.watch(accountLedgerRepositoryProvider).updateTransfer(
+        transferId: transferId,
+        fromAccountId: fromAccountId,
+        toAccountId: toAccountId,
+        amount: amount,
+        description: description,
+        date: date,
       );
 }

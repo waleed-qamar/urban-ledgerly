@@ -228,32 +228,23 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
           Row(
             children: [
               Expanded(
-                child: DropdownButtonFormField<int>(
-                  initialValue: _selectedSupplierId,
-                  decoration: const InputDecoration(
-                    labelText: 'Supplier',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: suppliers
-                      .map(
-                        (supplier) => DropdownMenuItem<int>(
-                          value: supplier.id,
-                          child: Text(
-                            supplier.name,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  validator: (value) =>
-                      value == null ? 'Select a Supplier' : null,
-                  onChanged: _isSubmitting
-                      ? null
-                      : (value) {
-                          setState(() {
-                            _selectedSupplierId = value;
-                          });
-                        },
+                child: SearchableDropdown<SupplierEntity>(
+                  items: suppliers,
+                  displayStringForOption: (supplier) => supplier.name,
+                  onSelected: (val) {
+                    if (!_isSubmitting) {
+                      setState(() => _selectedSupplierId = val.id);
+                    }
+                  },
+                  initialText: _selectedSupplierId != null
+                      ? suppliers
+                            .where((s) => s.id == _selectedSupplierId)
+                            .firstOrNull
+                            ?.name
+                      : null,
+                  labelText: 'Supplier',
+                  errorText: _selectedSupplierId == null ? 'Select a Supplier' : null,
+                  enabled: !_isSubmitting,
                 ),
               ),
               const SizedBox(width: 14),

@@ -5,6 +5,7 @@ import 'package:ledgerly/features/vender/domain/entities/vendor_entity.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/searchable_dropdown.dart';
+import '../../../account_ledger/domain/entities/account_entity.dart';
 import '../../../account_ledger/presentation/provider/account_ledger_providers.dart';
 import '../../../ledger/domain/entities/ledger_entity.dart';
 import '../../../ledger/presentation/providers/ledger_providers.dart';
@@ -229,32 +230,30 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                       });
                     }
 
-                    return DropdownButtonFormField<int?>(
-                      initialValue: _selectedAccountId,
-                      decoration: InputDecoration(
-                        labelText: 'Select $_paymentMethod Account *',
-                        border: const OutlineInputBorder(),
-                      ),
-                      items: [
-                        const DropdownMenuItem<int?>(
-                          value: null,
-                          child: Text('Select an account'),
-                        ),
-                        ...filteredAccounts.map(
-                          (acc) => DropdownMenuItem<int?>(
-                            value: acc.id,
-                            child: Text(
-                              '${acc.accountTitle} ${acc.bankName != null ? "(${acc.bankName})" : ""}',
-                            ),
-                          ),
-                        ),
-                      ],
-                      onChanged: _isSubmitting
-                          ? null
-                          : (value) =>
-                                setState(() => _selectedAccountId = value),
-                      validator: (value) =>
-                          value == null ? 'Please select an account' : null,
+                    final selectedAcc = _selectedAccountId != null
+                        ? filteredAccounts
+                              .where((acc) => acc.id == _selectedAccountId)
+                              .firstOrNull
+                        : null;
+
+                    return SearchableDropdown<AccountEntity>(
+                      items: filteredAccounts,
+                      displayStringForOption: (acc) =>
+                          '${acc.accountTitle} ${acc.bankName != null ? "(${acc.bankName})" : ""}',
+                      onSelected: (acc) {
+                        if (!_isSubmitting) {
+                          setState(() => _selectedAccountId = acc.id);
+                        }
+                      },
+                      initialText: selectedAcc != null
+                          ? '${selectedAcc.accountTitle} ${selectedAcc.bankName != null ? "(${selectedAcc.bankName})" : ""}'
+                          : null,
+                      labelText: 'Select $_paymentMethod Account *',
+                      prefixIcon: const Icon(Icons.account_balance_outlined),
+                      errorText: _selectedAccountId == null
+                          ? 'Please select an account'
+                          : null,
+                      enabled: !_isSubmitting,
                     );
                   },
                 ),

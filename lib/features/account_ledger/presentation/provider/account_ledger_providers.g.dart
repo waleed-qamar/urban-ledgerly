@@ -473,6 +473,7 @@ final class TransferBetweenAccountsProvider
       int toAccountId,
       double amount,
       String description,
+      DateTime? date,
     })
     super.argument,
   }) : super(
@@ -507,6 +508,7 @@ final class TransferBetweenAccountsProvider
               int toAccountId,
               double amount,
               String description,
+              DateTime? date,
             });
     return transferBetweenAccounts(
       ref,
@@ -514,6 +516,7 @@ final class TransferBetweenAccountsProvider
       toAccountId: argument.toAccountId,
       amount: argument.amount,
       description: argument.description,
+      date: argument.date,
     );
   }
 
@@ -530,7 +533,7 @@ final class TransferBetweenAccountsProvider
 }
 
 String _$transferBetweenAccountsHash() =>
-    r'99bd291e674a86955267ec1e8384f9d19557a6af';
+    r'65719398e53a3eb079859f0fbf2e44ab52c4504e';
 
 final class TransferBetweenAccountsFamily extends $Family
     with
@@ -541,6 +544,7 @@ final class TransferBetweenAccountsFamily extends $Family
             int toAccountId,
             double amount,
             String description,
+            DateTime? date,
           })
         > {
   const TransferBetweenAccountsFamily._()
@@ -557,16 +561,217 @@ final class TransferBetweenAccountsFamily extends $Family
     required int toAccountId,
     required double amount,
     required String description,
+    DateTime? date,
   }) => TransferBetweenAccountsProvider._(
     argument: (
       fromAccountId: fromAccountId,
       toAccountId: toAccountId,
       amount: amount,
       description: description,
+      date: date,
     ),
     from: this,
   );
 
   @override
   String toString() => r'transferBetweenAccountsProvider';
+}
+
+@ProviderFor(getTransferDetails)
+const getTransferDetailsProvider = GetTransferDetailsFamily._();
+
+final class GetTransferDetailsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Map<String, dynamic>>,
+          Map<String, dynamic>,
+          FutureOr<Map<String, dynamic>>
+        >
+    with
+        $FutureModifier<Map<String, dynamic>>,
+        $FutureProvider<Map<String, dynamic>> {
+  const GetTransferDetailsProvider._({
+    required GetTransferDetailsFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'getTransferDetailsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$getTransferDetailsHash();
+
+  @override
+  String toString() {
+    return r'getTransferDetailsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Map<String, dynamic>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Map<String, dynamic>> create(Ref ref) {
+    final argument = this.argument as int;
+    return getTransferDetails(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is GetTransferDetailsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$getTransferDetailsHash() =>
+    r'abfea051cbf0d6e4fad42bc56f86aaf11d277185';
+
+final class GetTransferDetailsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Map<String, dynamic>>, int> {
+  const GetTransferDetailsFamily._()
+    : super(
+        retry: null,
+        name: r'getTransferDetailsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  GetTransferDetailsProvider call(int transferId) =>
+      GetTransferDetailsProvider._(argument: transferId, from: this);
+
+  @override
+  String toString() => r'getTransferDetailsProvider';
+}
+
+@ProviderFor(updateTransfer)
+const updateTransferProvider = UpdateTransferFamily._();
+
+final class UpdateTransferProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const UpdateTransferProvider._({
+    required UpdateTransferFamily super.from,
+    required ({
+      int transferId,
+      int fromAccountId,
+      int toAccountId,
+      double amount,
+      String description,
+      DateTime date,
+    })
+    super.argument,
+  }) : super(
+         retry: null,
+         name: r'updateTransferProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateTransferHash();
+
+  @override
+  String toString() {
+    return r'updateTransferProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument =
+        this.argument
+            as ({
+              int transferId,
+              int fromAccountId,
+              int toAccountId,
+              double amount,
+              String description,
+              DateTime date,
+            });
+    return updateTransfer(
+      ref,
+      transferId: argument.transferId,
+      fromAccountId: argument.fromAccountId,
+      toAccountId: argument.toAccountId,
+      amount: argument.amount,
+      description: argument.description,
+      date: argument.date,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is UpdateTransferProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$updateTransferHash() => r'8558f08d028d9a68bf583701bd21344c5edec4c5';
+
+final class UpdateTransferFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<void>,
+          ({
+            int transferId,
+            int fromAccountId,
+            int toAccountId,
+            double amount,
+            String description,
+            DateTime date,
+          })
+        > {
+  const UpdateTransferFamily._()
+    : super(
+        retry: null,
+        name: r'updateTransferProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  UpdateTransferProvider call({
+    required int transferId,
+    required int fromAccountId,
+    required int toAccountId,
+    required double amount,
+    required String description,
+    required DateTime date,
+  }) => UpdateTransferProvider._(
+    argument: (
+      transferId: transferId,
+      fromAccountId: fromAccountId,
+      toAccountId: toAccountId,
+      amount: amount,
+      description: description,
+      date: date,
+    ),
+    from: this,
+  );
+
+  @override
+  String toString() => r'updateTransferProvider';
 }

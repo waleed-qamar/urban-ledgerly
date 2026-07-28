@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/features/employee/domain/entities/operator_entity.dart';
+import 'package:ledgerly/core/widgets/searchable_dropdown.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../provider/operator_providers.dart';
@@ -250,25 +251,24 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                         builder: (context, ref, _) {
                           final async = ref.watch(getAllWorkGroupsProvider);
                           return async.when(
-                            data: (groups) => DropdownButtonFormField<int>(
-                              initialValue: _workGroupId,
-                              decoration: const InputDecoration(
+                            data: (groups) {
+                              final noneGroup = {'id': null, 'name': 'None'};
+                              final items = <Map<String, dynamic>>[noneGroup, ...groups];
+                              
+                              final selectedGroup = _workGroupId != null
+                                  ? groups.where((g) => g['id'] == _workGroupId).firstOrNull
+                                  : null;
+                              final initialTextStr = selectedGroup != null ? selectedGroup['name'] as String : 'None';
+                              
+                              return SearchableDropdown<Map<String, dynamic>>(
+                                items: items,
+                                displayStringForOption: (g) => g['name'] as String,
+                                onSelected: (val) =>
+                                    setState(() => _workGroupId = val['id'] as int?),
+                                initialText: initialTextStr,
                                 labelText: 'Work Group',
-                                border: OutlineInputBorder(),
-                              ),
-                              items: [
-                                const DropdownMenuItem<int>(
-                                    value: null, child: Text('None')),
-                                ...groups.map(
-                                  (g) => DropdownMenuItem<int>(
-                                    value: g['id'] as int,
-                                    child: Text(g['name'] as String),
-                                  ),
-                                ),
-                              ],
-                              onChanged: (val) =>
-                                  setState(() => _workGroupId = val),
-                            ),
+                              );
+                            },
                             loading: () =>
                                 const LinearProgressIndicator(),
                             error: (e, _) => Text('Error: $e'),
@@ -284,25 +284,24 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                         builder: (context, ref, _) {
                           final async = ref.watch(getAllWageRolesProvider);
                           return async.when(
-                            data: (roles) => DropdownButtonFormField<int>(
-                              initialValue: _defaultWageRoleId,
-                              decoration: const InputDecoration(
+                            data: (roles) {
+                              final noneRole = {'id': null, 'role_name': 'None'};
+                              final items = <Map<String, dynamic>>[noneRole, ...roles];
+
+                              final selectedRole = _defaultWageRoleId != null
+                                  ? roles.where((r) => r['id'] == _defaultWageRoleId).firstOrNull
+                                  : null;
+                              final initialTextStr = selectedRole != null ? selectedRole['role_name'] as String : 'None';
+
+                              return SearchableDropdown<Map<String, dynamic>>(
+                                items: items,
+                                displayStringForOption: (r) => r['role_name'] as String,
+                                onSelected: (val) =>
+                                    setState(() => _defaultWageRoleId = val['id'] as int?),
+                                initialText: initialTextStr,
                                 labelText: 'Default Role',
-                                border: OutlineInputBorder(),
-                              ),
-                              items: [
-                                const DropdownMenuItem<int>(
-                                    value: null, child: Text('None')),
-                                ...roles.map(
-                                  (r) => DropdownMenuItem<int>(
-                                    value: r['id'] as int,
-                                    child: Text(r['role_name'] as String),
-                                  ),
-                                ),
-                              ],
-                              onChanged: (val) =>
-                                  setState(() => _defaultWageRoleId = val),
-                            ),
+                              );
+                            },
                             loading: () =>
                                 const LinearProgressIndicator(),
                             error: (e, _) => Text('Error: $e'),

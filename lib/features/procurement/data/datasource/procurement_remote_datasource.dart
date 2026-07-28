@@ -40,6 +40,8 @@ class ProcurementRemoteDatasource {
             'brokerage_price': procurement.brokeragePrice,
             'loading_charges': procurement.loadingCharges,
             'unloading_charges': procurement.unloadingCharges,
+            'rent_amount': procurement.rentAmount,
+            'rent_expense_head_id': procurement.rentExpenseHeadId,
             'items_total': procurement.itemsTotal,
             'notes': procurement.notes,
           })
@@ -113,6 +115,32 @@ class ProcurementRemoteDatasource {
             'created_at': DateTime.now().toIso8601String(),
           });
         }
+
+        // 5) Auto rent expense and account transaction
+        if (procurement.rentAmount > 0 && procurement.rentExpenseHeadId != null) {
+          final expenseInserted = await _client.from('expenses').insert({
+            'expense_head_id': procurement.rentExpenseHeadId,
+            'amount': procurement.rentAmount,
+            'date': _parseDate(procurement.procurementDate).toIso8601String(),
+            'remarks': 'Auto rent from procurement #$createdId',
+          }).select().single();
+
+          final expenseId = expenseInserted['id'] as int;
+
+          await _client.from('procurements').update({
+            'rent_expense_id': expenseId,
+          }).eq('id', createdId);
+
+          await _client.from('account_transactions').insert({
+            'account_id': 1,
+            'transaction_type': 'DEBIT',
+            'amount': procurement.rentAmount,
+            'reference_type': 'procurement_rent',
+            'reference_id': createdId,
+            'transaction_date': _parseDate(procurement.procurementDate).toIso8601String(),
+            'notes': 'Auto rent from procurement #$createdId',
+          });
+        }
       } catch (_) {
         // Keep data consistent: if side-effects fail, remove procurement row.
         await _client.from('procurements').delete().eq('id', createdId);
@@ -135,6 +163,8 @@ class ProcurementRemoteDatasource {
             'brokerage_price': procurement.brokeragePrice,
             'loading_charges': procurement.loadingCharges,
             'unloading_charges': procurement.unloadingCharges,
+            'rent_amount': procurement.rentAmount,
+            'rent_expense_head_id': procurement.rentExpenseHeadId,
             'items_total': procurement.itemsTotal,
             'notes': procurement.notes,
           })
@@ -224,6 +254,52 @@ class ProcurementRemoteDatasource {
           'created_at': DateTime.now().toIso8601String(),
         });
       }
+
+      // 7) Handle Rent Expense Updates
+      // First delete existing rent transactions
+      await _client
+          .from('account_transactions')
+          .delete()
+          .eq('reference_type', 'procurement_rent')
+          .eq('reference_id', procurementId);
+
+      if (procurement.rentExpenseId != null) {
+        await _client
+            .from('expenses')
+            .delete()
+            .eq('id', procurement.rentExpenseId!);
+      }
+
+      // Then insert new if applicable
+      if (procurement.rentAmount > 0 && procurement.rentExpenseHeadId != null) {
+        final expenseInserted = await _client.from('expenses').insert({
+          'expense_head_id': procurement.rentExpenseHeadId,
+          'amount': procurement.rentAmount,
+          'date': _parseDate(procurement.procurementDate).toIso8601String(),
+          'remarks': 'Auto rent from procurement #$procurementId',
+        }).select().single();
+
+        final expenseId = expenseInserted['id'] as int;
+
+        await _client.from('procurements').update({
+          'rent_expense_id': expenseId,
+        }).eq('id', procurementId);
+
+        await _client.from('account_transactions').insert({
+          'account_id': 1,
+          'transaction_type': 'DEBIT',
+          'amount': procurement.rentAmount,
+          'reference_type': 'procurement_rent',
+          'reference_id': procurementId,
+          'transaction_date': _parseDate(procurement.procurementDate).toIso8601String(),
+          'notes': 'Auto rent from procurement #$procurementId',
+        });
+      } else {
+        // if no rent, ensure we clear the rent_expense_id from the DB
+        await _client.from('procurements').update({
+          'rent_expense_id': null,
+        }).eq('id', procurementId);
+      }
     });
   }
 
@@ -244,7 +320,21 @@ class ProcurementRemoteDatasource {
           .eq('reference_id', id.toString());
 
       // 3) Delete procurement itself (cascades to procurement_items)
+      // Note: First fetch it to see if there is an expense to delete
+      final procResponse = await _client.from('procurements').select('rent_expense_id').eq('id', id).maybeSingle();
+      
       await _client.from('procurements').delete().eq('id', id);
+
+      // 4) Delete rent account transaction and expense
+      await _client
+          .from('account_transactions')
+          .delete()
+          .eq('reference_type', 'procurement_rent')
+          .eq('reference_id', id);
+          
+      if (procResponse != null && procResponse['rent_expense_id'] != null) {
+        await _client.from('expenses').delete().eq('id', procResponse['rent_expense_id'] as int);
+      }
     });
   }
 

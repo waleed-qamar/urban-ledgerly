@@ -12,5 +12,17 @@ abstract class AccountLedgerRepository {
     required int toAccountId,
     required double amount,
     required String description,
+    DateTime? date,
+  });
+
+  Future<Map<String, dynamic>> getTransferDetails(int transferId);
+
+  Future<void> updateTransfer({
+    required int transferId,
+    required int fromAccountId,
+    required int toAccountId,
+    required double amount,
+    required String description,
+    required DateTime date,
   });
 }

@@ -5,9 +5,12 @@ import '../../../../core/theme/app_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../account_ledger/domain/entities/account_entity.dart';
 import '../../../account_ledger/presentation/provider/account_ledger_providers.dart';
 import '../../domain/entities/expense.dart';
+import '../../domain/entities/expense_head.dart';
 import '../providers/expense_providers.dart';
+import '../../../../core/widgets/searchable_dropdown.dart';
 
 class AddExpenseDialog extends ConsumerStatefulWidget {
   final Expense? expense;
@@ -154,23 +157,21 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                         style: TextStyle(color: Colors.red),
                       );
                     }
-                    return DropdownButtonFormField<int>(
-                      initialValue: _selectedHeadId,
-                      decoration: const InputDecoration(
-                        labelText: 'Expense Head',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: heads
-                          .map(
-                            (h) => DropdownMenuItem(
-                              value: h.id,
-                              child: Text(h.name),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) => setState(() => _selectedHeadId = val),
-                      validator: (val) =>
-                          val == null ? 'Please select a head' : null,
+                    return SearchableDropdown<ExpenseHead>(
+                      items: heads,
+                      displayStringForOption: (h) => h.name,
+                      onSelected: (selected) =>
+                          setState(() => _selectedHeadId = selected.id),
+                      initialText: _selectedHeadId != null
+                          ? heads
+                                .where((h) => h.id == _selectedHeadId)
+                                .firstOrNull
+                                ?.name
+                          : null,
+                      labelText: 'Expense Head',
+                      errorText: _selectedHeadId == null
+                          ? 'Please select a head'
+                          : null,
                     );
                   },
                   loading: () => const CircularProgressIndicator(),
@@ -220,26 +221,37 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                         });
                       }
 
-                      return DropdownButtonFormField<int>(
-                        initialValue: _selectedAccountId,
-                        decoration: const InputDecoration(
-                          labelText: 'Paid From Account *',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: accounts
-                            .map(
-                              (a) => DropdownMenuItem(
-                                value: a.id,
-                                child: Text(
-                                  '${a.accountTitle} (${a.accountType})',
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedAccountId = val),
-                        validator: (val) =>
-                            val == null ? 'Please select an account' : null,
+                      final selectedAcc = _selectedAccountId != null
+                          ? accounts
+                                .where((a) => a.id == _selectedAccountId)
+                                .firstOrNull
+                          : null;
+
+                      String formatAccount(AccountEntity a) {
+                        final parts = <String>[];
+                        if (a.bankName != null && a.bankName!.isNotEmpty) {
+                          parts.add(a.bankName!);
+                        }
+                        parts.add(a.accountTitle);
+                        if (a.accountNumber != null &&
+                            a.accountNumber!.isNotEmpty) {
+                          parts.add('(${a.accountNumber})');
+                        }
+                        return parts.join(' - ');
+                      }
+
+                      return SearchableDropdown<AccountEntity>(
+                        items: accounts,
+                        displayStringForOption: formatAccount,
+                        onSelected: (val) =>
+                            setState(() => _selectedAccountId = val.id),
+                        initialText: selectedAcc != null
+                            ? formatAccount(selectedAcc)
+                            : null,
+                        labelText: 'Paid From Account *',
+                        errorText: _selectedAccountId == null
+                            ? 'Please select an account'
+                            : null,
                       );
                     },
                   ),

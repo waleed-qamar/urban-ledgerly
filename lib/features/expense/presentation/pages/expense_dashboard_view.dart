@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:ledgerly/features/expense/presentation/pages/vnv_report_view.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/searchable_dropdown.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -65,25 +66,17 @@ class ExpenseDashboardView extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DropdownButtonFormField<int?>(
-                    initialValue: tempHeadId,
-                    decoration: const InputDecoration(
-                      labelText: 'Expense Category',
-                      border: OutlineInputBorder(),
-                    ),
+                  SearchableDropdown<Map<String, dynamic>>(
                     items: [
-                      const DropdownMenuItem(
-                        value: null,
-                        child: Text('All Categories'),
-                      ),
-                      ...heads.map(
-                        (h) => DropdownMenuItem<int?>(
-                          value: h.id,
-                          child: Text(h.name),
-                        ),
-                      ),
+                      {'id': null, 'name': 'All Categories'},
+                      ...heads.map((h) => {'id': h.id, 'name': h.name}),
                     ],
-                    onChanged: (val) => setState(() => tempHeadId = val),
+                    displayStringForOption: (item) => item['name'] as String,
+                    onSelected: (item) => setState(() => tempHeadId = item['id'] as int?),
+                    initialText: tempHeadId == null
+                        ? 'All Categories'
+                        : heads.where((h) => h.id == tempHeadId).firstOrNull?.name,
+                    labelText: 'Expense Category',
                   ),
                   const SizedBox(height: 24),
                   const Text(

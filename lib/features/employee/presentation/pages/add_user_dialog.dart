@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
+import 'package:ledgerly/core/widgets/searchable_dropdown.dart';
 import 'package:ledgerly/features/auth/presentation/provider/current_employee_provider.dart';
 import 'package:ledgerly/features/employee/domain/entities/employee_entity.dart';
 import 'package:ledgerly/features/employee/presentation/provider/operator_providers.dart';
@@ -242,22 +243,25 @@ class _AddUserDialogState extends ConsumerState<AddUserDialog> {
                 rolesAsync.when(
                   data: (roles) {
                     if (_selectedRoleId == null && roles.isNotEmpty) {
-                      _selectedRoleId = roles.first['id'] as int;
+                      // Schedule update after build
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted && _selectedRoleId == null) {
+                          setState(() => _selectedRoleId = roles.first['id'] as int);
+                        }
+                      });
                     }
-                    return DropdownButtonFormField<int>(
-                      initialValue: _selectedRoleId,
-                      decoration: const InputDecoration(
-                        labelText: 'Role',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: roles.map((r) {
-                        return DropdownMenuItem<int>(
-                          value: r['id'] as int,
-                          child: Text(r['name'].toString().toUpperCase()),
-                        );
-                      }).toList(),
-                      onChanged: (val) => setState(() => _selectedRoleId = val),
-                      validator: (val) => val == null ? 'Required' : null,
+                    final selectedRole = _selectedRoleId != null
+                        ? roles.where((r) => r['id'] == _selectedRoleId).firstOrNull
+                        : null;
+                    final initialTextStr = selectedRole != null ? selectedRole['name'].toString().toUpperCase() : null;
+
+                    return SearchableDropdown<Map<String, dynamic>>(
+                      items: roles,
+                      displayStringForOption: (r) => r['name'].toString().toUpperCase(),
+                      onSelected: (val) => setState(() => _selectedRoleId = val['id'] as int),
+                      initialText: initialTextStr,
+                      labelText: 'Role',
+                      errorText: _selectedRoleId == null ? 'Required' : null,
                     );
                   },
                   loading: () => const Align(
