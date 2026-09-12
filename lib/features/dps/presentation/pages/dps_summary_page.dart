@@ -1006,7 +1006,9 @@ class _DpsSummaryPageState extends ConsumerState<DpsSummaryPage>
     if (tooltip == null || tooltip.isEmpty) {
       return DataCell(textWidget);
     }
-    return DataCell(_HoverTooltipCell(label: value, tooltip: tooltip, textColor: textColor));
+    return DataCell(
+      _HoverTooltipCell(label: value, tooltip: tooltip, textColor: textColor),
+    );
   }
 
   Widget _emptyState(String message) {
@@ -1197,7 +1199,11 @@ class _HoverTooltipCellState extends State<_HoverTooltipCell> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.info_outline_rounded, size: 13, color: Color(0xFFFFB74D)),
+                      const Icon(
+                        Icons.info_outline_rounded,
+                        size: 13,
+                        color: Color(0xFFFFB74D),
+                      ),
                       const SizedBox(width: 5),
                       const Text(
                         'Damage Reason',
@@ -1263,7 +1269,9 @@ class _HoverTooltipCellState extends State<_HoverTooltipCell> {
           Icon(
             Icons.info_outline_rounded,
             size: 13,
-            color: (widget.textColor ?? AppColors.textBlack87).withValues(alpha: 0.55),
+            color: (widget.textColor ?? AppColors.textBlack87).withValues(
+              alpha: 0.55,
+            ),
           ),
         ],
       ),
