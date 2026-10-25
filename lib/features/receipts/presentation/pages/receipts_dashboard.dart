@@ -594,8 +594,11 @@ class _ReceiptCard extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 18),
-                tooltip: 'View / Edit',
-                onPressed: onTap,
+                tooltip: 'Edit Entry',
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (_) => AddReceiptDialog(receipt: receipt),
+                ),
               ),
             ],
           ),
@@ -809,8 +812,12 @@ class _DisbursementCard extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 18),
-                tooltip: 'View / Edit',
-                onPressed: onTap,
+                tooltip: 'Edit Entry',
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (_) =>
+                      AddDisbursementDialog(disbursement: disbursement),
+                ),
               ),
             ],
           ),
@@ -822,7 +829,7 @@ class _DisbursementCard extends StatelessWidget {
 
 // ── Receipt Details + Edit Dialog ─────────────────────────────────────────────
 
-class _ReceiptDetailsDialog extends StatefulWidget {
+class _ReceiptDetailsDialog extends StatelessWidget {
   final ReceiptEntity receipt;
   final String clientName;
   final WidgetRef ref;
@@ -834,79 +841,11 @@ class _ReceiptDetailsDialog extends StatefulWidget {
   });
 
   @override
-  State<_ReceiptDetailsDialog> createState() => _ReceiptDetailsDialogState();
-}
-
-class _ReceiptDetailsDialogState extends State<_ReceiptDetailsDialog> {
-  bool _editing = false;
-  bool _saving = false;
-  late TextEditingController _accountNoCtrl;
-  late TextEditingController _remarksCtrl;
-  late String _paymentMethod;
-  late DateTime _receivedDate;
-
-  @override
-  void initState() {
-    super.initState();
-    _accountNoCtrl =
-        TextEditingController(text: widget.receipt.accountNo ?? '');
-    _remarksCtrl =
-        TextEditingController(text: widget.receipt.remarks ?? '');
-    _paymentMethod = widget.receipt.paymentMethod;
-    _receivedDate = widget.receipt.receivedDate;
-  }
-
-  @override
-  void dispose() {
-    _accountNoCtrl.dispose();
-    _remarksCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    if (widget.receipt.id == null) return;
-    setState(() => _saving = true);
-    try {
-      await widget.ref.read(
-        updateReceiptProvider(
-          id: widget.receipt.id!,
-          paymentMethod: _paymentMethod,
-          accountNo: _accountNoCtrl.text.trim().isEmpty
-              ? null
-              : _accountNoCtrl.text.trim(),
-          remarks: _remarksCtrl.text.trim().isEmpty
-              ? null
-              : _remarksCtrl.text.trim(),
-          receivedDate: _receivedDate,
-        ).future,
-      );
-      widget.ref.invalidate(getAllReceiptsProvider);
-      if (mounted) {
-        setState(() {
-          _editing = false;
-          _saving = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Receipt updated.')),
-        );
-      }
-    } catch (e) {
-      setState(() => _saving = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final r = widget.receipt;
-    const methods = ['cash', 'bank', 'cheque', 'other'];
+    final r = receipt;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),
         child: SingleChildScrollView(
@@ -927,18 +866,22 @@ class _ReceiptDetailsDialogState extends State<_ReceiptDetailsDialog> {
                               fontSize: 18, fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 2),
-                        Text(widget.clientName,
-                            style:
-                                TextStyle(color: Colors.grey.shade600)),
+                        Text(clientName,
+                            style: TextStyle(color: Colors.grey.shade600)),
                       ],
                     ),
                   ),
-                  if (!_editing)
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined),
-                      tooltip: 'Edit',
-                      onPressed: () => setState(() => _editing = true),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined),
+                    tooltip: 'Edit Entry',
+                    onPressed: () {
+                      Navigator.pop(context);
+                      showDialog(
+                        context: context,
+                        builder: (_) => AddReceiptDialog(receipt: r),
+                      );
+                    },
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
@@ -946,8 +889,7 @@ class _ReceiptDetailsDialogState extends State<_ReceiptDetailsDialog> {
                 ],
               ),
               const Divider(height: 24),
-              _DetailRow(
-                  'Amount', 'PKR ${r.totalAmount.toStringAsFixed(2)}'),
+              _DetailRow('Amount', 'PKR ${r.totalAmount.toStringAsFixed(2)}'),
               const SizedBox(height: 10),
               _DetailRow(
                   'Date',
@@ -966,95 +908,22 @@ class _ReceiptDetailsDialogState extends State<_ReceiptDetailsDialog> {
                         Text('Invoice #${a.invoiceId}'),
                         Text(
                           'PKR ${a.amount.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ],
                     ),
                   ),
                 ),
               ],
-              const SizedBox(height: 16),
-              if (_editing) ...[
-                const Divider(),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: _paymentMethod,
-                  decoration: const InputDecoration(
-                      labelText: 'Payment Method',
-                      border: OutlineInputBorder()),
-                  items: methods
-                      .map((m) => DropdownMenuItem(
-                          value: m, child: Text(m.toUpperCase())))
-                      .toList(),
-                  onChanged: (v) => setState(
-                      () => _paymentMethod = v ?? _paymentMethod),
-                ),
+              const SizedBox(height: 10),
+              _DetailRow('Payment Method', r.paymentMethod.toUpperCase()),
+              if (r.accountNo?.isNotEmpty == true) ...[
                 const SizedBox(height: 10),
-                TextField(
-                  controller: _accountNoCtrl,
-                  decoration: const InputDecoration(
-                      labelText: 'Account No.',
-                      border: OutlineInputBorder()),
-                ),
+                _DetailRow('Account No.', r.accountNo!),
+              ],
+              if (r.remarks?.isNotEmpty == true) ...[
                 const SizedBox(height: 10),
-                TextField(
-                  controller: _remarksCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                      labelText: 'Remarks',
-                      border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 10),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.calendar_today, size: 16),
-                  label: Text(
-                      'Date: ${_receivedDate.day}/${_receivedDate.month}/${_receivedDate.year}'),
-                  onPressed: () async {
-                    final p = await showDatePicker(
-                      context: context,
-                      initialDate: _receivedDate,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2100),
-                    );
-                    if (p != null) setState(() => _receivedDate = p);
-                  },
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: _saving
-                          ? null
-                          : () => setState(() => _editing = false),
-                      child: const Text('Cancel'),
-                    ),
-                    const SizedBox(width: 8),
-                    FilledButton(
-                      onPressed: _saving ? null : _save,
-                      child: _saving
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white))
-                          : const Text('Save'),
-                    ),
-                  ],
-                ),
-              ] else ...[
-                _DetailRow(
-                    'Payment Method', r.paymentMethod.toUpperCase()),
-                if (r.accountNo?.isNotEmpty == true) ...[
-                  const SizedBox(height: 10),
-                  _DetailRow('Account No.', r.accountNo!),
-                ],
-                if (r.remarks?.isNotEmpty == true) ...[
-                  const SizedBox(height: 10),
-                  _DetailRow('Remarks', r.remarks!),
-                ],
+                _DetailRow('Remarks', r.remarks!),
               ],
             ],
           ),
@@ -1066,7 +935,7 @@ class _ReceiptDetailsDialogState extends State<_ReceiptDetailsDialog> {
 
 // ── Disbursement Details + Edit Dialog ────────────────────────────────────────
 
-class _DisbursementDetailsDialog extends StatefulWidget {
+class _DisbursementDetailsDialog extends StatelessWidget {
   final DisbursementRecord disbursement;
   final String vendorName;
   final WidgetRef ref;
@@ -1078,87 +947,11 @@ class _DisbursementDetailsDialog extends StatefulWidget {
   });
 
   @override
-  State<_DisbursementDetailsDialog> createState() =>
-      _DisbursementDetailsDialogState();
-}
-
-class _DisbursementDetailsDialogState
-    extends State<_DisbursementDetailsDialog> {
-  bool _editing = false;
-  bool _saving = false;
-  late TextEditingController _accountNoCtrl;
-  late TextEditingController _categoryCtrl;
-  late TextEditingController _remarksCtrl;
-  late String _paymentMethod;
-  late DateTime _paidDate;
-
-  @override
-  void initState() {
-    super.initState();
-    _accountNoCtrl =
-        TextEditingController(text: widget.disbursement.accountNo ?? '');
-    _categoryCtrl =
-        TextEditingController(text: widget.disbursement.category ?? '');
-    _remarksCtrl =
-        TextEditingController(text: widget.disbursement.remarks ?? '');
-    _paymentMethod = widget.disbursement.paymentMethod;
-    _paidDate = widget.disbursement.paidDate;
-  }
-
-  @override
-  void dispose() {
-    _accountNoCtrl.dispose();
-    _categoryCtrl.dispose();
-    _remarksCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    setState(() => _saving = true);
-    try {
-      await widget.ref.read(
-        updateDisbursementProvider(
-          id: widget.disbursement.id,
-          paymentMethod: _paymentMethod,
-          accountNo: _accountNoCtrl.text.trim().isEmpty
-              ? null
-              : _accountNoCtrl.text.trim(),
-          category: _categoryCtrl.text.trim().isEmpty
-              ? null
-              : _categoryCtrl.text.trim(),
-          remarks: _remarksCtrl.text.trim().isEmpty
-              ? null
-              : _remarksCtrl.text.trim(),
-          paidDate: _paidDate,
-        ).future,
-      );
-      widget.ref.invalidate(getAllDisbursementsProvider);
-      if (mounted) {
-        setState(() {
-          _editing = false;
-          _saving = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Disbursement updated.')),
-        );
-      }
-    } catch (e) {
-      setState(() => _saving = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final d = widget.disbursement;
-    const methods = ['cash', 'bank', 'cheque', 'other'];
+    final d = disbursement;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),
         child: SingleChildScrollView(
@@ -1179,18 +972,23 @@ class _DisbursementDetailsDialogState
                               fontSize: 18, fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 2),
-                        Text(widget.vendorName,
-                            style:
-                                TextStyle(color: Colors.grey.shade600)),
+                        Text(vendorName,
+                            style: TextStyle(color: Colors.grey.shade600)),
                       ],
                     ),
                   ),
-                  if (!_editing)
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined),
-                      tooltip: 'Edit',
-                      onPressed: () => setState(() => _editing = true),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined),
+                    tooltip: 'Edit Entry',
+                    onPressed: () {
+                      Navigator.pop(context);
+                      showDialog(
+                        context: context,
+                        builder: (_) =>
+                            AddDisbursementDialog(disbursement: d),
+                      );
+                    },
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
@@ -1198,104 +996,24 @@ class _DisbursementDetailsDialogState
                 ],
               ),
               const Divider(height: 24),
-              _DetailRow(
-                  'Amount', 'PKR ${d.totalAmount.toStringAsFixed(2)}'),
+              _DetailRow('Amount', 'PKR ${d.totalAmount.toStringAsFixed(2)}'),
               const SizedBox(height: 10),
               _DetailRow(
                   'Date',
                   '${d.paidDate.day}/${d.paidDate.month}/${d.paidDate.year}'),
-              if (!_editing) ...[
+              const SizedBox(height: 10),
+              _DetailRow('Payment Method', d.paymentMethod.toUpperCase()),
+              if (d.accountNo?.isNotEmpty == true) ...[
                 const SizedBox(height: 10),
-                _DetailRow(
-                    'Payment Method', d.paymentMethod.toUpperCase()),
-                if (d.accountNo?.isNotEmpty == true) ...[
-                  const SizedBox(height: 10),
-                  _DetailRow('Account No.', d.accountNo!),
-                ],
-                if (d.category?.isNotEmpty == true) ...[
-                  const SizedBox(height: 10),
-                  _DetailRow('Category', d.category!),
-                ],
-                if (d.remarks?.isNotEmpty == true) ...[
-                  const SizedBox(height: 10),
-                  _DetailRow('Remarks', d.remarks!),
-                ],
-              ] else ...[
-                const Divider(),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: _paymentMethod,
-                  decoration: const InputDecoration(
-                      labelText: 'Payment Method',
-                      border: OutlineInputBorder()),
-                  items: methods
-                      .map((m) => DropdownMenuItem(
-                          value: m, child: Text(m.toUpperCase())))
-                      .toList(),
-                  onChanged: (v) => setState(
-                      () => _paymentMethod = v ?? _paymentMethod),
-                ),
+                _DetailRow('Account No.', d.accountNo!),
+              ],
+              if (d.category?.isNotEmpty == true) ...[
                 const SizedBox(height: 10),
-                TextField(
-                  controller: _accountNoCtrl,
-                  decoration: const InputDecoration(
-                      labelText: 'Account No.',
-                      border: OutlineInputBorder()),
-                ),
+                _DetailRow('Category', d.category!),
+              ],
+              if (d.remarks?.isNotEmpty == true) ...[
                 const SizedBox(height: 10),
-                TextField(
-                  controller: _categoryCtrl,
-                  decoration: const InputDecoration(
-                      labelText: 'Category',
-                      border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _remarksCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                      labelText: 'Remarks',
-                      border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 10),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.calendar_today, size: 16),
-                  label: Text(
-                      'Date: ${_paidDate.day}/${_paidDate.month}/${_paidDate.year}'),
-                  onPressed: () async {
-                    final p = await showDatePicker(
-                      context: context,
-                      initialDate: _paidDate,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                    );
-                    if (p != null) setState(() => _paidDate = p);
-                  },
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: _saving
-                          ? null
-                          : () => setState(() => _editing = false),
-                      child: const Text('Cancel'),
-                    ),
-                    const SizedBox(width: 8),
-                    FilledButton(
-                      onPressed: _saving ? null : _save,
-                      child: _saving
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white))
-                          : const Text('Save'),
-                    ),
-                  ],
-                ),
+                _DetailRow('Remarks', d.remarks!),
               ],
             ],
           ),

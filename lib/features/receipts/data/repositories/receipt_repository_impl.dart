@@ -59,36 +59,48 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
   @override
   Future<void> updateReceipt({
     required int id,
+    int? clientId,
+    int? accountId,
     required String paymentMethod,
     String? accountNo,
     String? remarks,
     required DateTime receivedDate,
+    double? totalAmount,
   }) {
     return _datasource.updateReceipt(
       id: id,
+      clientId: clientId,
+      accountId: accountId,
       paymentMethod: paymentMethod,
       accountNo: accountNo,
       remarks: remarks,
       receivedDate: receivedDate,
+      totalAmount: totalAmount,
     );
   }
 
   @override
   Future<void> updateDisbursement({
     required int id,
+    int? supplierId,
+    int? accountId,
     required String paymentMethod,
     String? accountNo,
     String? category,
     String? remarks,
     required DateTime paidDate,
+    double? totalAmount,
   }) {
     return _datasource.updateDisbursement(
       id: id,
+      supplierId: supplierId,
+      accountId: accountId,
       paymentMethod: paymentMethod,
       accountNo: accountNo,
       category: category,
       remarks: remarks,
       paidDate: paidDate,
+      totalAmount: totalAmount,
     );
   }
 }

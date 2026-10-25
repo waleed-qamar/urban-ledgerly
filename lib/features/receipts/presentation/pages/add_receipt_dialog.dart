@@ -14,7 +14,9 @@ import '../../domain/entities/receipt_entity.dart';
 import '../providers/receipt_providers.dart';
 
 class AddReceiptDialog extends ConsumerStatefulWidget {
-  const AddReceiptDialog({super.key});
+  final ReceiptEntity? receipt;
+
+  const AddReceiptDialog({super.key, this.receipt});
 
   @override
   ConsumerState<AddReceiptDialog> createState() => _AddReceiptDialogState();
@@ -32,6 +34,33 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
   String _bankTransferMode = 'online'; // 'online' or 'cheque'
   int? _selectedClientId;
   int? _selectedAccountId;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.receipt != null) {
+      final r = widget.receipt!;
+      _selectedClientId = r.clientId;
+      _paymentAmountController.text = r.totalAmount.toString();
+      _paymentMethod = r.paymentMethod == 'cheque' ? 'bank' : r.paymentMethod;
+      _bankTransferMode = r.paymentMethod == 'cheque' ? 'cheque' : 'online';
+      _accountNoController.text = r.accountNo ?? '';
+      _remarksController.text = r.remarks ?? '';
+      _receivedDate = r.receivedDate;
+      _selectedAccountId = r.accountId;
+
+      if (_selectedAccountId == null && r.id != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          final accId = await ref
+              .read(accountLedgerRepositoryProvider)
+              .getAccountIdByReference('receipt', r.id!);
+          if (mounted && accId != null) {
+            setState(() => _selectedAccountId = accId);
+          }
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -90,25 +119,46 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
           ? 'cheque'
           : _paymentMethod;
 
-      final receipt = ReceiptEntity(
-        clientId: _selectedClientId!,
-        totalAmount: paymentAmount,
-        paymentMethod: finalPaymentMethod,
-        accountId: _selectedAccountId,
-        accountNo: _accountNoController.text.trim().isEmpty
-            ? null
-            : _accountNoController.text.trim(),
-        remarks: _remarksController.text.trim().isEmpty
-            ? null
-            : _remarksController.text.trim(),
-        receivedDate: _receivedDate,
-        allocations: const [],
-      );
+      if (widget.receipt != null) {
+        await ref.read(receiptRepositoryProvider).updateReceipt(
+          id: widget.receipt!.id!,
+          clientId: _selectedClientId,
+          accountId: _selectedAccountId,
+          paymentMethod: finalPaymentMethod,
+          accountNo: _accountNoController.text.trim().isEmpty
+              ? null
+              : _accountNoController.text.trim(),
+          remarks: _remarksController.text.trim().isEmpty
+              ? null
+              : _remarksController.text.trim(),
+          receivedDate: _receivedDate,
+          totalAmount: paymentAmount,
+        );
+      } else {
+        final receipt = ReceiptEntity(
+          clientId: _selectedClientId!,
+          totalAmount: paymentAmount,
+          paymentMethod: finalPaymentMethod,
+          accountId: _selectedAccountId,
+          accountNo: _accountNoController.text.trim().isEmpty
+              ? null
+              : _accountNoController.text.trim(),
+          remarks: _remarksController.text.trim().isEmpty
+              ? null
+              : _remarksController.text.trim(),
+          receivedDate: _receivedDate,
+          allocations: const [],
+        );
 
-      await ref.read(createReceiptProvider(receipt).future);
+        await ref.read(createReceiptProvider(receipt).future);
+      }
 
       ref.invalidate(getAllReceiptsProvider);
       ref.invalidate(getAllAccountsProvider);
+      ref.invalidate(getAllEntriesProvider);
+      ref.invalidate(getBalanceProvider);
+      ref.invalidate(getEntriesByPartyProvider);
+      ref.invalidate(getEntriesByTypeProvider);
       if (context.mounted) {
         Navigator.pop(context.mounted ? context : context, true);
       }
@@ -116,7 +166,7 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context.mounted ? context : context,
-        ).showSnackBar(SnackBar(content: Text('Failed to create receipt: $e')));
+        ).showSnackBar(SnackBar(content: Text('Failed to save receipt: $e')));
       }
     } finally {
       if (mounted) {
@@ -157,7 +207,9 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'New Receipt',
+                                  widget.receipt != null
+                                      ? 'Edit Receipt'
+                                      : 'New Receipt',
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineSmall
@@ -165,7 +217,9 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Record a payment received from a client.',
+                                  widget.receipt != null
+                                      ? 'Update payment details and remarks.'
+                                      : 'Record a payment received from a client.',
                                   style: TextStyle(color: Colors.grey.shade600),
                                 ),
                               ],
@@ -450,7 +504,11 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                                     ),
                                   )
                                 : const Icon(Icons.save_outlined),
-                            label: const Text('Save Receipt'),
+                            label: Text(
+                              widget.receipt != null
+                                  ? 'Update Receipt'
+                                  : 'Save Receipt',
+                            ),
                           ),
                         ],
                       ),

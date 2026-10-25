@@ -39,6 +39,25 @@ class ReceiptRemoteDatasource {
       );
 
       final receiptId = (createdReceiptId as num).toInt();
+
+      if (receipt.remarks != null && receipt.remarks!.trim().isNotEmpty) {
+        await _client
+            .from('ledger')
+            .update({'remarks': receipt.remarks!.trim()})
+            .inFilter('transaction_source', [
+              'receipt',
+              'receipt_allocation',
+              'receipt_advance',
+            ])
+            .eq('reference_id', receiptId.toString());
+
+        await _client
+            .from('account_transactions')
+            .update({'description': receipt.remarks!.trim()})
+            .eq('reference_type', 'receipt')
+            .eq('reference_id', receiptId);
+      }
+
       return getReceiptById(receiptId);
     });
   }
@@ -78,37 +97,167 @@ class ReceiptRemoteDatasource {
 
   Future<void> updateReceipt({
     required int id,
+    int? clientId,
+    int? accountId,
     required String paymentMethod,
     String? accountNo,
     String? remarks,
     required DateTime receivedDate,
+    double? totalAmount,
   }) async {
     await supabaseSafeCall(() async {
-      await _client.from('receipts').update({
+      final updateData = <String, dynamic>{
         'payment_method': paymentMethod,
         'account_no': accountNo,
         'remarks': remarks,
         'received_date': receivedDate.toIso8601String(),
-      }).eq('id', id);
+      };
+      if (clientId != null) {
+        updateData['client_id'] = clientId;
+      }
+      if (totalAmount != null) {
+        updateData['total_amount'] = totalAmount;
+      }
+
+      await _client.from('receipts').update(updateData).eq('id', id);
+
+      // Update corresponding ledger entries
+      final ledgerUpdate = <String, dynamic>{
+        'remarks': remarks,
+        'payment_method': paymentMethod,
+        'entry_date': receivedDate.toIso8601String(),
+      };
+      if (clientId != null) {
+        ledgerUpdate['party_id'] = clientId;
+      }
+      if (totalAmount != null) {
+        ledgerUpdate['amount'] = totalAmount;
+      }
+
+      await _client
+          .from('ledger')
+          .update(ledgerUpdate)
+          .inFilter('transaction_source', [
+            'receipt',
+            'receipt_allocation',
+            'receipt_advance',
+          ])
+          .eq('reference_id', id.toString());
+
+      // Update corresponding account_transactions
+      final txUpdate = <String, dynamic>{
+        'description': remarks,
+        'transaction_date': receivedDate.toIso8601String(),
+        'external_reference': accountNo,
+      };
+      if (totalAmount != null) {
+        txUpdate['amount'] = totalAmount;
+      }
+      if (accountId != null) {
+        txUpdate['account_id'] = accountId;
+      }
+
+      final updatedTx = await _client
+          .from('account_transactions')
+          .update(txUpdate)
+          .eq('reference_type', 'receipt')
+          .eq('reference_id', id)
+          .select();
+
+      if ((updatedTx as List).isEmpty && accountId != null && totalAmount != null) {
+        await _client.from('account_transactions').insert({
+          'account_id': accountId,
+          'amount': totalAmount,
+          'transaction_type': 'credit',
+          'reference_type': 'receipt',
+          'reference_id': id,
+          'description': remarks,
+          'transaction_date': receivedDate.toIso8601String(),
+          'external_reference': accountNo,
+        });
+      }
     });
   }
 
   Future<void> updateDisbursement({
     required int id,
+    int? supplierId,
+    int? accountId,
     required String paymentMethod,
     String? accountNo,
     String? category,
     String? remarks,
     required DateTime paidDate,
+    double? totalAmount,
   }) async {
     await supabaseSafeCall(() async {
-      await _client.from('disbursements').update({
+      final updateData = <String, dynamic>{
         'payment_method': paymentMethod,
         'account_no': accountNo,
         'category': category,
         'remarks': remarks,
         'paid_date': paidDate.toIso8601String(),
-      }).eq('id', id);
+      };
+      if (supplierId != null) {
+        updateData['supplier_id'] = supplierId;
+      }
+      if (totalAmount != null) {
+        updateData['total_amount'] = totalAmount;
+      }
+
+      await _client.from('disbursements').update(updateData).eq('id', id);
+
+      // Also update corresponding ledger entry
+      final ledgerUpdate = <String, dynamic>{
+        'remarks': remarks,
+        'payment_method': paymentMethod,
+        'entry_date': paidDate.toIso8601String(),
+      };
+      if (supplierId != null) {
+        ledgerUpdate['party_id'] = supplierId;
+      }
+      if (totalAmount != null) {
+        ledgerUpdate['amount'] = totalAmount;
+      }
+
+      await _client
+          .from('ledger')
+          .update(ledgerUpdate)
+          .eq('transaction_source', 'disbursement')
+          .eq('reference_id', id.toString());
+
+      // Update corresponding account_transactions
+      final txUpdate = <String, dynamic>{
+        'description': remarks,
+        'transaction_date': paidDate.toIso8601String(),
+        'external_reference': accountNo,
+      };
+      if (totalAmount != null) {
+        txUpdate['amount'] = totalAmount;
+      }
+      if (accountId != null) {
+        txUpdate['account_id'] = accountId;
+      }
+
+      final updatedTx = await _client
+          .from('account_transactions')
+          .update(txUpdate)
+          .eq('reference_type', 'disbursement')
+          .eq('reference_id', id)
+          .select();
+
+      if ((updatedTx as List).isEmpty && accountId != null && totalAmount != null) {
+        await _client.from('account_transactions').insert({
+          'account_id': accountId,
+          'amount': totalAmount,
+          'transaction_type': 'debit',
+          'reference_type': 'disbursement',
+          'reference_id': id,
+          'description': remarks,
+          'transaction_date': paidDate.toIso8601String(),
+          'external_reference': accountNo,
+        });
+      }
     });
   }
 
@@ -162,6 +311,8 @@ class ReceiptRemoteDatasource {
             .toString();
     normalized['accountNo'] =
         normalized['accountNo'] ?? normalized['account_no'];
+    normalized['accountId'] =
+        normalized['accountId'] ?? normalized['account_id'];
     normalized['remarks'] = normalized['remarks']?.toString();
     normalized['receivedDate'] =
         (normalized['receivedDate'] ??

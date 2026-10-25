@@ -10,10 +10,13 @@ import '../../../account_ledger/presentation/provider/account_ledger_providers.d
 import '../../../ledger/domain/entities/ledger_entity.dart';
 import '../../../ledger/presentation/providers/ledger_providers.dart';
 import '../../../vender/presentation/providers/vendor_providers.dart';
+import '../../domain/entities/disbursement_record.dart';
 import '../providers/receipt_providers.dart';
 
 class AddDisbursementDialog extends ConsumerStatefulWidget {
-  const AddDisbursementDialog({super.key});
+  final DisbursementRecord? disbursement;
+
+  const AddDisbursementDialog({super.key, this.disbursement});
 
   @override
   ConsumerState<AddDisbursementDialog> createState() =>
@@ -33,6 +36,31 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
   String _bankTransferMode = 'online';
   DateTime _paidDate = DateTime.now();
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.disbursement != null) {
+      final d = widget.disbursement!;
+      _selectedVendorId = d.supplierId;
+      _amountController.text = d.totalAmount.toString();
+      _paymentMethod = d.paymentMethod == 'cheque' ? 'bank' : d.paymentMethod;
+      _bankTransferMode = d.paymentMethod == 'cheque' ? 'cheque' : 'online';
+      _accountNoController.text = d.accountNo ?? '';
+      _categoryController.text = d.category ?? '';
+      _remarksController.text = d.remarks ?? '';
+      _paidDate = d.paidDate;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final accId = await ref
+            .read(accountLedgerRepositoryProvider)
+            .getAccountIdByReference('disbursement', d.id);
+        if (mounted && accId != null) {
+          setState(() => _selectedAccountId = accId);
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -86,9 +114,11 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
 
     return AlertDialog(
       backgroundColor: AppColors.textWhite,
-      title: const Text(
-        'Add Disbursement',
-        style: TextStyle(fontWeight: FontWeight.w800),
+      title: Text(
+        widget.disbursement != null
+            ? 'Edit Disbursement'
+            : 'Add Disbursement',
+        style: const TextStyle(fontWeight: FontWeight.w800),
       ),
       content: SizedBox(
         width: 520,
@@ -358,24 +388,46 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                         ? 'cheque'
                         : _paymentMethod;
 
-                    await ref
-                        .read(receiptRepositoryProvider)
-                        .createDisbursement(
-                          supplierId: _selectedVendorId!,
-                          totalAmount: amount,
-                          paymentMethod: finalPaymentMethod,
-                          accountId: _selectedAccountId,
-                          accountNo: _accountNoController.text.trim().isEmpty
-                              ? null
-                              : _accountNoController.text.trim(),
-                          category: _categoryController.text.trim().isEmpty
-                              ? null
-                              : _categoryController.text.trim(),
-                          remarks: _remarksController.text.trim().isEmpty
-                              ? null
-                              : _remarksController.text.trim(),
-                          paidDate: _paidDate,
-                        );
+                    if (widget.disbursement != null) {
+                      await ref
+                          .read(receiptRepositoryProvider)
+                          .updateDisbursement(
+                            id: widget.disbursement!.id,
+                            supplierId: _selectedVendorId!,
+                            accountId: _selectedAccountId,
+                            totalAmount: amount,
+                            paymentMethod: finalPaymentMethod,
+                            accountNo: _accountNoController.text.trim().isEmpty
+                                ? null
+                                : _accountNoController.text.trim(),
+                            category: _categoryController.text.trim().isEmpty
+                                ? null
+                                : _categoryController.text.trim(),
+                            remarks: _remarksController.text.trim().isEmpty
+                                ? null
+                                : _remarksController.text.trim(),
+                            paidDate: _paidDate,
+                          );
+                    } else {
+                      await ref
+                          .read(receiptRepositoryProvider)
+                          .createDisbursement(
+                            supplierId: _selectedVendorId!,
+                            totalAmount: amount,
+                            paymentMethod: finalPaymentMethod,
+                            accountId: _selectedAccountId,
+                            accountNo: _accountNoController.text.trim().isEmpty
+                                ? null
+                                : _accountNoController.text.trim(),
+                            category: _categoryController.text.trim().isEmpty
+                                ? null
+                                : _categoryController.text.trim(),
+                            remarks: _remarksController.text.trim().isEmpty
+                                ? null
+                                : _remarksController.text.trim(),
+                            paidDate: _paidDate,
+                          );
+                    }
 
                     if (!mounted) return;
                     ref.invalidate(getAllEntriesProvider);
@@ -390,7 +442,7 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                         context.mounted ? context : context,
                       ).showSnackBar(
                         SnackBar(
-                          content: Text('Failed to add disbursement: $error'),
+                          content: Text('Failed to save disbursement: $error'),
                         ),
                       );
                     }
@@ -407,7 +459,13 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.payments_outlined),
-          label: Text(_isSubmitting ? 'Saving...' : 'Save Disbursement'),
+          label: Text(
+            _isSubmitting
+                ? 'Saving...'
+                : (widget.disbursement != null
+                    ? 'Update Disbursement'
+                    : 'Save Disbursement'),
+          ),
         ),
       ],
     );

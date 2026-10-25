@@ -50,17 +50,23 @@ final getAllDisbursementsProvider = FutureProvider<List<DisbursementRecord>>(
 Future<void> updateReceipt(
   Ref ref, {
   required int id,
+  int? clientId,
+  int? accountId,
   required String paymentMethod,
   String? accountNo,
   String? remarks,
   required DateTime receivedDate,
+  double? totalAmount,
 }) {
   return ref.watch(receiptRepositoryProvider).updateReceipt(
     id: id,
+    clientId: clientId,
+    accountId: accountId,
     paymentMethod: paymentMethod,
     accountNo: accountNo,
     remarks: remarks,
     receivedDate: receivedDate,
+    totalAmount: totalAmount,
   );
 }
 
@@ -68,18 +74,24 @@ Future<void> updateReceipt(
 Future<void> updateDisbursement(
   Ref ref, {
   required int id,
+  int? supplierId,
+  int? accountId,
   required String paymentMethod,
   String? accountNo,
   String? category,
   String? remarks,
   required DateTime paidDate,
+  double? totalAmount,
 }) {
   return ref.watch(receiptRepositoryProvider).updateDisbursement(
     id: id,
+    supplierId: supplierId,
+    accountId: accountId,
     paymentMethod: paymentMethod,
     accountNo: accountNo,
     category: category,
     remarks: remarks,
     paidDate: paidDate,
+    totalAmount: totalAmount,
   );
 }
