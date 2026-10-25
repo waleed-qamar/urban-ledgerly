@@ -377,16 +377,23 @@ CREATE TABLE IF NOT EXISTS procurements (
     id BIGSERIAL PRIMARY KEY,
     vendor_id BIGINT NOT NULL REFERENCES vendors(id),
     procurement_date DATE NOT NULL,
-    broker_id BIGINT REFERENCES vendors(id),  -- fixed: was `vendor(id)`, typo
+    broker_id BIGINT REFERENCES vendors(id),
     brokerage_price NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (brokerage_price >= 0),
     loading_charges NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (loading_charges >= 0),
     unloading_charges NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (unloading_charges >= 0),
     items_total NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (items_total >= 0),
     grand_total NUMERIC(12,2) GENERATED ALWAYS AS
         (items_total + brokerage_price + loading_charges + unloading_charges) STORED,
+    rent_amount NUMERIC DEFAULT 0,
+    rent_expense_head_id BIGINT REFERENCES expense_heads(id),
+    rent_expense_id BIGINT REFERENCES expenses(id),
     notes TEXT,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() at time zone 'utc'),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() at time zone 'utc')
+    created_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() at time zone 'utc'),
+    CONSTRAINT procurements_broker_consistency_check CHECK (
+        (broker_id IS NULL AND brokerage_price = 0)
+        OR (broker_id IS NOT NULL AND brokerage_price > 0)
+    )
 );
 
 CREATE TABLE IF NOT EXISTS procurement_items (

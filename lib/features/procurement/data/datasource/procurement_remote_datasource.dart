@@ -133,12 +133,12 @@ class ProcurementRemoteDatasource {
 
           await _client.from('account_transactions').insert({
             'account_id': 1,
-            'transaction_type': 'DEBIT',
+            'transaction_type': 'debit',
             'amount': procurement.rentAmount,
-            'reference_type': 'procurement_rent',
+            'reference_type': 'expense',
             'reference_id': createdId,
             'transaction_date': _parseDate(procurement.procurementDate).toIso8601String(),
-            'notes': 'Auto rent from procurement #$createdId',
+            'description': 'Auto rent from procurement #$createdId',
           });
         }
       } catch (_) {
@@ -260,7 +260,7 @@ class ProcurementRemoteDatasource {
       await _client
           .from('account_transactions')
           .delete()
-          .eq('reference_type', 'procurement_rent')
+          .eq('reference_type', 'expense')
           .eq('reference_id', procurementId);
 
       if (procurement.rentExpenseId != null) {
@@ -287,12 +287,12 @@ class ProcurementRemoteDatasource {
 
         await _client.from('account_transactions').insert({
           'account_id': 1,
-          'transaction_type': 'DEBIT',
+          'transaction_type': 'debit',
           'amount': procurement.rentAmount,
-          'reference_type': 'procurement_rent',
+          'reference_type': 'expense',
           'reference_id': procurementId,
           'transaction_date': _parseDate(procurement.procurementDate).toIso8601String(),
-          'notes': 'Auto rent from procurement #$procurementId',
+          'description': 'Auto rent from procurement #$procurementId',
         });
       } else {
         // if no rent, ensure we clear the rent_expense_id from the DB
@@ -329,7 +329,7 @@ class ProcurementRemoteDatasource {
       await _client
           .from('account_transactions')
           .delete()
-          .eq('reference_type', 'procurement_rent')
+          .eq('reference_type', 'expense')
           .eq('reference_id', id);
           
       if (procResponse != null && procResponse['rent_expense_id'] != null) {

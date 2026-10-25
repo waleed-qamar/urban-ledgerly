@@ -158,10 +158,19 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
 
     final itemsTotal = _calculateItemsTotal();
     final grandTotal = _calculateGrandTotal();
-    final brokerage = double.tryParse(_brokerageController.text) ?? 0;
+    final brokerage = _selectedBrokerId != null
+        ? (double.tryParse(_brokerageController.text) ?? 0)
+        : 0.0;
     final loading = double.tryParse(_loadingController.text) ?? 0;
     final unloading = double.tryParse(_unloadingController.text) ?? 0;
     final rentAmount = double.tryParse(_rentController.text) ?? 0;
+
+    // Enforce broker consistency: if broker selected, brokerage must be > 0
+    if (_selectedBrokerId != null && brokerage <= 0) {
+      _showError('Brokerage price must be greater than 0 when a broker is selected.');
+      setState(() => _isSaving = false);
+      return;
+    }
 
     final procurement = ProcurementEntity(
       id: widget.procurementToEdit?.id,
