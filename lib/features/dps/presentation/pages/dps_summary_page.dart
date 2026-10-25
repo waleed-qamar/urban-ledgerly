@@ -1,6 +1,7 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:excel/excel.dart' hide Border;
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -1110,21 +1111,20 @@ class _DpsSummaryPageState extends ConsumerState<DpsSummaryPage>
       final bytes = excel.encode();
       if (bytes == null) throw Exception('Failed to generate excel file');
 
-      final downloadsDir = Directory(
-        '${Platform.environment['USERPROFILE'] ?? Platform.environment['HOME']}/Downloads',
-      );
-      if (!await downloadsDir.exists())
-        await downloadsDir.create(recursive: true);
-
       final fileName =
-          'DPS_Summary_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.xlsx';
-      final file = File('${downloadsDir.path}/$fileName');
-      await file.writeAsBytes(bytes, flush: true);
+          'DPS_Summary_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}';
+
+      await FileSaver.instance.saveFile(
+        name: fileName,
+        bytes: Uint8List.fromList(bytes),
+        fileExtension: 'xlsx',
+        mimeType: MimeType.microsoftExcel,
+      );
 
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Excel summary exported to: ${file.path}'),
+          content: Text('Excel summary exported: $fileName.xlsx'),
           backgroundColor: AppColors.successText,
           behavior: SnackBarBehavior.floating,
         ),
