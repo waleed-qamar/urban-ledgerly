@@ -18,8 +18,6 @@ import 'features/ledger/presentation/pages/ledger_page.dart';
 import 'package:ledgerly/features/vender/presentation/pages/vendor_dashboard_view.dart';
 import 'package:ledgerly/features/dps/presentation/pages/dps_dashboard.dart';
 import 'package:ledgerly/features/overview/overview_dashboard.dart';
-import 'package:ledgerly/features/attendance_review/presentation/screens/attendance_review_screen.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/features/auth/presentation/provider/current_employee_provider.dart';
 
@@ -209,15 +207,6 @@ class _MainLayoutState extends ConsumerState<MainLayout>
           ),
           const OperatorDashboard(),
         ),
-      if (showAttendance)
-        (
-          const NavigationRailDestination(
-            icon: Icon(Icons.access_time_outlined),
-            selectedIcon: Icon(Icons.access_time),
-            label: Text('Attendance'),
-          ),
-          const AttendanceReviewScreen(),
-        ),
       if (showUsers)
         (
           const NavigationRailDestination(
@@ -272,7 +261,10 @@ class _MainLayoutState extends ConsumerState<MainLayout>
                       const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('UC', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                            'UC',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           Text(
                             'Inventory Management',
                             style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -316,10 +308,7 @@ class _MainLayoutState extends ConsumerState<MainLayout>
 
               if (constraints.maxHeight < minHeight) {
                 return SingleChildScrollView(
-                  child: SizedBox(
-                    height: minHeight,
-                    child: rail,
-                  ),
+                  child: SizedBox(height: minHeight, child: rail),
                 );
               } else {
                 return rail;

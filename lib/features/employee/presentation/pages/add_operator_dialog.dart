@@ -51,7 +51,9 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
           : '',
     );
 
-    _deviceEmployeeCodeController = TextEditingController(text: op?.deviceEmployeeCode ?? '');
+    _deviceEmployeeCodeController = TextEditingController(
+      text: op?.deviceEmployeeCode ?? '',
+    );
 
     _joiningDate = op?.joiningDate ?? DateTime.now();
     _isActive = op?.isActive ?? true;
@@ -63,7 +65,8 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
   TextEditingController _getRoleRateController(int roleId) {
     if (!_hourlyRateControllers.containsKey(roleId)) {
       _hourlyRateControllers[roleId] = TextEditingController(
-        text: widget.clientToEdit?.hourlyRates[roleId]?.toStringAsFixed(2) ?? '',
+        text:
+            widget.clientToEdit?.hourlyRates[roleId]?.toStringAsFixed(2) ?? '',
       );
     }
     return _hourlyRateControllers[roleId]!;
@@ -109,14 +112,14 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
       joiningDate: _joiningDate,
       isActive: _isActive,
       createdAt: widget.clientToEdit?.createdAt ?? DateTime.now(),
-      workGroupId: _workGroupId,
-      defaultWageRoleId: _defaultWageRoleId,
-      overtimeEnabled: _overtimeEnabled,
-      monthlySalary: monthlySalary,
-      deviceEmployeeCode: _deviceEmployeeCodeController.text.trim().isEmpty 
-          ? null 
-          : _deviceEmployeeCodeController.text.trim(),
-      hourlyRates: hourlyRates,
+      // workGroupId: _workGroupId,
+      // defaultWageRoleId: _defaultWageRoleId,
+      // overtimeEnabled: _overtimeEnabled,
+      // monthlySalary: monthlySalary,
+      // deviceEmployeeCode: _deviceEmployeeCodeController.text.trim().isEmpty
+      //     ? null
+      //     : _deviceEmployeeCodeController.text.trim(),
+      // hourlyRates: hourlyRates,
     );
 
     try {
@@ -176,7 +179,8 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                   decoration: const InputDecoration(
                     labelText: 'ZKTeco Device ID (Optional)',
                     border: OutlineInputBorder(),
-                    helperText: 'Enter the ID assigned on the ZKTeco device to sync punches.',
+                    helperText:
+                        'Enter the ID assigned on the ZKTeco device to sync punches.',
                     helperMaxLines: 2,
                   ),
                 ),
@@ -253,24 +257,32 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                           return async.when(
                             data: (groups) {
                               final noneGroup = {'id': null, 'name': 'None'};
-                              final items = <Map<String, dynamic>>[noneGroup, ...groups];
-                              
+                              final items = <Map<String, dynamic>>[
+                                noneGroup,
+                                ...groups,
+                              ];
+
                               final selectedGroup = _workGroupId != null
-                                  ? groups.where((g) => g['id'] == _workGroupId).firstOrNull
+                                  ? groups
+                                        .where((g) => g['id'] == _workGroupId)
+                                        .firstOrNull
                                   : null;
-                              final initialTextStr = selectedGroup != null ? selectedGroup['name'] as String : 'None';
-                              
+                              final initialTextStr = selectedGroup != null
+                                  ? selectedGroup['name'] as String
+                                  : 'None';
+
                               return SearchableDropdown<Map<String, dynamic>>(
                                 items: items,
-                                displayStringForOption: (g) => g['name'] as String,
-                                onSelected: (val) =>
-                                    setState(() => _workGroupId = val['id'] as int?),
+                                displayStringForOption: (g) =>
+                                    g['name'] as String,
+                                onSelected: (val) => setState(
+                                  () => _workGroupId = val['id'] as int?,
+                                ),
                                 initialText: initialTextStr,
                                 labelText: 'Work Group',
                               );
                             },
-                            loading: () =>
-                                const LinearProgressIndicator(),
+                            loading: () => const LinearProgressIndicator(),
                             error: (e, _) => Text('Error: $e'),
                           );
                         },
@@ -285,25 +297,38 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                           final async = ref.watch(getAllWageRolesProvider);
                           return async.when(
                             data: (roles) {
-                              final noneRole = {'id': null, 'role_name': 'None'};
-                              final items = <Map<String, dynamic>>[noneRole, ...roles];
+                              final noneRole = {
+                                'id': null,
+                                'role_name': 'None',
+                              };
+                              final items = <Map<String, dynamic>>[
+                                noneRole,
+                                ...roles,
+                              ];
 
                               final selectedRole = _defaultWageRoleId != null
-                                  ? roles.where((r) => r['id'] == _defaultWageRoleId).firstOrNull
+                                  ? roles
+                                        .where(
+                                          (r) => r['id'] == _defaultWageRoleId,
+                                        )
+                                        .firstOrNull
                                   : null;
-                              final initialTextStr = selectedRole != null ? selectedRole['role_name'] as String : 'None';
+                              final initialTextStr = selectedRole != null
+                                  ? selectedRole['role_name'] as String
+                                  : 'None';
 
                               return SearchableDropdown<Map<String, dynamic>>(
                                 items: items,
-                                displayStringForOption: (r) => r['role_name'] as String,
-                                onSelected: (val) =>
-                                    setState(() => _defaultWageRoleId = val['id'] as int?),
+                                displayStringForOption: (r) =>
+                                    r['role_name'] as String,
+                                onSelected: (val) => setState(
+                                  () => _defaultWageRoleId = val['id'] as int?,
+                                ),
                                 initialText: initialTextStr,
                                 labelText: 'Default Role',
                               );
                             },
-                            loading: () =>
-                                const LinearProgressIndicator(),
+                            loading: () => const LinearProgressIndicator(),
                             error: (e, _) => Text('Error: $e'),
                           );
                         },
@@ -319,17 +344,16 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                   padding: EdgeInsets.only(bottom: 10),
                   child: Text(
                     'Pay Rates',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                 ),
 
                 // Monthly Salary
                 TextFormField(
                   controller: _monthlySalaryController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                   ],
@@ -360,9 +384,14 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                             padding: const EdgeInsets.only(bottom: 12.0),
                             child: TextFormField(
                               controller: _getRoleRateController(roleId),
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
                               inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9.]'),
+                                ),
                               ],
                               decoration: InputDecoration(
                                 labelText: '$roleName Rate / Hr (PKR)',
@@ -390,7 +419,9 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                 // ── Toggles ────────────────────────────────────────────
                 SwitchListTile(
                   title: const Text('Overtime Enabled'),
-                  subtitle: const Text('Allow overtime calculation for this operator'),
+                  subtitle: const Text(
+                    'Allow overtime calculation for this operator',
+                  ),
                   value: _overtimeEnabled,
                   onChanged: (val) => setState(() => _overtimeEnabled = val),
                   activeThumbColor: AppColors.primary,
@@ -429,9 +460,7 @@ class _AddEmployeeDialogState extends ConsumerState<AddEmployeeDialog> {
                   ),
                 )
               : Text(
-                  widget.clientToEdit != null
-                      ? 'Update Record'
-                      : 'Save Record',
+                  widget.clientToEdit != null ? 'Update Record' : 'Save Record',
                 ),
         ),
       ],
