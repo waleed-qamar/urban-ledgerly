@@ -80,17 +80,3 @@ Future<List<Map<String, dynamic>>> getAllPermissions(Ref ref) {
 Future<List<Map<String, dynamic>>> getRolePermissions(Ref ref) {
   return ref.watch(operatorRepositoryProvider).fetchRolePermissions();
 }
-
-@riverpod
-Future<List<Map<String, dynamic>>> getAllWorkGroups(Ref ref) async {
-  final client = ref.watch(supabaseClientProvider);
-  final response = await client.from('work_groups').select('id, name, default_shift_start, default_shift_end');
-  return List<Map<String, dynamic>>.from(response);
-}
-
-@riverpod
-Future<List<Map<String, dynamic>>> getAllWageRoles(Ref ref) async {
-  final client = ref.watch(supabaseClientProvider);
-  final response = await client.from('wage_roles').select('id, role_name');
-  return List<Map<String, dynamic>>.from(response);
-}

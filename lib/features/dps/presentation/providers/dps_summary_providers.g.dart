@@ -140,4 +140,4 @@ final class DpsSummaryProvider
   }
 }
 
-String _$dpsSummaryHash() => r'eb6d030d5a06bd1ebf0059ebd2bb3932b2087636';
+String _$dpsSummaryHash() => r'12f7690b6c6332c9fd63ad26161fd0d229ed11fe';

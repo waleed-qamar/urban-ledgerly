@@ -11,15 +11,9 @@ abstract class OperatorEntity with _$OperatorEntity {
     required String phone,
     String? cnic,
     @JsonKey(name: 'joining_date') required DateTime joiningDate,
-    @JsonKey(name: 'is_active') required bool isActive,
+    @JsonKey(name: 'default_per_day') @Default(0.0) double defaultPerDay,
+    @JsonKey(name: 'is_active') @Default(true) bool isActive,
     @JsonKey(name: 'created_at') DateTime? createdAt,
-    // @JsonKey(name: 'work_group_id') int? workGroupId,
-    // @JsonKey(name: 'default_wage_role_id') int? defaultWageRoleId,
-    // @JsonKey(name: 'overtime_enabled') @Default(true) bool overtimeEnabled,
-    // // Rate fields — stored directly on operators for salary, and via operator_role_rates for hourly
-    // @JsonKey(name: 'monthly_salary') double? monthlySalary,
-    // @JsonKey(name: 'device_employee_code') String? deviceEmployeeCode,
-    // @JsonKey(includeFromJson: false, includeToJson: false) @Default({}) Map<int, double> hourlyRates,
   }) = _OperatorEntity;
 
   factory OperatorEntity.fromJson(Map<String, dynamic> json) =>

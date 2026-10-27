@@ -144,10 +144,6 @@ class _OperatorDashboardState extends ConsumerState<OperatorDashboard> {
                     itemBuilder: (context, index) {
                       final semp = emp[index];
 
-                      final initial = (semp.name).isNotEmpty
-                          ? semp.name[0].toUpperCase()
-                          : '?';
-
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
@@ -171,45 +167,59 @@ class _OperatorDashboardState extends ConsumerState<OperatorDashboard> {
                         ),
                         child: Row(
                           children: [
-                            // Avatar
+                            // ID / Sr.
                             Container(
-                              width: 50,
-                              height: 50,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.lightBackground,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Center(
-                                child: Text(
-                                  initial,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primaryDark,
-                                  ),
+                              child: Text(
+                                '#${semp.id}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: AppColors.primaryDark,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 20),
+                            const SizedBox(width: 16),
 
-                            // Name & Role
+                            // Name & CNIC
                             Expanded(
                               flex: 3,
-                              child: Text(
-                                semp.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: AppColors.textBlack,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    semp.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: AppColors.textBlack,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (semp.cnic != null && semp.cnic!.isNotEmpty)
+                                    Text(
+                                      'CNIC: ${semp.cnic}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textGrey,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
 
                             // Contact
                             Expanded(
-                              flex: 3,
+                              flex: 2,
                               child: Text(
                                 semp.phone,
                                 style: const TextStyle(
@@ -218,6 +228,21 @@ class _OperatorDashboardState extends ConsumerState<OperatorDashboard> {
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+
+                            // Daily Rate (Per Day)
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                semp.defaultPerDay > 0
+                                    ? '₨ ${semp.defaultPerDay.toStringAsFixed(0)} / day'
+                                    : '—',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: AppColors.textBlack,
+                                ),
                               ),
                             ),
 
@@ -240,10 +265,22 @@ class _OperatorDashboardState extends ConsumerState<OperatorDashboard> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      CircleAvatar(radius: 4),
+                                      CircleAvatar(
+                                        radius: 4,
+                                        backgroundColor: (semp.isActive)
+                                            ? Colors.green
+                                            : Colors.grey,
+                                      ),
                                       const SizedBox(width: 8),
                                       Text(
                                         (semp.isActive) ? 'Active' : 'Inactive',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: (semp.isActive)
+                                              ? Colors.green[800]
+                                              : Colors.grey[700],
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -253,14 +290,13 @@ class _OperatorDashboardState extends ConsumerState<OperatorDashboard> {
 
                             // Actions
                             Expanded(
-                              flex: 2,
+                              flex: 1,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   PopupMenuButton<String>(
                                     color: AppColors.textWhite,
                                     onSelected: (val) async {
-                                      // implement actions: edit / mark inactive
                                       if (val == 'edit') {
                                         showDialog(
                                           context: context,
@@ -268,18 +304,72 @@ class _OperatorDashboardState extends ConsumerState<OperatorDashboard> {
                                             clientToEdit: semp,
                                           ),
                                         );
-                                      } else if (val == 'mark_inactive') {
-                                        // placeholder: call repo to toggle
+                                      } else if (val == 'toggle_active') {
+                                        await ref
+                                            .read(operatorRepositoryProvider)
+                                            .updateEmployee(
+                                              semp.copyWith(isActive: !semp.isActive),
+                                            );
+                                        ref.invalidate(getAllOperatorsProvider);
+                                      } else if (val == 'delete') {
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder: (ctx) => AlertDialog(
+                                            title: const Text('Delete Employee'),
+                                            content: Text(
+                                              'Are you sure you want to delete ${semp.name}?',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(ctx, false),
+                                                child: const Text('Cancel'),
+                                              ),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                                onPressed: () => Navigator.pop(ctx, true),
+                                                child: const Text('Delete'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                        if (confirm == true) {
+                                          try {
+                                            await ref
+                                                .read(operatorRepositoryProvider)
+                                                .deleteEmployee(semp.id);
+                                            ref.invalidate(getAllOperatorsProvider);
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Cannot delete: $e')),
+                                              );
+                                            }
+                                          }
+                                        }
                                       }
                                     },
-                                    itemBuilder: (_) => const [
-                                      PopupMenuItem(
+                                    itemBuilder: (_) => [
+                                      const PopupMenuItem(
                                         value: 'edit',
                                         child: Text('Edit'),
                                       ),
                                       PopupMenuItem(
-                                        value: 'mark_inactive',
-                                        child: Text('Toggle Active'),
+                                        value: 'toggle_active',
+                                        child: Text(
+                                          semp.isActive
+                                              ? 'Mark Inactive'
+                                              : 'Reactivate',
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text(
+                                          'Delete',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
                                       ),
                                     ],
                                     icon: const Icon(Icons.more_vert),

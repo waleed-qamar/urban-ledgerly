@@ -374,10 +374,13 @@ final class UpdateReceiptProvider
     required UpdateReceiptFamily super.from,
     required ({
       int id,
+      int? clientId,
+      int? accountId,
       String paymentMethod,
       String? accountNo,
       String? remarks,
       DateTime receivedDate,
+      double? totalAmount,
     })
     super.argument,
   }) : super(
@@ -409,18 +412,24 @@ final class UpdateReceiptProvider
         this.argument
             as ({
               int id,
+              int? clientId,
+              int? accountId,
               String paymentMethod,
               String? accountNo,
               String? remarks,
               DateTime receivedDate,
+              double? totalAmount,
             });
     return updateReceipt(
       ref,
       id: argument.id,
+      clientId: argument.clientId,
+      accountId: argument.accountId,
       paymentMethod: argument.paymentMethod,
       accountNo: argument.accountNo,
       remarks: argument.remarks,
       receivedDate: argument.receivedDate,
+      totalAmount: argument.totalAmount,
     );
   }
 
@@ -435,7 +444,7 @@ final class UpdateReceiptProvider
   }
 }
 
-String _$updateReceiptHash() => r'e703b313e9cb9da5fa31a2be6aca27b27cc7082f';
+String _$updateReceiptHash() => r'51d684c01218c0ff5091a4d38887bfc39ea5bcba';
 
 final class UpdateReceiptFamily extends $Family
     with
@@ -443,10 +452,13 @@ final class UpdateReceiptFamily extends $Family
           FutureOr<void>,
           ({
             int id,
+            int? clientId,
+            int? accountId,
             String paymentMethod,
             String? accountNo,
             String? remarks,
             DateTime receivedDate,
+            double? totalAmount,
           })
         > {
   const UpdateReceiptFamily._()
@@ -460,17 +472,23 @@ final class UpdateReceiptFamily extends $Family
 
   UpdateReceiptProvider call({
     required int id,
+    int? clientId,
+    int? accountId,
     required String paymentMethod,
     String? accountNo,
     String? remarks,
     required DateTime receivedDate,
+    double? totalAmount,
   }) => UpdateReceiptProvider._(
     argument: (
       id: id,
+      clientId: clientId,
+      accountId: accountId,
       paymentMethod: paymentMethod,
       accountNo: accountNo,
       remarks: remarks,
       receivedDate: receivedDate,
+      totalAmount: totalAmount,
     ),
     from: this,
   );
@@ -489,11 +507,14 @@ final class UpdateDisbursementProvider
     required UpdateDisbursementFamily super.from,
     required ({
       int id,
+      int? supplierId,
+      int? accountId,
       String paymentMethod,
       String? accountNo,
       String? category,
       String? remarks,
       DateTime paidDate,
+      double? totalAmount,
     })
     super.argument,
   }) : super(
@@ -525,20 +546,26 @@ final class UpdateDisbursementProvider
         this.argument
             as ({
               int id,
+              int? supplierId,
+              int? accountId,
               String paymentMethod,
               String? accountNo,
               String? category,
               String? remarks,
               DateTime paidDate,
+              double? totalAmount,
             });
     return updateDisbursement(
       ref,
       id: argument.id,
+      supplierId: argument.supplierId,
+      accountId: argument.accountId,
       paymentMethod: argument.paymentMethod,
       accountNo: argument.accountNo,
       category: argument.category,
       remarks: argument.remarks,
       paidDate: argument.paidDate,
+      totalAmount: argument.totalAmount,
     );
   }
 
@@ -554,7 +581,7 @@ final class UpdateDisbursementProvider
 }
 
 String _$updateDisbursementHash() =>
-    r'eba34d9091bfffb2e04f482242b97f449ef936f8';
+    r'676fcce3bbba059401400e4dcf1b3979009e020c';
 
 final class UpdateDisbursementFamily extends $Family
     with
@@ -562,11 +589,14 @@ final class UpdateDisbursementFamily extends $Family
           FutureOr<void>,
           ({
             int id,
+            int? supplierId,
+            int? accountId,
             String paymentMethod,
             String? accountNo,
             String? category,
             String? remarks,
             DateTime paidDate,
+            double? totalAmount,
           })
         > {
   const UpdateDisbursementFamily._()
@@ -580,19 +610,25 @@ final class UpdateDisbursementFamily extends $Family
 
   UpdateDisbursementProvider call({
     required int id,
+    int? supplierId,
+    int? accountId,
     required String paymentMethod,
     String? accountNo,
     String? category,
     String? remarks,
     required DateTime paidDate,
+    double? totalAmount,
   }) => UpdateDisbursementProvider._(
     argument: (
       id: id,
+      supplierId: supplierId,
+      accountId: accountId,
       paymentMethod: paymentMethod,
       accountNo: accountNo,
       category: category,
       remarks: remarks,
       paidDate: paidDate,
+      totalAmount: totalAmount,
     ),
     from: this,
   );

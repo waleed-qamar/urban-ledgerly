@@ -5,6 +5,7 @@ import 'package:ledgerly/dashboard.dart';
 import 'package:ledgerly/features/audit_logs/presentation/pages/audit_log_page.dart';
 import 'package:ledgerly/features/employee/presentation/pages/operator_dashboard.dart';
 import 'package:ledgerly/features/employee/presentation/pages/users_dashboard.dart';
+import 'package:ledgerly/features/payroll/presentation/pages/payroll_dashboard.dart';
 import 'package:ledgerly/features/orders/presentation/pages/order_dashboard.dart';
 import 'package:ledgerly/features/procurement/presentation/pages/procurement_dashboard.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_dashboard.dart';
@@ -73,10 +74,9 @@ class _MainLayoutState extends ConsumerState<MainLayout>
       hasPermissionProvider('procurements.read'),
     );
     final showExpenses = ref.watch(hasPermissionProvider('expenses.read'));
-    final showInventory = ref.watch(hasPermissionProvider('inventory.read'));
     final showDps = ref.watch(hasPermissionProvider('dps.read'));
-    final showOperators = ref.watch(hasPermissionProvider('employees.read'));
-    final showAttendance = ref.watch(hasPermissionProvider('attendance.read'));
+    final showOperators = ref.watch(hasPermissionProvider('operators.read'));
+    final showPayroll = ref.watch(hasPermissionProvider('payroll.read'));
     final showUsers = ref.watch(hasPermissionProvider('employees.update'));
     // Audit Logs are master-only — no DB permission row needed
     final showAudit = ref.watch(isMasterProvider);
@@ -206,6 +206,15 @@ class _MainLayoutState extends ConsumerState<MainLayout>
             label: Text('Operators'),
           ),
           const OperatorDashboard(),
+        ),
+      if (showPayroll)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.request_quote_outlined),
+            selectedIcon: Icon(Icons.request_quote),
+            label: Text('Payroll'),
+          ),
+          const PayrollDashboard(),
         ),
       if (showUsers)
         (
