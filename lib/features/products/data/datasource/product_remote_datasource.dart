@@ -79,6 +79,54 @@ class ProductRemoteDatasource {
     });
   }
 
+  Future<void> updateProductSet(ProductSetEntity productSet) async {
+    await supabaseSafeCall(() async {
+      final setId = productSet.setId;
+      if (setId == null) {
+        throw ArgumentError('Product set must have a setId to update.');
+      }
+
+      final payload = <String, dynamic>{
+        'name': productSet.name.trim(),
+      };
+      final description = productSet.description?.trim();
+      payload['description'] =
+          (description != null && description.isNotEmpty) ? description : null;
+
+      await _client.from('product_sets').update(payload).eq('set_id', setId);
+
+      final productIds = <int>{
+        for (final item in productSet.products) item.productId,
+      }.toList();
+
+      if (productIds.isEmpty) {
+        throw ArgumentError('Product set must contain at least one product.');
+      }
+
+      await _client.from('product_set_items').delete().eq('set_id', setId);
+
+      final createdAt = DateTime.now();
+      final itemsPayload = productIds
+          .map(
+            (productId) => {
+              'set_id': setId,
+              'product_id': productId,
+              'created_at': createdAt.toIso8601String(),
+            },
+          )
+          .toList();
+
+      await _client.from('product_set_items').insert(itemsPayload);
+    });
+  }
+
+  Future<void> deleteProductSet(int setId) async {
+    await supabaseSafeCall(() async {
+      await _client.from('product_set_items').delete().eq('set_id', setId);
+      await _client.from('product_sets').delete().eq('set_id', setId);
+    });
+  }
+
   Future<void> updateProduct(ProductEntity product) async {
     await supabaseSafeCall(() async {
       final payload = product.toJson();

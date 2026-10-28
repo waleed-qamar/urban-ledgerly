@@ -9,7 +9,8 @@ import 'package:ledgerly/core/widgets/searchable_dropdown.dart';
 import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
 
 class AddProductsetDialog extends ConsumerStatefulWidget {
-  const AddProductsetDialog({super.key});
+  final ProductSetEntity? setToEdit;
+  const AddProductsetDialog({super.key, this.setToEdit});
 
   @override
   ConsumerState<AddProductsetDialog> createState() =>
@@ -18,11 +19,31 @@ class AddProductsetDialog extends ConsumerStatefulWidget {
 
 class _AddProductsetDialogState extends ConsumerState<AddProductsetDialog> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _descriptionController;
   bool _isSubmitting = false;
 
-  final List<_DraftProduct> _draftProducts = [_DraftProduct()];
+  late final List<_DraftProduct> _draftProducts;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(
+      text: widget.setToEdit?.name ?? '',
+    );
+    _descriptionController = TextEditingController(
+      text: widget.setToEdit?.description ?? '',
+    );
+    if (widget.setToEdit != null && widget.setToEdit!.products.isNotEmpty) {
+      _draftProducts = widget.setToEdit!.products.map((item) {
+        final draft = _DraftProduct();
+        draft.id = item.productId;
+        return draft;
+      }).toList();
+    } else {
+      _draftProducts = [_DraftProduct()];
+    }
+  }
 
   @override
   void dispose() {
@@ -38,7 +59,7 @@ class _AddProductsetDialogState extends ConsumerState<AddProductsetDialog> {
       backgroundColor: AppColors.textWhite,
       insetPadding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      title: const Text('Add Product Set'),
+      title: Text(widget.setToEdit != null ? 'Edit Product Set' : 'Add Product Set'),
 
       content: SizedBox(
         width: 50.h,
@@ -201,6 +222,7 @@ class _AddProductsetDialogState extends ConsumerState<AddProductsetDialog> {
                   }
 
                   final productSet = ProductSetEntity(
+                    setId: widget.setToEdit?.setId,
                     name: _nameController.text.trim(),
                     description: _descriptionController.text.trim().isEmpty
                         ? null
@@ -218,10 +240,28 @@ class _AddProductsetDialogState extends ConsumerState<AddProductsetDialog> {
                   });
 
                   try {
-                    await ref.read(addProductSetProvider(productSet).future);
+                    if (widget.setToEdit != null) {
+                      await ref
+                          .read(productRepositoryProvider)
+                          .updateProductSet(productSet);
+                    } else {
+                      await ref
+                          .read(addProductSetProvider(productSet).future);
+                    }
                     ref.invalidate(getAllProductSetsProvider);
                     if (mounted) {
                       Navigator.of(context.mounted ? context : context).pop();
+                      ScaffoldMessenger.of(
+                        context.mounted ? context : context,
+                      ).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            widget.setToEdit != null
+                                ? 'Product set updated successfully'
+                                : 'Product set created successfully',
+                          ),
+                        ),
+                      );
                     }
                   } catch (error) {
                     if (mounted) {
@@ -229,7 +269,11 @@ class _AddProductsetDialogState extends ConsumerState<AddProductsetDialog> {
                         context.mounted ? context : context,
                       ).showSnackBar(
                         SnackBar(
-                          content: Text('Failed to create product set: $error'),
+                          content: Text(
+                            widget.setToEdit != null
+                                ? 'Failed to update product set: $error'
+                                : 'Failed to create product set: $error',
+                          ),
                           backgroundColor: AppColors.errorText,
                         ),
                       );
@@ -249,7 +293,7 @@ class _AddProductsetDialogState extends ConsumerState<AddProductsetDialog> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.save),
-          label: const Text('Add Set'),
+          label: Text(widget.setToEdit != null ? 'Save Changes' : 'Add Set'),
         ),
       ],
     );

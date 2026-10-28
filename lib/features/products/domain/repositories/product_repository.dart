@@ -8,5 +8,7 @@ abstract class ProductRepository {
   Future<void> updateProduct(ProductEntity product);
   Future<void> deleteProduct(int productId);
   Future<void> addProductSet(ProductSetEntity productSet);
+  Future<void> updateProductSet(ProductSetEntity productSet);
+  Future<void> deleteProductSet(int setId);
   Future<List<ProductSetEntity>> getProductSets();
 }

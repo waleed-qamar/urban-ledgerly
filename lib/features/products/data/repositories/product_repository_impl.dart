@@ -28,6 +28,14 @@ class ProductRepositoryImpl implements ProductRepository {
       _dataSource.addProductSet(productSet);
 
   @override
+  Future<void> updateProductSet(ProductSetEntity productSet) =>
+      _dataSource.updateProductSet(productSet);
+
+  @override
+  Future<void> deleteProductSet(int setId) =>
+      _dataSource.deleteProductSet(setId);
+
+  @override
   Future<List<ProductSetEntity>> getProductSets() =>
       _dataSource.getProductSets();
 }

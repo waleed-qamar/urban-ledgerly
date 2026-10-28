@@ -11,6 +11,7 @@ import 'package:ledgerly/features/orders/presentation/providers/order_providers.
 import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
 import 'package:ledgerly/features/products/domain/entities/product_set_entity.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
+import 'add_order_dialog.dart';
 
 // Available order statuses
 const _kOrderStatuses = [('pending', 'Pending'), ('completed', 'Completed')];
@@ -63,7 +64,7 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
     final updated = await showDialog<OrderEntity>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => _EditOrderDialog(order: _order),
+      builder: (_) => AddOrderDialog(order: _order),
     );
 
     if (updated != null && mounted) {
@@ -493,21 +494,44 @@ class _EditOrderDialogState extends ConsumerState<_EditOrderDialog> {
                             fontSize: 16,
                           ),
                         ),
-                        TextButton.icon(
-                          onPressed: _isSaving
-                              ? null
-                              : () {
-                                  setState(() {
-                                    _lines.add(
-                                      _EditableOrderLine(
-                                        quantity: 1,
-                                        unitPrice: 0,
-                                      ),
-                                    );
-                                  });
-                                },
-                          icon: const Icon(Icons.add_circle_outline),
-                          label: const Text('Add Product'),
+                        Row(
+                          children: [
+                            TextButton.icon(
+                              onPressed: _isSaving
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        _lines.add(
+                                          _EditableOrderLine(
+                                            quantity: 1,
+                                            unitPrice: 0,
+                                            isSet: false,
+                                          ),
+                                        );
+                                      });
+                                    },
+                              icon: const Icon(Icons.add_circle_outline),
+                              label: const Text('Add Product'),
+                            ),
+                            const SizedBox(width: 8),
+                            TextButton.icon(
+                              onPressed: _isSaving
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        _lines.add(
+                                          _EditableOrderLine(
+                                            quantity: 1,
+                                            unitPrice: 0,
+                                            isSet: true,
+                                          ),
+                                        );
+                                      });
+                                    },
+                              icon: const Icon(Icons.add_circle_outline),
+                              label: const Text('Add Set'),
+                            ),
+                          ],
                         ),
                       ],
                     ),

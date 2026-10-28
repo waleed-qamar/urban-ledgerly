@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/theme/app_colors.dart';
 import 'package:ledgerly/core/widgets/build_search_box.dart';
+import 'package:ledgerly/features/products/domain/entities/product_set_entity.dart';
 import 'package:ledgerly/features/products/presentation/pages/add_productset_dialog.dart';
 import 'package:ledgerly/features/products/presentation/pages/product_detail_page.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
@@ -118,64 +119,64 @@ class _ProductDashboardState extends ConsumerState<ProductDashboard> {
 
             const SizedBox(height: 32),
 
-            // Summary Cards
-            productsAsyncValue.when(
-              data: (products) {
-                if (products.isEmpty) {
-                  return SizedBox(
-                    height: 120,
-                    child: Center(
-                      child: Text(
-                        'No products yet. Click "Add Product" to get started.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textGrey,
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return Row(
-                  children: [
-                    Expanded(
-                      child: _buildSummaryCard(
-                        title: 'Total Products',
-                        value: products.length.toString(),
-                        subtitleLabel: 'PRODUCTS',
-                        icon: Icons.shopping_cart,
-                      ),
-                    ),
-                  ],
-                );
-              },
-              error: (err, _) => Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.textWhite,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.dividerColor.withValues(alpha: 0.5),
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    'Error loading products: $err',
-                    style: TextStyle(color: AppColors.errorText),
-                  ),
-                ),
-              ),
-              loading: () => Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.textWhite,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.dividerColor.withValues(alpha: 0.5),
-                  ),
-                ),
-                child: const Center(child: CircularProgressIndicator()),
-              ),
-            ),
-            const SizedBox(height: 48),
+            // // Summary Cards
+            // productsAsyncValue.when(
+            //   data: (products) {
+            //     if (products.isEmpty) {
+            //       return SizedBox(
+            //         height: 120,
+            //         child: Center(
+            //           child: Text(
+            //             'No products yet. Click "Add Product" to get started.',
+            //             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            //               color: AppColors.textGrey,
+            //             ),
+            //           ),
+            //         ),
+            //       );
+            //     }
+            //     return Row(
+            //       children: [
+            //         Expanded(
+            //           child: _buildSummaryCard(
+            //             title: 'Total Products',
+            //             value: products.length.toString(),
+            //             subtitleLabel: 'PRODUCTS',
+            //             icon: Icons.shopping_cart,
+            //           ),
+            //         ),
+            //       ],
+            //     );
+            //   },
+            //   error: (err, _) => Container(
+            //     padding: const EdgeInsets.all(24),
+            //     decoration: BoxDecoration(
+            //       color: AppColors.textWhite,
+            //       borderRadius: BorderRadius.circular(12),
+            //       border: Border.all(
+            //         color: AppColors.dividerColor.withValues(alpha: 0.5),
+            //       ),
+            //     ),
+            //     child: Center(
+            //       child: Text(
+            //         'Error loading products: $err',
+            //         style: TextStyle(color: AppColors.errorText),
+            //       ),
+            //     ),
+            //   ),
+            //   loading: () => Container(
+            //     padding: const EdgeInsets.all(24),
+            //     decoration: BoxDecoration(
+            //       color: AppColors.textWhite,
+            //       borderRadius: BorderRadius.circular(12),
+            //       border: Border.all(
+            //         color: AppColors.dividerColor.withValues(alpha: 0.5),
+            //       ),
+            //     ),
+            //     child: const Center(child: CircularProgressIndicator()),
+            //   ),
+            // ),
+            // const SizedBox(height: 48),
 
             // Products List
             Expanded(
@@ -336,10 +337,19 @@ class _ProductDashboardState extends ConsumerState<ProductDashboard> {
                                       // navigate to set detail page if you have one
                                     },
                                     onEdit: () {
-                                      // showDialog(...) if you have an edit-set dialog
+                                      showDialog(
+                                        context: context,
+                                        builder: (_) => AddProductsetDialog(
+                                          setToEdit: set,
+                                        ),
+                                      );
                                     },
                                     onDelete: () {
-                                      // your delete-set confirmation logic
+                                      _showDeleteSetConfirmation(
+                                        context,
+                                        ref,
+                                        set,
+                                      );
                                     },
                                   );
                                 },
@@ -400,6 +410,58 @@ class _ProductDashboardState extends ConsumerState<ProductDashboard> {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error deleting product: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteSetConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    ProductSetEntity set,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Product Set'),
+        content: Text(
+          'Are you sure you want to delete "${set.name}"? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.errorText,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              try {
+                if (set.setId == null) return;
+                await ref
+                    .read(productRepositoryProvider)
+                    .deleteProductSet(set.setId!);
+                ref.invalidate(getAllProductSetsProvider);
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Product set deleted successfully'),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error deleting product set: $e')),
                   );
                 }
               }

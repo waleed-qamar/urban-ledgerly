@@ -16,7 +16,9 @@ import 'package:ledgerly/features/products/presentation/providers/product_provid
 import '../../../../core/widgets/searchable_dropdown.dart';
 
 class AddOrderDialog extends ConsumerStatefulWidget {
-  const AddOrderDialog({super.key});
+  const AddOrderDialog({super.key, this.order});
+
+  final OrderEntity? order;
 
   @override
   ConsumerState<AddOrderDialog> createState() => _AddOrderDialogState();
@@ -41,13 +43,44 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
   DateTime _orderDate = DateUtils.dateOnly(DateTime.now());
   final String _status = 'pending';
   bool _isSubmitting = false;
-  final List<_DraftOrderLine> _lines = [
-    _DraftOrderLine(quantity: 1, unitPrice: 0),
-  ];
+  final List<_DraftOrderLine> _lines = [];
 
   @override
   void initState() {
     super.initState();
+    if (widget.order != null) {
+      final o = widget.order!;
+      _selectedSupplierId = o.supplierId;
+      _selectedClientId = o.clientId;
+      _orderDate = o.orderDate;
+      _departmentController.text = o.department ?? '';
+      _poController.text = o.po ?? '';
+      _deliveryTerm = o.deliveryTerm;
+      for (final item in o.items) {
+        if (item.isSet) {
+          final line = _DraftSetLine(
+            quantity: item.quantity,
+            unitPrice: item.price,
+            id: item.id,
+            invoicedQuantity: item.invoicedQuantity,
+          );
+          line.setId = item.setId;
+          _lines.add(line);
+        } else {
+          final line = _DraftProductLine(
+            quantity: item.quantity,
+            unitPrice: item.price,
+            id: item.id,
+            invoicedQuantity: item.invoicedQuantity,
+          );
+          line.productId = item.productId;
+          _lines.add(line);
+        }
+      }
+    }
+    if (_lines.isEmpty) {
+      _lines.add(_DraftProductLine(quantity: 1, unitPrice: 0));
+    }
     _orderDateController.text = _formatDate(_orderDate);
   }
 
@@ -165,9 +198,9 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
               Expanded(
                 child: Row(
                   children: [
-                    const Text(
-                      'New Order',
-                      style: TextStyle(
+                    Text(
+                      widget.order != null ? 'Edit Order' : 'New Order',
+                      style: const TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w800,
                       ),
@@ -182,36 +215,44 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: ordersAsync.when(
-                        loading: () => const Text(
-                          'Order# ...',
-                          style: TextStyle(
-                            color: AppColors.textWhite,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        error: (_, _) => const Text(
-                          'Order# N/A',
-                          style: TextStyle(
-                            color: AppColors.textWhite,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        data: (orders) {
-                          final maxId = orders
-                              .map((order) => order.id ?? 0)
-                              .fold<int>(0, (max, id) => id > max ? id : max);
-                          final nextId = maxId + 1;
+                      child: widget.order != null
+                          ? Text(
+                              'Order# ${widget.order!.id ?? ''}',
+                              style: const TextStyle(
+                                color: AppColors.textWhite,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            )
+                          : ordersAsync.when(
+                              loading: () => const Text(
+                                'Order# ...',
+                                style: TextStyle(
+                                  color: AppColors.textWhite,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              error: (_, _) => const Text(
+                                'Order# N/A',
+                                style: TextStyle(
+                                  color: AppColors.textWhite,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              data: (orders) {
+                                final maxId = orders
+                                    .map((order) => order.id ?? 0)
+                                    .fold<int>(0, (max, id) => id > max ? id : max);
+                                final nextId = maxId + 1;
 
-                          return Text(
-                            'Order# $nextId',
-                            style: const TextStyle(
-                              color: AppColors.textWhite,
-                              fontWeight: FontWeight.w600,
+                                return Text(
+                                  'Order# $nextId',
+                                  style: const TextStyle(
+                                    color: AppColors.textWhite,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
                     ),
                   ],
                 ),
@@ -520,7 +561,7 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Create Order'),
+                    : Text(widget.order != null ? 'Save Changes' : 'Create Order'),
               ),
             ],
           ),
@@ -599,11 +640,13 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
 
       items.add(
         OrderItemEntity(
+          id: line.id,
           productId: line.productId,
           setId: line.setId,
           isSet: line.isSet,
           quantity: line.quantity,
           price: discountedUnitPrice,
+          invoicedQuantity: line.invoicedQuantity,
         ),
       );
     }
@@ -625,6 +668,44 @@ class _AddOrderDialogState extends ConsumerState<AddOrderDialog> {
 
     if (_deliveryTerm == null) {
       _showError('Please select a Delivery Term.');
+      return;
+    }
+
+    if (widget.order != null) {
+      final updatedOrder = widget.order!.copyWith(
+        supplierId: _selectedSupplierId!,
+        clientId: _selectedClientId!,
+        items: items,
+        status: widget.order!.status ?? _status,
+        department: department.isEmpty ? null : department,
+        deliveryTerm: _deliveryTerm!,
+        po: po.isEmpty ? null : po,
+        orderDate: _orderDate,
+      );
+
+      setState(() {
+        _isSubmitting = true;
+      });
+
+      try {
+        await ref.read(orderRepositoryProvider).updateOrder(updatedOrder);
+        ref.invalidate(getAllOrdersProvider);
+        if (!context.mounted) {
+          return;
+        }
+        Navigator.of(context).pop(updatedOrder);
+      } catch (error) {
+        if (!mounted) {
+          return;
+        }
+        _showError('Failed to update order: $error');
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+        }
+      }
       return;
     }
 
@@ -898,7 +979,7 @@ class _OrderLineEditor extends StatelessWidget {
           SizedBox(
             width: 118,
             child: TextFormField(
-              // initialValue: line.unitPrice.toStringAsFixed(2),
+              initialValue: line.unitPrice > 0 ? line.unitPrice.toStringAsFixed(2) : null,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
@@ -940,21 +1021,33 @@ class _DraftOrderLine {
     required this.quantity,
     required this.unitPrice,
     this.isSet = false,
+    this.id,
+    this.invoicedQuantity,
   });
 
+  int? id;
   bool isSet;
   int? productId;
   int? setId;
   int quantity;
   double unitPrice;
+  int? invoicedQuantity;
 }
 
 class _DraftProductLine extends _DraftOrderLine {
-  _DraftProductLine({required super.quantity, required super.unitPrice})
-    : super(isSet: false);
+  _DraftProductLine({
+    required super.quantity,
+    required super.unitPrice,
+    super.id,
+    super.invoicedQuantity,
+  }) : super(isSet: false);
 }
 
 class _DraftSetLine extends _DraftOrderLine {
-  _DraftSetLine({required super.quantity, required super.unitPrice})
-    : super(isSet: true);
+  _DraftSetLine({
+    required super.quantity,
+    required super.unitPrice,
+    super.id,
+    super.invoicedQuantity,
+  }) : super(isSet: true);
 }
