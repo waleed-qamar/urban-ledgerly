@@ -5,13 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import 'package:ledgerly/core/widgets/audit_log_list_widget.dart';
-import 'package:ledgerly/features/account_ledger/domain/entities/account_entity.dart';
+import '../../../../core/widgets/audit_log_list_widget.dart';
+import '../../domain/entities/account_entity.dart';
 
 import '../../../../core/theme/app_colors.dart';
 // import '../../../../core/widgets/pdf_button.dart';
 import '../../../../core/widgets/searchable_dropdown.dart';
 import '../provider/account_ledger_providers.dart';
+import 'opening_balance_dialog.dart';
+import 'withdraw_dialog.dart';
 
 class AccountDetailsPage extends ConsumerStatefulWidget {
   final int accountId;
@@ -63,19 +65,46 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.arrow_back),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Account Details',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textBlack,
+                  ),
+                ),
+                const Spacer(),
+                OutlinedButton.icon(
+                  onPressed: () => OpeningBalanceDialog.show(
+                    context,
+                    initialAccountId: widget.accountId,
+                  ),
+                  icon: const Icon(Icons.account_balance_wallet_outlined),
+                  label: const Text('Initial Balance'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             accountAsync.when(
-              loading: () => const SizedBox.shrink(),
-              error: (_, _) => const SizedBox.shrink(),
+              loading: () => const LinearProgressIndicator(),
+              error: (err, _) => Text(
+                'Error loading account: $err',
+                style: const TextStyle(color: Colors.red),
+              ),
               data: (account) {
                 return Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue.shade50, Colors.indigo.shade50],
-                    ),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppColors.dividerColor.withValues(alpha: 0.3),
+                      color: AppColors.dividerColor.withValues(alpha: 0.35),
                     ),
                   ),
                   child: Row(
@@ -176,10 +205,27 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
                   ],
                 ),
                 if (_activeTab == 0)
-                  FilledButton.icon(
-                    onPressed: () => _openTransferDialog(context),
-                    icon: const Icon(Icons.compare_arrows),
-                    label: const Text('Transfer Money'),
+                  Row(
+                    children: [
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.orange.shade800,
+                          side: BorderSide(color: Colors.orange.shade800),
+                        ),
+                        onPressed: () => WithdrawDialog.show(
+                          context,
+                          initialAccountId: widget.accountId,
+                        ),
+                        icon: const Icon(Icons.money_off),
+                        label: const Text('Withdraw Money'),
+                      ),
+                      const SizedBox(width: 10),
+                      FilledButton.icon(
+                        onPressed: () => _openTransferDialog(context),
+                        icon: const Icon(Icons.compare_arrows),
+                        label: const Text('Transfer Money'),
+                      ),
+                    ],
                   ),
               ],
             ),
@@ -378,16 +424,24 @@ class _AccountDetailsPageState extends ConsumerState<AccountDetailsPage> {
                                             ),
                                           ),
                                           DataCell(
-                                            tx.referenceType == 'transfer' && tx.referenceId != null
+                                            tx.referenceType == 'transfer' &&
+                                                    tx.referenceId != null
                                                 ? IconButton(
-                                                    icon: const Icon(Icons.edit, size: 20, color: AppColors.primary),
+                                                    icon: const Icon(
+                                                      Icons.edit,
+                                                      size: 20,
+                                                      color: AppColors.primary,
+                                                    ),
                                                     onPressed: () {
                                                       showDialog(
                                                         context: context,
-                                                        builder: (ctx) => _EditTransferDialog(
-                                                          transferId: tx.referenceId!,
-                                                          accountId: widget.accountId,
-                                                        ),
+                                                        builder: (ctx) =>
+                                                            _EditTransferDialog(
+                                                              transferId: tx
+                                                                  .referenceId!,
+                                                              accountId: widget
+                                                                  .accountId,
+                                                            ),
                                                       );
                                                     },
                                                     tooltip: 'Edit Transfer',
@@ -806,18 +860,27 @@ class _TransferMoneyDialogState extends ConsumerState<_TransferMoneyDialog> {
 
                     String formatAccount(AccountEntity a) {
                       final parts = <String>[];
-                      if (a.bankName != null && a.bankName!.isNotEmpty) parts.add(a.bankName!);
+                      if (a.bankName != null && a.bankName!.isNotEmpty) {
+                        parts.add(a.bankName!);
+                      }
                       parts.add(a.accountTitle);
-                      if (a.accountNumber != null && a.accountNumber!.isNotEmpty) parts.add('(${a.accountNumber})');
+                      if (a.accountNumber != null &&
+                          a.accountNumber!.isNotEmpty) {
+                        parts.add('(${a.accountNumber})');
+                      }
                       return parts.join(' - ');
                     }
 
                     final selectedAcc = _selectedToAccountId != null
-                        ? otherAccounts.where((acc) => acc.id == _selectedToAccountId).firstOrNull
+                        ? otherAccounts
+                              .where((acc) => acc.id == _selectedToAccountId)
+                              .firstOrNull
                         : null;
 
                     return SearchableDropdown<AccountEntity>(
-                      initialText: selectedAcc != null ? formatAccount(selectedAcc) : null,
+                      initialText: selectedAcc != null
+                          ? formatAccount(selectedAcc)
+                          : null,
                       labelText: 'To Account *',
                       prefixIcon: const Icon(Icons.account_balance_outlined),
                       items: otherAccounts,
@@ -827,7 +890,9 @@ class _TransferMoneyDialogState extends ConsumerState<_TransferMoneyDialog> {
                           _selectedToAccountId = account.id;
                         });
                       },
-                      errorText: _selectedToAccountId == null || _selectedToAccountId == -1
+                      errorText:
+                          _selectedToAccountId == null ||
+                              _selectedToAccountId == -1
                           ? 'Please select a destination account'
                           : null,
                     );
@@ -932,10 +997,14 @@ class _TransferMoneyDialogState extends ConsumerState<_TransferMoneyDialog> {
 class _EditTransferDialog extends ConsumerStatefulWidget {
   final int transferId;
   final int accountId;
-  const _EditTransferDialog({required this.transferId, required this.accountId});
+  const _EditTransferDialog({
+    required this.transferId,
+    required this.accountId,
+  });
 
   @override
-  ConsumerState<_EditTransferDialog> createState() => _EditTransferDialogState();
+  ConsumerState<_EditTransferDialog> createState() =>
+      _EditTransferDialogState();
 }
 
 class _EditTransferDialogState extends ConsumerState<_EditTransferDialog> {
@@ -957,17 +1026,17 @@ class _EditTransferDialogState extends ConsumerState<_EditTransferDialog> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedFromAccountId == null || _selectedToAccountId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select accounts')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select accounts')));
       return;
     }
 
     final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
     if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a valid amount')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter a valid amount')));
       return;
     }
 
@@ -999,9 +1068,9 @@ class _EditTransferDialogState extends ConsumerState<_EditTransferDialog> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating transfer: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error updating transfer: $e')));
       }
     } finally {
       if (mounted) {
@@ -1013,40 +1082,63 @@ class _EditTransferDialogState extends ConsumerState<_EditTransferDialog> {
   @override
   Widget build(BuildContext context) {
     final allAccountsAsync = ref.watch(getAllAccountsProvider);
-    final transferDetailsAsync = ref.watch(getTransferDetailsProvider(widget.transferId));
+    final transferDetailsAsync = ref.watch(
+      getTransferDetailsProvider(widget.transferId),
+    );
 
     return AlertDialog(
       backgroundColor: AppColors.textWhite,
-      title: const Text('Edit Transfer', style: TextStyle(fontWeight: FontWeight.w800)),
+      title: const Text(
+        'Edit Transfer',
+        style: TextStyle(fontWeight: FontWeight.w800),
+      ),
       content: SizedBox(
         width: 480,
         child: allAccountsAsync.when(
-          loading: () => const SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
+          loading: () => const SizedBox(
+            height: 100,
+            child: Center(child: CircularProgressIndicator()),
+          ),
           error: (e, _) => Text('Error: $e'),
           data: (accounts) => transferDetailsAsync.when(
-            loading: () => const SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
+            loading: () => const SizedBox(
+              height: 100,
+              child: Center(child: CircularProgressIndicator()),
+            ),
             error: (e, _) => Text('Error: $e'),
             data: (transfer) {
-              if (_selectedFromAccountId == null && _selectedToAccountId == null && _amountController.text.isEmpty) {
+              if (_selectedFromAccountId == null &&
+                  _selectedToAccountId == null &&
+                  _amountController.text.isEmpty) {
                 _selectedFromAccountId = transfer['from_account_id'] as int;
                 _selectedToAccountId = transfer['to_account_id'] as int;
                 _amountController.text = transfer['amount'].toString();
                 _descriptionController.text = transfer['description'] ?? '';
                 if (transfer['transfer_date'] != null) {
-                  _transactionDate = DateTime.parse(transfer['transfer_date'] as String);
+                  _transactionDate = DateTime.parse(
+                    transfer['transfer_date'] as String,
+                  );
                 }
               }
 
               String formatAccount(AccountEntity a) {
                 final parts = <String>[];
-                if (a.bankName != null && a.bankName!.isNotEmpty) parts.add(a.bankName!);
+                if (a.bankName != null && a.bankName!.isNotEmpty) {
+                  parts.add(a.bankName!);
+                }
                 parts.add(a.accountTitle);
-                if (a.accountNumber != null && a.accountNumber!.isNotEmpty) parts.add('(${a.accountNumber})');
+                if (a.accountNumber != null && a.accountNumber!.isNotEmpty) {
+                  parts.add('(${a.accountNumber})');
+                }
                 return parts.join(' - ');
               }
 
-              final selectedFromAcc = accounts.where((a) => a.id == _selectedFromAccountId).firstOrNull;
-              final selectedToAcc = accounts.where((a) => a.id == _selectedToAccountId).firstOrNull;
+              final selectedFromAcc = accounts
+                  .where((a) => a.id == _selectedFromAccountId)
+                  .firstOrNull;
+              final selectedToAcc = accounts
+                  .where((a) => a.id == _selectedToAccountId)
+                  .firstOrNull;
 
               return Form(
                 key: _formKey,
@@ -1055,30 +1147,49 @@ class _EditTransferDialogState extends ConsumerState<_EditTransferDialog> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SearchableDropdown<AccountEntity>(
-                        initialText: selectedFromAcc != null ? formatAccount(selectedFromAcc) : null,
+                        initialText: selectedFromAcc != null
+                            ? formatAccount(selectedFromAcc)
+                            : null,
                         labelText: 'From Account *',
                         prefixIcon: const Icon(Icons.account_balance_outlined),
                         items: accounts,
                         displayStringForOption: formatAccount,
-                        onSelected: (acc) => setState(() => _selectedFromAccountId = acc.id),
-                        errorText: _selectedFromAccountId == null ? 'Required' : null,
+                        onSelected: (acc) =>
+                            setState(() => _selectedFromAccountId = acc.id),
+                        errorText: _selectedFromAccountId == null
+                            ? 'Required'
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       SearchableDropdown<AccountEntity>(
-                        initialText: selectedToAcc != null ? formatAccount(selectedToAcc) : null,
+                        initialText: selectedToAcc != null
+                            ? formatAccount(selectedToAcc)
+                            : null,
                         labelText: 'To Account *',
                         prefixIcon: const Icon(Icons.account_balance_outlined),
                         items: accounts,
                         displayStringForOption: formatAccount,
-                        onSelected: (acc) => setState(() => _selectedToAccountId = acc.id),
-                        errorText: _selectedToAccountId == null ? 'Required' : null,
+                        onSelected: (acc) =>
+                            setState(() => _selectedToAccountId = acc.id),
+                        errorText: _selectedToAccountId == null
+                            ? 'Required'
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _amountController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-                        decoration: const InputDecoration(labelText: 'Amount *', border: OutlineInputBorder(), prefixIcon: Icon(Icons.payments_outlined), prefixText: 'PKR '),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                        ],
+                        decoration: const InputDecoration(
+                          labelText: 'Amount *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.payments_outlined),
+                          prefixText: 'PKR ',
+                        ),
                         validator: (val) {
                           final amt = double.tryParse(val ?? '');
                           if (amt == null || amt <= 0) return 'Invalid amount';
@@ -1094,18 +1205,32 @@ class _EditTransferDialogState extends ConsumerState<_EditTransferDialog> {
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2100),
                           );
-                          if (picked != null) setState(() => _transactionDate = picked);
+                          if (picked != null) {
+                            setState(() => _transactionDate = picked);
+                          }
                         },
                         child: InputDecorator(
-                          decoration: const InputDecoration(labelText: 'Transaction Date *', border: OutlineInputBorder(), prefixIcon: Icon(Icons.calendar_today_outlined)),
-                          child: Text(DateFormat('dd MMM yyyy').format(_transactionDate), style: const TextStyle(fontSize: 16)),
+                          decoration: const InputDecoration(
+                            labelText: 'Transaction Date *',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.calendar_today_outlined),
+                          ),
+                          child: Text(
+                            DateFormat('dd MMM yyyy').format(_transactionDate),
+                            style: const TextStyle(fontSize: 16),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _descriptionController,
                         maxLines: 2,
-                        decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder(), prefixIcon: Icon(Icons.notes_outlined), alignLabelWithHint: true),
+                        decoration: const InputDecoration(
+                          labelText: 'Description',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.notes_outlined),
+                          alignLabelWithHint: true,
+                        ),
                       ),
                     ],
                   ),
@@ -1122,7 +1247,16 @@ class _EditTransferDialogState extends ConsumerState<_EditTransferDialog> {
         ),
         FilledButton.icon(
           onPressed: _isSubmitting ? null : _submit,
-          icon: _isSubmitting ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white))) : const Icon(Icons.save),
+          icon: _isSubmitting
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                  ),
+                )
+              : const Icon(Icons.save),
           label: Text(_isSubmitting ? 'Saving...' : 'Save'),
         ),
       ],

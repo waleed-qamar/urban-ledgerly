@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ledgerly/core/theme/app_colors.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import '../../../../core/theme/app_colors.dart';
 
 import '../../domain/entities/account_entity.dart';
 
@@ -23,26 +25,6 @@ extension AccountTypeOptionX on AccountTypeOption {
 }
 
 /// A dialog for creating a new account or editing an existing one.
-///
-/// Usage:
-/// ```dart
-/// // Add mode
-/// AccountFormDialog.show(
-///   context,
-///   onSave: (account) async {
-///     await ref.read(accountRepositoryProvider).createAccount(account);
-///   },
-/// );
-///
-/// // Edit mode
-/// AccountFormDialog.show(
-///   context,
-///   account: existingAccount,
-///   onSave: (account) async {
-///     await ref.read(accountRepositoryProvider).updateAccount(account);
-///   },
-/// );
-/// ```
 class AccountFormDialog extends StatefulWidget {
   const AccountFormDialog({super.key, this.account, required this.onSave});
 
@@ -51,16 +33,24 @@ class AccountFormDialog extends StatefulWidget {
   final AccountEntity? account;
 
   /// Called with the built [AccountEntity] when the user taps Save.
-  /// Throw inside this callback (e.g. on a Supabase error) to have the
-  /// dialog surface the error and stay open for correction.
-  final Future<void> Function(AccountEntity account) onSave;
+  final Future<void> Function(
+    AccountEntity account, {
+    double? initialBalance,
+    DateTime? initialBalanceDate,
+  })
+  onSave;
 
   bool get isEditMode => account != null;
 
   static Future<void> show(
     BuildContext context, {
     AccountEntity? account,
-    required Future<void> Function(AccountEntity account) onSave,
+    required Future<void> Function(
+      AccountEntity account, {
+      double? initialBalance,
+      DateTime? initialBalanceDate,
+    })
+    onSave,
   }) {
     return showDialog(
       context: context,
@@ -79,7 +69,8 @@ class _AccountFormDialogState extends State<AccountFormDialog> {
   late final TextEditingController _bankNameController;
   late final TextEditingController _accountNumberController;
   late final TextEditingController _currencyController;
-  // late final TextEditingController _balanceController;
+  late final TextEditingController _initialBalanceController;
+  DateTime _openingDate = DateTime.now();
 
   late AccountTypeOption _selectedType;
   late bool _isActive;
@@ -100,9 +91,7 @@ class _AccountFormDialogState extends State<AccountFormDialog> {
     _currencyController = TextEditingController(
       text: account?.currency ?? 'PKR',
     );
-    // _balanceController = TextEditingController(
-    //   text: (account?.currentBalance ?? 0.0).toStringAsFixed(2),
-    // );
+    _initialBalanceController = TextEditingController();
 
     _selectedType = account != null
         ? AccountTypeOptionX.fromDb(account.accountType)
@@ -116,7 +105,7 @@ class _AccountFormDialogState extends State<AccountFormDialog> {
     _bankNameController.dispose();
     _accountNumberController.dispose();
     _currencyController.dispose();
-    // _balanceController.dispose();
+    _initialBalanceController.dispose();
     super.dispose();
   }
 
@@ -147,7 +136,12 @@ class _AccountFormDialogState extends State<AccountFormDialog> {
     );
 
     try {
-      await widget.onSave(result);
+      final initialBal = double.tryParse(_initialBalanceController.text.trim());
+      await widget.onSave(
+        result,
+        initialBalance: initialBal,
+        initialBalanceDate: _openingDate,
+      );
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -258,28 +252,64 @@ class _AccountFormDialogState extends State<AccountFormDialog> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    // Expanded(
-                    //   child: TextFormField(
-                    //     controller: _balanceController,
-                    //     decoration: const InputDecoration(
-                    //       labelText: 'Current Balance',
-                    //     ),
-                    //     keyboardType: const TextInputType.numberWithOptions(
-                    //       decimal: true,
-                    //     ),
-                    //     validator: (value) {
-                    //       final v = value?.trim() ?? '';
-                    //       if (v.isEmpty) return 'Required';
-                    //       if (double.tryParse(v) == null) {
-                    //         return 'Invalid number';
-                    //       }
-                    //       return null;
-                    //     },
-                    //   ),
-                    // ),
                   ],
                 ),
+                if (!widget.isEditMode) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _initialBalanceController,
+                          decoration: const InputDecoration(
+                            labelText: 'Opening Balance (Optional)',
+                            prefixText: 'PKR ',
+                            hintText: '0.00',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(
+                              Icons.account_balance_wallet_outlined,
+                            ),
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9.]'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: _openingDate,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) {
+                              setState(() => _openingDate = picked);
+                            }
+                          },
+                          child: InputDecorator(
+                            decoration: const InputDecoration(
+                              labelText: 'Opening Date',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.calendar_today_outlined),
+                            ),
+                            child: Text(
+                              DateFormat('dd MMM yyyy').format(_openingDate),
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 8),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,

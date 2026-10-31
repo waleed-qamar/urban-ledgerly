@@ -24,8 +24,46 @@ class AccountLedgerRepositoryImpl implements AccountLedgerRepository {
   }
 
   @override
-  Future<AccountEntity> createAccount(AccountEntity account) {
-    return _datasource.createAccount(account);
+  Future<AccountEntity> createAccount(
+    AccountEntity account, {
+    double? initialBalance,
+    DateTime? initialBalanceDate,
+  }) {
+    return _datasource.createAccount(
+      account,
+      initialBalance: initialBalance,
+      initialBalanceDate: initialBalanceDate,
+    );
+  }
+
+  @override
+  Future<void> setOpeningBalance({
+    required int accountId,
+    required double amount,
+    DateTime? date,
+    String? description,
+  }) {
+    return _datasource.setOpeningBalance(
+      accountId: accountId,
+      amount: amount,
+      date: date,
+      description: description,
+    );
+  }
+
+  @override
+  Future<void> recordWithdrawal({
+    required int accountId,
+    required double amount,
+    required String description,
+    DateTime? date,
+  }) {
+    return _datasource.recordWithdrawal(
+      accountId: accountId,
+      amount: amount,
+      description: description,
+      date: date,
+    );
   }
 
   @override

@@ -101,7 +101,11 @@ class AccountLedgerRemoteDatasource {
     return transactions.reversed.toList();
   }
 
-  Future<AccountEntity> createAccount(AccountEntity account) async {
+  Future<AccountEntity> createAccount(
+    AccountEntity account, {
+    double? initialBalance,
+    DateTime? initialBalanceDate,
+  }) async {
     final payload = account.toJson()
       ..remove('id')
       ..remove('current_balance')
@@ -114,7 +118,108 @@ class AccountLedgerRemoteDatasource {
         .select()
         .single();
 
-    return AccountEntity.fromJson(_normalizeAccountRow(response));
+    final created = AccountEntity.fromJson(_normalizeAccountRow(response));
+
+    if (initialBalance != null && initialBalance > 0) {
+      await setOpeningBalance(
+        accountId: created.id,
+        amount: initialBalance,
+        date: initialBalanceDate,
+        description: 'Opening balance equity / Starting balance',
+      );
+      return getAccountById(created.id);
+    }
+
+    return created;
+  }
+
+  /// Sets or updates the opening balance for an account.
+  /// If an 'opening_balance' transaction already exists for this account, it updates it.
+  /// Otherwise, it inserts a new credit transaction with reference_type 'opening_balance'.
+  Future<void> setOpeningBalance({
+    required int accountId,
+    required double amount,
+    DateTime? date,
+    String? description,
+  }) async {
+    try {
+      final existing = await _client
+          .from('account_transactions')
+          .select('id')
+          .eq('account_id', accountId)
+          .eq('reference_type', 'opening_balance')
+          .limit(1);
+
+      final txDate = (date ?? DateTime.now()).toIso8601String();
+      final txDesc = description?.trim().isNotEmpty == true
+          ? description!.trim()
+          : 'Initial / Starting balance';
+
+      if (existing.isNotEmpty) {
+        final existingId = existing.first['id'];
+        await _client.from('account_transactions').update({
+          'amount': amount,
+          'transaction_type': 'credit',
+          'description': txDesc,
+          'transaction_date': txDate,
+        }).eq('id', existingId);
+      } else {
+        await _client.from('account_transactions').insert({
+          'account_id': accountId,
+          'amount': amount,
+          'transaction_type': 'credit',
+          'reference_type': 'opening_balance',
+          'description': txDesc,
+          'transaction_date': txDate,
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to set opening balance: $e');
+    }
+  }
+
+  /// Records a personal withdrawal (drawings) from an account.
+  /// Inserts a debit transaction with reference_type 'withdrawal' (fallback to 'disbursement' if DB check constraint does not include 'withdrawal').
+  Future<void> recordWithdrawal({
+    required int accountId,
+    required double amount,
+    required String description,
+    DateTime? date,
+  }) async {
+    try {
+      final txDate = (date ?? DateTime.now()).toIso8601String();
+      final txDesc = description.trim().isNotEmpty
+          ? 'Personal withdrawal: ${description.trim()}'
+          : 'Personal withdrawal for personal use';
+
+      try {
+        await _client.from('account_transactions').insert({
+          'account_id': accountId,
+          'amount': amount,
+          'transaction_type': 'debit',
+          'reference_type': 'withdrawal',
+          'description': txDesc,
+          'transaction_date': txDate,
+        });
+      } catch (insertError) {
+        // Fallback to 'disbursement' if 'withdrawal' violates check constraint
+        final errStr = insertError.toString().toLowerCase();
+        if (errStr.contains('check') || errStr.contains('reference_type')) {
+          await _client.from('account_transactions').insert({
+            'account_id': accountId,
+            'amount': amount,
+            'transaction_type': 'debit',
+            'reference_type': 'disbursement',
+            'description': txDesc,
+            'transaction_date': txDate,
+          });
+        } else {
+          rethrow;
+        }
+      }
+    } catch (e) {
+      throw Exception('Failed to record withdrawal: $e');
+    }
   }
 
   Map<String, dynamic> _normalizeAccountRow(Map<String, dynamic> row) {

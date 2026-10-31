@@ -5,7 +5,23 @@ abstract class AccountLedgerRepository {
   Future<List<AccountEntity>> getAllAccounts();
   Future<AccountEntity> getAccountById(int accountId);
   Future<List<AccountTransactionEntity>> getAccountTransactions(int accountId);
-  Future<AccountEntity> createAccount(AccountEntity account);
+  Future<AccountEntity> createAccount(
+    AccountEntity account, {
+    double? initialBalance,
+    DateTime? initialBalanceDate,
+  });
+  Future<void> setOpeningBalance({
+    required int accountId,
+    required double amount,
+    DateTime? date,
+    String? description,
+  });
+  Future<void> recordWithdrawal({
+    required int accountId,
+    required double amount,
+    required String description,
+    DateTime? date,
+  });
   Future<int?> getAccountIdByReference(String referenceType, int referenceId);
   Future<void> transferBetweenAccounts({
     required int fromAccountId,

@@ -42,8 +42,49 @@ Future<List<AccountTransactionEntity>> getAccountTransactions(
 }
 
 @riverpod
-Future<void> createAccount(Ref ref, AccountEntity account) {
-  return ref.watch(accountLedgerRepositoryProvider).createAccount(account);
+Future<void> createAccount(
+  Ref ref,
+  AccountEntity account, {
+  double? initialBalance,
+  DateTime? initialBalanceDate,
+}) {
+  return ref.watch(accountLedgerRepositoryProvider).createAccount(
+        account,
+        initialBalance: initialBalance,
+        initialBalanceDate: initialBalanceDate,
+      );
+}
+
+@riverpod
+Future<void> setOpeningBalance(
+  Ref ref, {
+  required int accountId,
+  required double amount,
+  DateTime? date,
+  String? description,
+}) {
+  return ref.watch(accountLedgerRepositoryProvider).setOpeningBalance(
+        accountId: accountId,
+        amount: amount,
+        date: date,
+        description: description,
+      );
+}
+
+@riverpod
+Future<void> recordWithdrawal(
+  Ref ref, {
+  required int accountId,
+  required double amount,
+  required String description,
+  DateTime? date,
+}) {
+  return ref.watch(accountLedgerRepositoryProvider).recordWithdrawal(
+        accountId: accountId,
+        amount: amount,
+        description: description,
+        date: date,
+      );
 }
 
 @riverpod

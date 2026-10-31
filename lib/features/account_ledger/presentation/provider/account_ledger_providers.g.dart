@@ -315,7 +315,12 @@ final class CreateAccountProvider
     with $FutureModifier<void>, $FutureProvider<void> {
   const CreateAccountProvider._({
     required CreateAccountFamily super.from,
-    required AccountEntity super.argument,
+    required (
+      AccountEntity, {
+      double? initialBalance,
+      DateTime? initialBalanceDate,
+    })
+    super.argument,
   }) : super(
          retry: null,
          name: r'createAccountProvider',
@@ -331,7 +336,7 @@ final class CreateAccountProvider
   String toString() {
     return r'createAccountProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
@@ -341,8 +346,19 @@ final class CreateAccountProvider
 
   @override
   FutureOr<void> create(Ref ref) {
-    final argument = this.argument as AccountEntity;
-    return createAccount(ref, argument);
+    final argument =
+        this.argument
+            as (
+              AccountEntity, {
+              double? initialBalance,
+              DateTime? initialBalanceDate,
+            });
+    return createAccount(
+      ref,
+      argument.$1,
+      initialBalance: argument.initialBalance,
+      initialBalanceDate: argument.initialBalanceDate,
+    );
   }
 
   @override
@@ -356,10 +372,18 @@ final class CreateAccountProvider
   }
 }
 
-String _$createAccountHash() => r'377842821192e9c51132093821e8bfe38999bc1b';
+String _$createAccountHash() => r'ac1eb91145614b6af42130a0c22fa82f6860c0f2';
 
 final class CreateAccountFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<void>, AccountEntity> {
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<void>,
+          (
+            AccountEntity, {
+            double? initialBalance,
+            DateTime? initialBalanceDate,
+          })
+        > {
   const CreateAccountFamily._()
     : super(
         retry: null,
@@ -369,11 +393,229 @@ final class CreateAccountFamily extends $Family
         isAutoDispose: true,
       );
 
-  CreateAccountProvider call(AccountEntity account) =>
-      CreateAccountProvider._(argument: account, from: this);
+  CreateAccountProvider call(
+    AccountEntity account, {
+    double? initialBalance,
+    DateTime? initialBalanceDate,
+  }) => CreateAccountProvider._(
+    argument: (
+      account,
+      initialBalance: initialBalance,
+      initialBalanceDate: initialBalanceDate,
+    ),
+    from: this,
+  );
 
   @override
   String toString() => r'createAccountProvider';
+}
+
+@ProviderFor(setOpeningBalance)
+const setOpeningBalanceProvider = SetOpeningBalanceFamily._();
+
+final class SetOpeningBalanceProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const SetOpeningBalanceProvider._({
+    required SetOpeningBalanceFamily super.from,
+    required ({
+      int accountId,
+      double amount,
+      DateTime? date,
+      String? description,
+    })
+    super.argument,
+  }) : super(
+         retry: null,
+         name: r'setOpeningBalanceProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$setOpeningBalanceHash();
+
+  @override
+  String toString() {
+    return r'setOpeningBalanceProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument =
+        this.argument
+            as ({
+              int accountId,
+              double amount,
+              DateTime? date,
+              String? description,
+            });
+    return setOpeningBalance(
+      ref,
+      accountId: argument.accountId,
+      amount: argument.amount,
+      date: argument.date,
+      description: argument.description,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SetOpeningBalanceProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$setOpeningBalanceHash() => r'2f31b9c6c0e52d5cf1cbab7d2ddee41acd1454d0';
+
+final class SetOpeningBalanceFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<void>,
+          ({int accountId, double amount, DateTime? date, String? description})
+        > {
+  const SetOpeningBalanceFamily._()
+    : super(
+        retry: null,
+        name: r'setOpeningBalanceProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  SetOpeningBalanceProvider call({
+    required int accountId,
+    required double amount,
+    DateTime? date,
+    String? description,
+  }) => SetOpeningBalanceProvider._(
+    argument: (
+      accountId: accountId,
+      amount: amount,
+      date: date,
+      description: description,
+    ),
+    from: this,
+  );
+
+  @override
+  String toString() => r'setOpeningBalanceProvider';
+}
+
+@ProviderFor(recordWithdrawal)
+const recordWithdrawalProvider = RecordWithdrawalFamily._();
+
+final class RecordWithdrawalProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const RecordWithdrawalProvider._({
+    required RecordWithdrawalFamily super.from,
+    required ({
+      int accountId,
+      double amount,
+      String description,
+      DateTime? date,
+    })
+    super.argument,
+  }) : super(
+         retry: null,
+         name: r'recordWithdrawalProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$recordWithdrawalHash();
+
+  @override
+  String toString() {
+    return r'recordWithdrawalProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument =
+        this.argument
+            as ({
+              int accountId,
+              double amount,
+              String description,
+              DateTime? date,
+            });
+    return recordWithdrawal(
+      ref,
+      accountId: argument.accountId,
+      amount: argument.amount,
+      description: argument.description,
+      date: argument.date,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is RecordWithdrawalProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$recordWithdrawalHash() => r'4baf5af297438963fbf32ec84284bd8167f0102c';
+
+final class RecordWithdrawalFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<void>,
+          ({int accountId, double amount, String description, DateTime? date})
+        > {
+  const RecordWithdrawalFamily._()
+    : super(
+        retry: null,
+        name: r'recordWithdrawalProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  RecordWithdrawalProvider call({
+    required int accountId,
+    required double amount,
+    required String description,
+    DateTime? date,
+  }) => RecordWithdrawalProvider._(
+    argument: (
+      accountId: accountId,
+      amount: amount,
+      description: description,
+      date: date,
+    ),
+    from: this,
+  );
+
+  @override
+  String toString() => r'recordWithdrawalProvider';
 }
 
 @ProviderFor(getAccountIdByReference)

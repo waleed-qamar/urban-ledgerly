@@ -5,6 +5,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../provider/account_ledger_providers.dart';
 import 'account_details_page.dart';
 import 'add_account_dialog.dart';
+import 'opening_balance_dialog.dart';
+import 'withdraw_dialog.dart';
 
 class AccountDashboard extends ConsumerWidget {
   const AccountDashboard({super.key});
@@ -15,18 +17,6 @@ class AccountDashboard extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.textWhite,
-      // appBar: AppBar(
-      //   title: const Text(
-      //     'Accounts',
-      //     style: TextStyle(fontWeight: FontWeight.w800),
-      //   ),
-      //   backgroundColor: AppColors.textWhite,
-      //   elevation: 0,
-      //   foregroundColor: AppColors.textBlack,
-      //   actions: [
-      //     FloatingActionButton(onPressed: )
-      //   ],
-      // ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -45,6 +35,40 @@ class AccountDashboard extends ConsumerWidget {
                 ),
                 Row(
                   children: [
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 18,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () => OpeningBalanceDialog.show(context),
+                      icon: const Icon(Icons.account_balance_wallet_outlined),
+                      label: const Text('Initial Balance'),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange.shade800,
+                        foregroundColor: AppColors.textWhite,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 18,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () => WithdrawDialog.show(context),
+                      icon: const Icon(Icons.money_off),
+                      label: const Text('Withdraw Money'),
+                    ),
+                    const SizedBox(width: 12),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
@@ -60,10 +84,18 @@ class AccountDashboard extends ConsumerWidget {
                       onPressed: () {
                         AccountFormDialog.show(
                           context,
-                          onSave: (account) async {
+                          onSave: (
+                            account, {
+                            initialBalance,
+                            initialBalanceDate,
+                          }) async {
                             await ref
                                 .read(accountLedgerRepositoryProvider)
-                                .createAccount(account);
+                                .createAccount(
+                                  account,
+                                  initialBalance: initialBalance,
+                                  initialBalanceDate: initialBalanceDate,
+                                );
                             ref.invalidate(getAllAccountsProvider);
                           },
                         );
@@ -75,17 +107,13 @@ class AccountDashboard extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 8),
             Text(
               'All Accounts',
               style: Theme.of(
                 context,
               ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
             ),
-            // const SizedBox(height: 8),
-            // Text(
-            //   'Overview of cash and bank accounts along with their current balances.',
-            //   style: TextStyle(color: Colors.grey.shade600),
-            // ),
             const SizedBox(height: 24),
             Expanded(
               child: accountsAsync.when(
@@ -139,6 +167,12 @@ class AccountDashboard extends ConsumerWidget {
                             DataColumn(
                               label: Text(
                                 'Type',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Actions',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -207,6 +241,50 @@ class AccountDashboard extends ConsumerWidget {
                                   ),
                                   onTap: () =>
                                       _navigateToDetails(context, account.id),
+                                ),
+                                DataCell(
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.account_balance_wallet_outlined,
+                                          size: 19,
+                                          color: AppColors.primary,
+                                        ),
+                                        tooltip: 'Set Initial Balance',
+                                        onPressed: () =>
+                                            OpeningBalanceDialog.show(
+                                              context,
+                                              initialAccountId: account.id,
+                                            ),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.money_off,
+                                          size: 19,
+                                          color: Colors.orange.shade800,
+                                        ),
+                                        tooltip: 'Withdraw Money',
+                                        onPressed: () => WithdrawDialog.show(
+                                          context,
+                                          initialAccountId: account.id,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.arrow_forward,
+                                          size: 19,
+                                          color: AppColors.textGrey,
+                                        ),
+                                        tooltip: 'View Ledger Details',
+                                        onPressed: () => _navigateToDetails(
+                                          context,
+                                          account.id,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             );
