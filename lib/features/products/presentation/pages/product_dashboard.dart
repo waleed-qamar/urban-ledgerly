@@ -339,9 +339,8 @@ class _ProductDashboardState extends ConsumerState<ProductDashboard> {
                                     onEdit: () {
                                       showDialog(
                                         context: context,
-                                        builder: (_) => AddProductsetDialog(
-                                          setToEdit: set,
-                                        ),
+                                        builder: (_) =>
+                                            AddProductsetDialog(setToEdit: set),
                                       );
                                     },
                                     onDelete: () {

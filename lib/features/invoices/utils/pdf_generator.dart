@@ -184,10 +184,19 @@ class PdfGenerator {
                       children: [
                         _buildInfoRow('Supplier Name', supplierName),
                         pw.Divider(color: PdfColors.black, thickness: 0.5),
+
                         _buildInfoRow('Supplier Address', supplierAddr),
-                        if (isSalesTax) ...[
+
+                        if (isSalesTax &&
+                            supplierStrnVal != null &&
+                            supplierStrnVal.toString().trim().isNotEmpty) ...[
                           pw.Divider(color: PdfColors.black, thickness: 0.5),
                           _buildInfoRow('STRN No.', supplierStrnVal),
+                        ],
+
+                        if (isSalesTax &&
+                            supplierNtnVal != null &&
+                            supplierNtnVal.toString().trim().isNotEmpty) ...[
                           pw.Divider(color: PdfColors.black, thickness: 0.5),
                           _buildInfoRow('NTN No.', supplierNtnVal),
                         ],
@@ -208,10 +217,19 @@ class PdfGenerator {
                       children: [
                         _buildInfoRow('Buyer Name', clientNameVal),
                         pw.Divider(color: PdfColors.black, thickness: 0.5),
+
                         _buildInfoRow('Buyer Address', clientAddrVal),
-                        if (isSalesTax) ...[
+
+                        if (isSalesTax &&
+                            clientStrnVal != null &&
+                            clientStrnVal.toString().trim().isNotEmpty) ...[
                           pw.Divider(color: PdfColors.black, thickness: 0.5),
                           _buildInfoRow('SSTRN No.', clientStrnVal),
+                        ],
+
+                        if (isSalesTax &&
+                            clientNtnVal != null &&
+                            clientNtnVal.toString().trim().isNotEmpty) ...[
                           pw.Divider(color: PdfColors.black, thickness: 0.5),
                           _buildInfoRow('NTN No.', clientNtnVal),
                         ],

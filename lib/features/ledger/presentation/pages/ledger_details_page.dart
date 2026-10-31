@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../invoices/presentation/providers/invoice_providers.dart';
 import '../../../invoices/presentation/widgets/invoice_view_dialog.dart';
+import '../../../orders/domain/entities/supplier_entity.dart';
+import '../../../orders/presentation/providers/supplier_providers.dart';
 import '../../../products/presentation/providers/product_providers.dart';
 import '../../../receipts/presentation/providers/receipt_providers.dart';
 import '../../../receipts/presentation/widgets/payment_view_dialog.dart';
@@ -521,6 +523,17 @@ class _RemarksCell extends StatelessWidget {
         final invoice = await ref.read(getInvoiceByIdProvider(refId).future);
         final products = await ref.read(getAllProductsProvider.future);
         final sets = await ref.read(getAllProductSetsProvider.future);
+        final suppliers = await ref
+            .read(getAllSuppliersProvider.future)
+            .catchError((_) => <SupplierEntity>[]);
+        final supplierMap = {
+          for (final s in suppliers)
+            if (s.id != null) s.id!: s.name,
+        };
+        final resolvedSupplier =
+            (invoice.supplierName?.trim().isNotEmpty == true)
+            ? invoice.supplierName!.trim()
+            : (supplierMap[invoice.supplierId] ?? 'Unknown Supplier');
         final productNames = {for (var p in products) p.id: p.name};
         final setNames = {
           for (final set in sets)
@@ -533,12 +546,12 @@ class _RemarksCell extends StatelessWidget {
           context: context,
           builder: (_) => InvoiceViewDialog(
             invoice: invoice,
-            clientName: entry.partyType == PartyType.client
+            clientName: (entry.partyType == PartyType.client)
                 ? partyName
-                : 'Unknown Client',
-            supplierName: entry.partyType == PartyType.vendor
-                ? partyName
-                : 'Unknown Supplier',
+                : (invoice.clientName ?? 'Unknown Client'),
+
+            supplierName: resolvedSupplier,
+
             productNames: productNames,
             setNames: setNames,
           ),

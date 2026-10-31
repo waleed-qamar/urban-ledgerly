@@ -7,6 +7,7 @@ import '../../domain/entities/payroll_sheet_entity.dart';
 import '../../domain/entities/payroll_row_entity.dart';
 import '../../domain/payroll_calc.dart';
 import '../../domain/repositories/payroll_repository.dart';
+import 'package:ledgerly/features/employee/presentation/provider/operator_providers.dart';
 
 part 'payroll_providers.g.dart';
 
@@ -28,12 +29,16 @@ class PayrollSheetState {
   });
 
   double get totalDays => rows.fold(0.0, (sum, r) => sum + r.days);
+  double get totalHours => rows.fold(0.0, (sum, r) => sum + r.hours);
   double get totalSalary => rows.fold(0.0, (sum, r) => sum + r.salary);
+  double get totalDayAmount => rows.fold(0.0, (sum, r) => sum + r.dayAmount);
+  double get totalHourAmount => rows.fold(0.0, (sum, r) => sum + r.hourAmount);
   double get totalAdvance => rows.fold(0.0, (sum, r) => sum + r.advance);
   double get totalCurrent => rows.fold(0.0, (sum, r) => sum + r.currentAmt);
   double get totalDemand => rows.fold(0.0, (sum, r) => sum + r.demand);
   double get totalPayable => rows.fold(0.0, (sum, r) => sum + r.payable);
   double get totalOvertime => rows.fold(0.0, (sum, r) => sum + r.overtime);
+  double get totalPaidAmount => rows.fold(0.0, (sum, r) => sum + r.paidAmount);
   double get grandTotal => rows.fold(0.0, (sum, r) => sum + r.total);
   double get balance => (sheet?.amountGiven ?? 0.0) - grandTotal;
 
@@ -90,7 +95,38 @@ class PayrollSheetDetail extends _$PayrollSheetDetail {
     try {
       final repo = ref.read(payrollRepositoryProvider);
       final sheet = await repo.getSheetById(sheetId);
-      final rows = await repo.getSheetRows(sheetId);
+      var rows = await repo.getSheetRows(sheetId);
+
+      // Auto-load Salary/Day from Operator table if row perDay is 0
+      try {
+        final operators = await ref.read(getAllOperatorsProvider.future);
+        final opWageMap = {for (final o in operators) o.id: o.defaultPerDay};
+
+        bool anyRowUpdated = false;
+        final filledRows = rows.map((r) {
+          if (r.perDay == 0.0 && opWageMap.containsKey(r.employeeId)) {
+            final opWage = opWageMap[r.employeeId] ?? 0.0;
+            if (opWage > 0.0) {
+              anyRowUpdated = true;
+              final mod = r.copyWith(perDay: opWage);
+              return sheet.isOvertime
+                  ? PayrollCalc.recomputeOvertime(mod)
+                  : PayrollCalc.recompute(mod);
+            }
+          }
+          return r;
+        }).toList();
+
+        if (anyRowUpdated) {
+          rows = filledRows;
+          for (final r in filledRows) {
+            if (r.perDay > 0) {
+              _scheduleRowSave(r.id, r);
+            }
+          }
+        }
+      } catch (_) {}
+
       state = state.copyWith(
         sheet: sheet,
         rows: rows,
@@ -108,6 +144,7 @@ class PayrollSheetDetail extends _$PayrollSheetDetail {
   void updateRowInputs(
     String rowId, {
     double? days,
+    double? hours,
     double? perDay,
     double? advance,
     double? demand,
@@ -121,6 +158,7 @@ class PayrollSheetDetail extends _$PayrollSheetDetail {
     final currentRow = state.rows[index];
     final modifiedRow = currentRow.copyWith(
       days: days ?? currentRow.days,
+      hours: hours ?? currentRow.hours,
       perDay: perDay ?? currentRow.perDay,
       advance: advance ?? currentRow.advance,
       demand: demand ?? currentRow.demand,
@@ -128,7 +166,9 @@ class PayrollSheetDetail extends _$PayrollSheetDetail {
     );
 
     // Instant local recomputation
-    final recomputedRow = PayrollCalc.recompute(modifiedRow);
+    final recomputedRow = (state.sheet?.isOvertime ?? false)
+        ? PayrollCalc.recomputeOvertime(modifiedRow)
+        : PayrollCalc.recompute(modifiedRow);
 
     final updatedRows = List<PayrollRowEntity>.from(state.rows);
     updatedRows[index] = recomputedRow;
@@ -140,6 +180,11 @@ class PayrollSheetDetail extends _$PayrollSheetDetail {
       rows: updatedRows,
       rowStatuses: updatedStatuses,
     );
+
+    // If perDay was updated, also update the operator default wage in the Operator table
+    if (perDay != null && perDay > 0 && currentRow.employeeId > 0) {
+      ref.read(operatorRepositoryProvider).updateOperatorWageRate(currentRow.employeeId, perDay);
+    }
 
     _scheduleRowSave(rowId, recomputedRow);
   }
@@ -161,7 +206,9 @@ class PayrollSheetDetail extends _$PayrollSheetDetail {
     }
 
     final modifiedRow = currentRow.copyWith(overrides: overrides);
-    final recomputedRow = PayrollCalc.recompute(modifiedRow);
+    final recomputedRow = (state.sheet?.isOvertime ?? false)
+        ? PayrollCalc.recomputeOvertime(modifiedRow)
+        : PayrollCalc.recompute(modifiedRow);
 
     final updatedRows = List<PayrollRowEntity>.from(state.rows);
     updatedRows[index] = recomputedRow;

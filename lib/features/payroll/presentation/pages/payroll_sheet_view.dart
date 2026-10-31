@@ -312,7 +312,7 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                               // Per Day (Editable input)
                               DataCell(
                                 _SpreadsheetCellInput(
-                                  key: ValueKey('per_day_${row.id}'),
+                                  key: ValueKey('per_day_${row.id}_${row.perDay}'),
                                   initialValue: row.perDay > 0 ? row.perDay.toStringAsFixed(0) : '',
                                   width: 70,
                                   isReadOnly: isReadOnly,

@@ -7,6 +7,7 @@ class PayrollRowEntity {
 
   // Editable input values
   final double days;
+  final double hours;
   final double perDay;
   final double advance;
   final double demand;
@@ -31,6 +32,7 @@ class PayrollRowEntity {
     required this.nameSnapshot,
     this.sortOrder = 0,
     this.days = 0.0,
+    this.hours = 0.0,
     this.perDay = 0.0,
     this.advance = 0.0,
     this.demand = 0.0,
@@ -44,12 +46,36 @@ class PayrollRowEntity {
     this.updatedAt,
   });
 
-  bool get isPayableOverridden => overrides.containsKey('payable');
+  bool get isPayableOverridden => overrides.containsKey('payable') || overrides.containsKey('paid_amount');
   bool get isSalaryOverridden => overrides.containsKey('salary');
   bool get isCurrentOverridden => overrides.containsKey('current');
   bool get isTotalOverridden => overrides.containsKey('total');
 
+  // Overtime Derived Helpers
+  double get hourlyRate => perDay > 0 ? (perDay / 8.0) : 0.0;
+  double get dayAmount => double.parse((days * perDay).toStringAsFixed(2));
+  double get hourAmount => double.parse((hours * hourlyRate).toStringAsFixed(2));
+  double get overtimeTotal => double.parse((dayAmount + hourAmount).toStringAsFixed(2));
+  double get paidAmount {
+    if (overrides.containsKey('payable') && overrides['payable'] != null) {
+      return (overrides['payable'] as num).toDouble();
+    }
+    if (overrides.containsKey('paid_amount') && overrides['paid_amount'] != null) {
+      return (overrides['paid_amount'] as num).toDouble();
+    }
+    return total > 0 ? total : overtimeTotal;
+  }
+  String get remarks => (total > 0 || overtimeTotal > 0 || paidAmount > 0) ? 'Paid' : 'Zero';
+  bool get isZero => (total == 0 && overtimeTotal == 0 && paidAmount == 0);
+
   factory PayrollRowEntity.fromJson(Map<String, dynamic> json) {
+    final overridesMap = json['overrides'] is Map
+        ? Map<String, dynamic>.from(json['overrides'] as Map)
+        : <String, dynamic>{};
+
+    final rawHours = (json['hours'] as num?)?.toDouble() ??
+        (overridesMap['hours'] is num ? (overridesMap['hours'] as num).toDouble() : 0.0);
+
     return PayrollRowEntity(
       id: json['id'] as String,
       sheetId: json['sheet_id'] as String,
@@ -57,13 +83,12 @@ class PayrollRowEntity {
       nameSnapshot: json['name_snapshot'] as String? ?? '',
       sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
       days: (json['days'] as num?)?.toDouble() ?? 0.0,
+      hours: rawHours,
       perDay: (json['per_day'] as num?)?.toDouble() ?? 0.0,
       advance: (json['advance'] as num?)?.toDouble() ?? 0.0,
       demand: (json['demand'] as num?)?.toDouble() ?? 0.0,
       overtime: (json['overtime'] as num?)?.toDouble() ?? 0.0,
-      overrides: json['overrides'] is Map
-          ? Map<String, dynamic>.from(json['overrides'] as Map)
-          : {},
+      overrides: overridesMap,
       salary: (json['salary'] as num?)?.toDouble() ?? 0.0,
       currentAmt: (json['current_amt'] as num?)?.toDouble() ?? 0.0,
       payable: (json['payable'] as num?)?.toDouble() ?? 0.0,
@@ -83,6 +108,7 @@ class PayrollRowEntity {
       'name_snapshot': nameSnapshot,
       'sort_order': sortOrder,
       'days': days,
+      'hours': hours,
       'per_day': perDay,
       'advance': advance,
       'demand': demand,
@@ -100,11 +126,16 @@ class PayrollRowEntity {
   Map<String, dynamic> toPatchJson() {
     return {
       'days': days,
+      'hours': hours,
       'per_day': perDay,
       'advance': advance,
       'demand': demand,
       'overtime': overtime,
       'overrides': overrides,
+      'salary': salary,
+      'current_amt': currentAmt,
+      'payable': payable,
+      'total': total,
     };
   }
 
@@ -115,6 +146,7 @@ class PayrollRowEntity {
     String? nameSnapshot,
     int? sortOrder,
     double? days,
+    double? hours,
     double? perDay,
     double? advance,
     double? demand,
@@ -134,6 +166,7 @@ class PayrollRowEntity {
       nameSnapshot: nameSnapshot ?? this.nameSnapshot,
       sortOrder: sortOrder ?? this.sortOrder,
       days: days ?? this.days,
+      hours: hours ?? this.hours,
       perDay: perDay ?? this.perDay,
       advance: advance ?? this.advance,
       demand: demand ?? this.demand,

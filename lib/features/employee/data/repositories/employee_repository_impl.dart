@@ -23,6 +23,10 @@ class EmployeeRepositoryImpl implements EmployeeRepository {
       _dataSource.deleteOperator(employeeId);
 
   @override
+  Future<void> updateOperatorWageRate(int operatorId, double defaultPerDay) =>
+      _dataSource.updateOperatorWageRate(operatorId, defaultPerDay);
+
+  @override
   Future<List<OperatorEntity>> getEmployees() => _dataSource.getOperators();
 
   @override

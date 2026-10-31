@@ -46,4 +46,34 @@ class PayrollCalc {
       total: total,
     );
   }
+
+  /// Recomputes all derived values for an Overtime sheet row
+  static PayrollRowEntity recomputeOvertime(PayrollRowEntity row) {
+    final overrides = row.overrides;
+
+    // Hourly rate = perDay / 8
+    final hourlyRate = row.perDay > 0 ? (row.perDay / 8.0) : 0.0;
+    final dayAmount = double.parse((row.days * row.perDay).toStringAsFixed(2));
+    final hourAmount = double.parse((row.hours * hourlyRate).toStringAsFixed(2));
+    final calculatedTotal = double.parse((dayAmount + hourAmount).toStringAsFixed(2));
+
+    final double total;
+    if (overrides.containsKey('payable') && overrides['payable'] != null) {
+      total = (overrides['payable'] as num).toDouble();
+    } else if (overrides.containsKey('paid_amount') && overrides['paid_amount'] != null) {
+      total = (overrides['paid_amount'] as num).toDouble();
+    } else if (overrides.containsKey('total') && overrides['total'] != null) {
+      total = (overrides['total'] as num).toDouble();
+    } else {
+      total = calculatedTotal;
+    }
+
+    return row.copyWith(
+      salary: dayAmount,
+      overtime: hourAmount,
+      currentAmt: total,
+      payable: total,
+      total: total,
+    );
+  }
 }

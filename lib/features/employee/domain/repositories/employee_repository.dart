@@ -7,6 +7,7 @@ abstract class EmployeeRepository {
   Future<int> addEmployee(OperatorEntity employee);
   Future<void> updateEmployee(OperatorEntity employee);
   Future<void> deleteEmployee(int employeeId);
+  Future<void> updateOperatorWageRate(int operatorId, double defaultPerDay);
   // setOperatorWage removed — rates are now columns on operators.
   // The DB trigger (sync_operator_rate_history) auto-archives to operator_wage_rates.
 

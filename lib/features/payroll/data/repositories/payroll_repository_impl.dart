@@ -26,6 +26,7 @@ class PayrollRepositoryImpl implements PayrollRepository {
     required DateTime cutoffDate,
     String? operatorName,
     double amountGiven = 0.0,
+    String sheetType = 'kharcha',
   }) {
     return _datasource.createSheet(
       company: company,
@@ -34,6 +35,7 @@ class PayrollRepositoryImpl implements PayrollRepository {
       cutoffDate: cutoffDate,
       operatorName: operatorName,
       amountGiven: amountGiven,
+      sheetType: sheetType,
     );
   }
 

@@ -51,6 +51,15 @@ class EmployeeRemoteDatasource {
     });
   }
 
+  Future<void> updateOperatorWageRate(int operatorId, double defaultPerDay) async {
+    await supabaseSafeCall(() async {
+      await _client
+          .from('operators')
+          .update({'default_per_day': defaultPerDay})
+          .eq('id', operatorId);
+    });
+  }
+
   // ----------------------------------------------------
   // Company Employees (For Users & Roster)
   // ----------------------------------------------------

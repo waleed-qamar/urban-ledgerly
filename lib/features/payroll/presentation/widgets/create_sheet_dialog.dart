@@ -23,6 +23,7 @@ class _CreatePayrollSheetDialogState
   late final TextEditingController _amountGivenController;
 
   late DateTime _cutoffDate;
+  String _sheetType = 'kharcha'; // 'kharcha' | 'overtime'
   bool _isLoading = false;
 
   @override
@@ -68,6 +69,7 @@ class _CreatePayrollSheetDialogState
                 ? null
                 : _operatorNameController.text.trim(),
             amountGiven: amountGiven,
+            sheetType: _sheetType,
           );
 
       ref.invalidate(payrollSheetsProvider);
@@ -120,7 +122,8 @@ class _CreatePayrollSheetDialogState
                         if (picked != null) {
                           setState(() {
                             _cutoffDate = picked;
-                            _titleController.text = '${picked.day} Kharcha';
+                            final suffix = _sheetType == 'overtime' ? 'Overtime' : 'Kharcha';
+                            _titleController.text = '${picked.day} $suffix';
                           });
                         }
                       },
@@ -128,6 +131,46 @@ class _CreatePayrollSheetDialogState
                       label: const Text('Change Date'),
                     ),
                   ],
+                ),
+                const SizedBox(height: 14),
+
+                // Sheet Type Dropdown
+                DropdownButtonFormField<String>(
+                  initialValue: _sheetType,
+                  decoration: const InputDecoration(
+                    labelText: 'Sheet Type',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'kharcha',
+                      child: Row(
+                        children: [
+                          Icon(Icons.receipt_long, color: Color(0xFF1E88E5), size: 18),
+                          SizedBox(width: 8),
+                          Text('Kharcha Sheet (Wages & Deductions)'),
+                        ],
+                      ),
+                    ),
+                    DropdownMenuItem(
+                      value: 'overtime',
+                      child: Row(
+                        children: [
+                          Icon(Icons.more_time, color: Color(0xFFE65100), size: 18),
+                          SizedBox(width: 8),
+                          Text('Overtime Sheet (Days & Hours)'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onChanged: (val) {
+                    if (val == null) return;
+                    setState(() {
+                      _sheetType = val;
+                      final suffix = _sheetType == 'overtime' ? 'Overtime' : 'Kharcha';
+                      _titleController.text = '${_cutoffDate.day} $suffix';
+                    });
+                  },
                 ),
                 const SizedBox(height: 14),
 

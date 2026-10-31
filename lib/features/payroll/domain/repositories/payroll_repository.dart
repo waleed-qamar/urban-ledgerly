@@ -11,6 +11,7 @@ abstract class PayrollRepository {
     required DateTime cutoffDate,
     String? operatorName,
     double amountGiven = 0.0,
+    String sheetType = 'kharcha',
   });
   Future<void> updateSheet(PayrollSheetEntity sheet);
   Future<void> finalizeSheet(String sheetId);

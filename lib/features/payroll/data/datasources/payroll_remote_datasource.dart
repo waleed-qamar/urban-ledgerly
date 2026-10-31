@@ -39,6 +39,7 @@ class PayrollRemoteDatasource {
     required DateTime cutoffDate,
     String? operatorName,
     double amountGiven = 0.0,
+    String sheetType = 'kharcha',
   }) async {
     return await supabaseSafeCall(() async {
       final res = await _client.rpc(
@@ -50,6 +51,7 @@ class PayrollRemoteDatasource {
           'p_cutoff_date': cutoffDate.toIso8601String().split('T').first,
           'p_operator_name': operatorName,
           'p_amount_given': amountGiven,
+          'p_sheet_type': sheetType,
         },
       );
       return res as String;
