@@ -13,6 +13,10 @@ import '../../domain/entities/ledger_entity.dart';
 import '../../../account_ledger/presentation/provider/account_ledger_providers.dart';
 import '../providers/ledger_providers.dart';
 import '../widgets/add_ledger_entry_dialog.dart';
+import 'package:ledgerly/features/procurement/presentation/widgets/procurement_details_dialog.dart';
+import 'package:ledgerly/features/procurement/presentation/providers/procurement_providers.dart';
+import 'package:ledgerly/features/raw_material/presentation/providers/raw_material_providers.dart';
+import 'package:ledgerly/features/vender/presentation/providers/vendor_providers.dart';
 
 class LedgerDetailsPage extends ConsumerWidget {
   final int partyId;
@@ -469,7 +473,9 @@ class _RemarksCell extends StatelessWidget {
     final hasDetails =
         entry.transactionSource == 'invoice' ||
         entry.transactionSource == 'receipt' ||
-        entry.transactionSource == 'disbursement';
+        entry.transactionSource == 'disbursement' ||
+        entry.transactionSource == 'procurement' ||
+        entry.transactionSource == 'procurement_brokerage';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -487,11 +493,14 @@ class _RemarksCell extends StatelessWidget {
               onPressed: () => _showDetails(context),
             ),
           Expanded(
-            child: Text(
-              entry.remarks ?? '-',
-              style: const TextStyle(fontWeight: FontWeight.w500),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            child: Tooltip(
+              message: entry.remarks ?? '-',
+              child: Text(
+                entry.remarks ?? '-',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
         ],
@@ -619,6 +628,29 @@ class _RemarksCell extends StatelessWidget {
             date: disp.paidDate,
             amount: disp.totalAmount,
             remarks: disp.remarks,
+          ),
+        );
+      } else if (source == 'procurement' || source == 'procurement_brokerage') {
+        final procurement = await ref
+            .read(procurementRepositoryProvider)
+            .getProcurementById(refId);
+        final vendors = await ref.read(getAllvendorsProvider.future);
+        final materials = await ref.read(getAllRawMaterialsProvider.future);
+        final vendorName = vendors
+                .where((v) => v.id == procurement.vendorId)
+                .firstOrNull
+                ?.vendorName ??
+            'Vendor #${procurement.vendorId}';
+        final materialsById = {for (final m in materials) m.id: m};
+
+        if (!context.mounted) return;
+        Navigator.pop(context); // close loader
+        showDialog(
+          context: context,
+          builder: (_) => ProcurementDetailsDialog(
+            procurement: procurement,
+            vendorName: vendorName,
+            materialsById: materialsById,
           ),
         );
       } else {

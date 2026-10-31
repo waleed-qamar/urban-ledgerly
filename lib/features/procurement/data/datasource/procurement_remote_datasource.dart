@@ -2,6 +2,7 @@ import 'package:ledgerly/core/utils/supabase_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/procurement_entity.dart';
+import '../../domain/entities/procurement_item_entity.dart';
 
 class ProcurementRemoteDatasource {
   final SupabaseClient _client;
@@ -26,7 +27,7 @@ class ProcurementRemoteDatasource {
         .eq('id', id)
         .single();
 
-    return ProcurementEntity.fromJson(response as Map<String, dynamic>);
+    return ProcurementEntity.fromJson(response);
   }
 
   Future<void> createProcurement(ProcurementEntity procurement) async {
@@ -83,6 +84,14 @@ class ProcurementRemoteDatasource {
         }
 
         // 3) Auto vendor ledger entry: credit increases payable (only for itemsTotal)
+        final materialInfo = await _fetchMaterialInfo(procurement.items);
+        final vendorRemarks = _formatProcurementVendorRemarks(
+          procurementId: createdId,
+          items: procurement.items,
+          materialInfo: materialInfo,
+          notes: procurement.notes,
+        );
+
         await _client.from('ledger').insert({
           'party_type': 'vendor',
           'party_id': procurement.vendorId,
@@ -94,12 +103,23 @@ class ProcurementRemoteDatasource {
           ).toIso8601String(),
           'transaction_source': 'procurement',
           'reference_id': createdId.toString(),
-          'remarks': 'Auto credit from procurement #$createdId',
+          'remarks': vendorRemarks,
           'created_at': DateTime.now().toIso8601String(),
         });
 
         // 4) Auto broker ledger entry if a broker is selected
         if (procurement.brokerId != null && procurement.brokeragePrice > 0) {
+          final totalQty = procurement.items.fold<int>(0, (sum, i) => sum + i.quantity);
+          final brokerRate = totalQty > 0 ? (procurement.brokeragePrice / totalQty) : 0.0;
+          final rateStr = brokerRate % 1 == 0 ? brokerRate.toInt().toString() : brokerRate.toStringAsFixed(2);
+          final brokerRemarks = _formatProcurementBrokerRemarks(
+            procurementId: createdId,
+            brokerRateStr: rateStr,
+            totalQty: totalQty,
+            items: procurement.items,
+            materialInfo: materialInfo,
+          );
+
           await _client.from('ledger').insert({
             'party_type': 'vendor',
             'party_id': procurement.brokerId,
@@ -111,7 +131,7 @@ class ProcurementRemoteDatasource {
             ).toIso8601String(),
             'transaction_source': 'procurement_brokerage',
             'reference_id': createdId.toString(),
-            'remarks': 'Auto brokerage credit from procurement #$createdId',
+            'remarks': brokerRemarks,
             'created_at': DateTime.now().toIso8601String(),
           });
         }
@@ -220,6 +240,14 @@ class ProcurementRemoteDatasource {
           .eq('transaction_source', 'procurement')
           .eq('reference_id', procurementId.toString());
 
+      final materialInfo = await _fetchMaterialInfo(procurement.items);
+      final vendorRemarks = _formatProcurementVendorRemarks(
+        procurementId: procurementId,
+        items: procurement.items,
+        materialInfo: materialInfo,
+        notes: procurement.notes,
+      );
+
       await _client.from('ledger').insert({
         'party_type': 'vendor',
         'party_id': procurement.vendorId,
@@ -229,7 +257,7 @@ class ProcurementRemoteDatasource {
         'entry_date': _parseDate(procurement.procurementDate).toIso8601String(),
         'transaction_source': 'procurement',
         'reference_id': procurementId.toString(),
-        'remarks': 'Auto credit from procurement #$procurementId',
+        'remarks': vendorRemarks,
         'created_at': DateTime.now().toIso8601String(),
       });
 
@@ -241,6 +269,17 @@ class ProcurementRemoteDatasource {
           .eq('reference_id', procurementId.toString());
 
       if (procurement.brokerId != null && procurement.brokeragePrice > 0) {
+        final totalQty = procurement.items.fold<int>(0, (sum, i) => sum + i.quantity);
+        final brokerRate = totalQty > 0 ? (procurement.brokeragePrice / totalQty) : 0.0;
+        final rateStr = brokerRate % 1 == 0 ? brokerRate.toInt().toString() : brokerRate.toStringAsFixed(2);
+        final brokerRemarks = _formatProcurementBrokerRemarks(
+          procurementId: procurementId,
+          brokerRateStr: rateStr,
+          totalQty: totalQty,
+          items: procurement.items,
+          materialInfo: materialInfo,
+        );
+
         await _client.from('ledger').insert({
           'party_type': 'vendor',
           'party_id': procurement.brokerId,
@@ -250,7 +289,7 @@ class ProcurementRemoteDatasource {
           'entry_date': _parseDate(procurement.procurementDate).toIso8601String(),
           'transaction_source': 'procurement_brokerage',
           'reference_id': procurementId.toString(),
-          'remarks': 'Auto brokerage credit from procurement #$procurementId',
+          'remarks': brokerRemarks,
           'created_at': DateTime.now().toIso8601String(),
         });
       }
@@ -341,5 +380,75 @@ class ProcurementRemoteDatasource {
   DateTime _parseDate(String raw) {
     final parsed = DateTime.tryParse(raw);
     return parsed ?? DateTime.now();
+  }
+  Future<Map<int, ({String name, String unit})>> _fetchMaterialInfo(
+    List<ProcurementItemEntity> items,
+  ) async {
+    final materialIds = items.map((i) => i.rawMaterialId).toSet().toList();
+    final map = <int, ({String name, String unit})>{};
+    if (materialIds.isEmpty) return map;
+    try {
+      final res = await _client
+          .from('raw_material')
+          .select('id, name, unit')
+          .inFilter('id', materialIds);
+      for (final row in (res as List)) {
+        final id = (row['id'] as num).toInt();
+        map[id] = (
+          name: (row['name'] ?? '').toString().trim(),
+          unit: (row['unit'] ?? '').toString().trim(),
+        );
+      }
+    } catch (_) {}
+    return map;
+  }
+
+  String _formatProcurementVendorRemarks({
+    required int procurementId,
+    required List<ProcurementItemEntity> items,
+    required Map<int, ({String name, String unit})> materialInfo,
+    String? notes,
+  }) {
+    if (items.isEmpty) {
+      return 'Procurement #$procurementId';
+    }
+
+    final itemSummaries = items.map((item) {
+      final info = materialInfo[item.rawMaterialId];
+      final name = (info != null && info.name.isNotEmpty)
+          ? info.name
+          : 'Material #${item.rawMaterialId}';
+      final unitStr = (info != null && info.unit.isNotEmpty)
+          ? ' ${info.unit}'
+          : '';
+      final rateStr = item.price % 1 == 0
+          ? item.price.toInt().toString()
+          : item.price.toStringAsFixed(2);
+      return '$name (${item.quantity}$unitStr @ Rs. $rateStr)';
+    }).join(', ');
+
+    String remarks = 'Procurement #$procurementId: $itemSummaries';
+    if (notes != null && notes.trim().isNotEmpty) {
+      remarks += ' | ${notes.trim()}';
+    }
+    return remarks;
+  }
+
+  String _formatProcurementBrokerRemarks({
+    required int procurementId,
+    required String brokerRateStr,
+    required int totalQty,
+    required List<ProcurementItemEntity> items,
+    required Map<int, ({String name, String unit})> materialInfo,
+  }) {
+    final materialNames = items
+        .map((i) => materialInfo[i.rawMaterialId]?.name)
+        .whereType<String>()
+        .where((n) => n.isNotEmpty)
+        .toSet()
+        .join(', ');
+
+    final matSuffix = materialNames.isNotEmpty ? ' ($materialNames)' : '';
+    return 'Brokerage @ Rs. $brokerRateStr x $totalQty units$matSuffix for Procurement #$procurementId';
   }
 }

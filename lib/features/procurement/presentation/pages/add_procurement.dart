@@ -46,6 +46,7 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
   DateTime _selectedDate = DateTime.now();
   int? _selectedVendorId;
   int? _selectedBrokerId;
+  final _brokerRateController = TextEditingController(text: '2');
   final _brokerageController = TextEditingController(text: '0');
   final _loadingController = TextEditingController(text: '0');
   final _unloadingController = TextEditingController(text: '0');
@@ -72,6 +73,9 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
       _unloadingController.text = p.unloadingCharges.toStringAsFixed(2);
       _rentController.text = p.rentAmount.toStringAsFixed(2);
       _selectedRentExpenseHeadId = p.rentExpenseHeadId;
+      final totalQty = p.items.fold<int>(0, (sum, item) => sum + item.quantity);
+      final rate = (totalQty > 0 && p.brokeragePrice > 0) ? (p.brokeragePrice / totalQty) : 2.0;
+      _brokerRateController.text = rate % 1 == 0 ? rate.toInt().toString() : rate.toStringAsFixed(2);
       
       _lines.clear();
       for (final item in p.items) {
@@ -89,11 +93,27 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
   @override
   void dispose() {
     _notesController.dispose();
+    _brokerRateController.dispose();
     _brokerageController.dispose();
     _loadingController.dispose();
     _unloadingController.dispose();
     _rentController.dispose();
     super.dispose();
+  }
+
+  int _calculateTotalQuantity() {
+    return _lines.fold<int>(0, (sum, line) => sum + line.quantity);
+  }
+
+  void _recalculateBrokerage() {
+    if (_selectedBrokerId == null) {
+      _brokerageController.text = '0';
+      return;
+    }
+    final totalQty = _calculateTotalQuantity();
+    final rate = double.tryParse(_brokerRateController.text) ?? 2.0;
+    final price = totalQty * rate;
+    _brokerageController.text = price.toStringAsFixed(2);
   }
 
   double _calculateItemsTotal() {
@@ -382,62 +402,124 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: vendorsAsync.when(
-                        loading: () =>
-                            const LinearProgressIndicator(minHeight: 2),
-                        error: (error, _) => Text(
-                          'Failed to load brokers: $error',
-                          style: const TextStyle(color: AppColors.errorText),
-                        ),
-                        data: (vendors) {
-                          final activeVendors = vendors
-                              .where((v) => v.isActive)
-                              .toList();
-
-                          return FormField<int>(
-                            initialValue: _selectedBrokerId,
-                            builder: (fieldState) {
-                              final selectedBroker = activeVendors
-                                  .where((v) => v.id == _selectedBrokerId)
-                                  .firstOrNull;
-
-                              return SearchableDropdown<VendorEntity>(
-                                items: activeVendors,
-                                displayStringForOption: (v) => v.vendorName,
-                                labelText: 'Broker (Optional)',
-                                errorText: fieldState.errorText,
-                                enabled: !_isSaving,
-                                initialText: selectedBroker?.vendorName,
-                                onSelected: (selected) {
-                                  setState(() {
-                                    _selectedBrokerId = selected.id;
-                                  });
-                                  fieldState.didChange(selected.id);
-                                },
-                              );
-                            },
-                          );
-                        },
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isNarrow = constraints.maxWidth < 600;
+                    final brokerDropdown = vendorsAsync.when(
+                      loading: () =>
+                          const LinearProgressIndicator(minHeight: 2),
+                      error: (error, _) => Text(
+                        'Failed to load brokers: $error',
+                        style: const TextStyle(color: AppColors.errorText),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _brokerageController,
-                        enabled: !_isSaving && _selectedBrokerId != null,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
-                          labelText: 'Brokerage Price',
-                          border: OutlineInputBorder(),
-                          prefixText: 'Rs. ',
-                        ),
-                        onChanged: (_) => setState(() {}),
+                      data: (vendors) {
+                        final activeVendors = vendors
+                            .where((v) => v.isActive)
+                            .toList();
+
+                        return FormField<int>(
+                          initialValue: _selectedBrokerId,
+                          builder: (fieldState) {
+                            final selectedBroker = activeVendors
+                                .where((v) => v.id == _selectedBrokerId)
+                                .firstOrNull;
+
+                            return SearchableDropdown<VendorEntity>(
+                              items: activeVendors,
+                              displayStringForOption: (v) => v.vendorName,
+                              labelText: 'Broker (Optional)',
+                              errorText: fieldState.errorText,
+                              enabled: !_isSaving,
+                              initialText: selectedBroker?.vendorName,
+                              onSelected: (selected) {
+                                setState(() {
+                                  _selectedBrokerId = selected.id;
+                                  _recalculateBrokerage();
+                                });
+                                fieldState.didChange(selected.id);
+                              },
+                            );
+                          },
+                        );
+                      },
+                    );
+
+                    final brokerRateField = TextFormField(
+                      controller: _brokerRateController,
+                      enabled: !_isSaving && _selectedBrokerId != null,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
                       ),
-                    ),
-                  ],
+                      decoration: const InputDecoration(
+                        labelText: 'Broker Rate',
+                        border: OutlineInputBorder(),
+                        prefixText: 'Rs. ',
+                        helperText: 'Rate / Unit',
+                      ),
+                      onChanged: (_) {
+                        setState(() {
+                          _recalculateBrokerage();
+                        });
+                      },
+                    );
+
+                    final brokeragePriceField = TextFormField(
+                      controller: _brokerageController,
+                      enabled: !_isSaving && _selectedBrokerId != null,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Brokerage Price',
+                        border: OutlineInputBorder(),
+                        prefixText: 'Rs. ',
+                        helperText: 'Total brokerage',
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    );
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isNarrow) ...[
+                          brokerDropdown,
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(child: brokerRateField),
+                              const SizedBox(width: 12),
+                              Expanded(child: brokeragePriceField),
+                            ],
+                          ),
+                        ] else ...[
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 3, child: brokerDropdown),
+                              const SizedBox(width: 12),
+                              Expanded(flex: 2, child: brokerRateField),
+                              const SizedBox(width: 12),
+                              Expanded(flex: 2, child: brokeragePriceField),
+                            ],
+                          ),
+                        ],
+                        if (_selectedBrokerId != null) ...[
+                          const SizedBox(height: 6),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4.0),
+                            child: Text(
+                              'Calculation: ${_calculateTotalQuantity()} units × Rs. ${_brokerRateController.text.trim().isEmpty ? "0" : _brokerRateController.text.trim()} = Rs. ${_brokerageController.text}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textGrey,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -458,6 +540,7 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
                                 _lines.add(
                                   _DraftProcurementLine(quantity: 1, price: 0),
                                 );
+                                _recalculateBrokerage();
                               });
                             },
                       icon: const Icon(Icons.add_circle_outline),
@@ -484,12 +567,17 @@ class _AddProcurementDialogState extends ConsumerState<AddProcurementDialog> {
                           line: _lines[index],
                           materials: materials,
                           enabled: !_isSaving,
-                          onChanged: () => setState(() {}),
+                          onChanged: () {
+                            setState(() {
+                              _recalculateBrokerage();
+                            });
+                          },
                           onDelete: _lines.length == 1
                               ? null
                               : () {
                                   setState(() {
                                     _lines.removeAt(index);
+                                    _recalculateBrokerage();
                                   });
                                 },
                         );
