@@ -147,7 +147,7 @@ class AccountLedgerRemoteDatasource {
           .from('account_transactions')
           .select('id')
           .eq('account_id', accountId)
-          .eq('reference_type', 'opening_balance')
+          .inFilter('reference_type', ['opening_balance', 'initial_balance'])
           .limit(1);
 
       final txDate = (date ?? DateTime.now()).toIso8601String();

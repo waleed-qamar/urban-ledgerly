@@ -1,3 +1,4 @@
+import '../../../auth/presentation/provider/current_employee_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,6 +87,11 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.disbursement != null;
+    final hasUpdatePermission = ref.watch(hasPermissionProvider('disbursements.update'));
+    final hasCreatePermission = ref.watch(hasPermissionProvider('disbursements.create'));
+    final hasPermission = isEdit ? hasUpdatePermission : hasCreatePermission;
+
     final vendorsAsync = ref.watch(getAllvendorsProvider);
     final vendorLedgerAsync = ref.watch(
       getEntriesByTypeProvider(PartyType.vendor),
@@ -106,8 +112,10 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
     final selectedDue = _selectedVendorId == null
         ? 0.0
         : (vendorBalances[_selectedVendorId!] ?? 0.0);
+    final isEditingSameVendor = isEdit && widget.disbursement!.supplierId == _selectedVendorId;
+    final availableBalance = selectedDue + (isEditingSameVendor ? widget.disbursement!.totalAmount : 0.0);
     final enteredAmount = double.tryParse(_amountController.text.trim()) ?? 0.0;
-    final remainingDue = (selectedDue - enteredAmount).clamp(
+    final remainingDue = (availableBalance - enteredAmount).clamp(
       0,
       double.infinity,
     );
@@ -129,6 +137,34 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (!hasPermission)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.lock_outline, size: 16, color: AppColors.errorText),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            isEdit
+                                ? 'You do not have permission to update disbursements.'
+                                : 'You do not have permission to create disbursements.',
+                            style: const TextStyle(
+                              color: AppColors.errorText,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 vendorsAsync.when(
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
@@ -177,7 +213,7 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                   data: (_) => Text(
                     _selectedVendorId == null
                         ? 'Select a vendor to view current due balance.'
-                        : 'Current due balance: PKR ${selectedDue.toStringAsFixed(2)}',
+                        : 'Current due balance: PKR ${availableBalance.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textBlack,
@@ -310,8 +346,8 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
                     if (_selectedVendorId == null) {
                       return 'Select a vendor first';
                     }
-                    if (parsed > selectedDue) {
-                      return 'Amount cannot exceed vendor due balance';
+                    if (parsed > availableBalance) {
+                      return 'Amount cannot exceed vendor due balance (PKR ${availableBalance.toStringAsFixed(2)})';
                     }
                     return null;
                   },
@@ -368,7 +404,7 @@ class _AddDisbursementDialogState extends ConsumerState<AddDisbursementDialog> {
           child: const Text('Cancel'),
         ),
         FilledButton.icon(
-          onPressed: _isSubmitting
+          onPressed: (_isSubmitting || !hasPermission)
               ? null
               : () async {
                   if (!_formKey.currentState!.validate()) {

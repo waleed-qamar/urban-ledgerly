@@ -91,7 +91,57 @@ class ReceiptRemoteDatasource {
 
   Future<void> deleteReceipt(int id) async {
     await supabaseSafeCall(() async {
-      await _client.rpc('delete_receipt', params: {'p_receipt_id': id});
+      // 1. Delete associated ledger entries (removes all entries matching this receipt)
+      await _client
+          .from('ledger')
+          .delete()
+          .eq('party_type', 'client')
+          .inFilter('transaction_source', [
+            'receipt',
+            'receipt_allocation',
+            'receipt_advance',
+            'receipt_allocation_reversal',
+            'receipt_advance_reversal',
+          ])
+          .eq('reference_id', id.toString());
+
+      // 2. Delete associated account transactions (cash/bank ledger)
+      await _client
+          .from('account_transactions')
+          .delete()
+          .eq('reference_type', 'receipt')
+          .eq('reference_id', id);
+
+      // 3. Delete allocations for this receipt
+      await _client
+          .from('receipt_allocations')
+          .delete()
+          .eq('receipt_id', id);
+
+      // 4. Delete the receipt itself
+      await _client.from('receipts').delete().eq('id', id);
+    });
+  }
+
+  Future<void> deleteDisbursement(int id) async {
+    await supabaseSafeCall(() async {
+      // 1. Delete associated ledger entries (vendor party)
+      await _client
+          .from('ledger')
+          .delete()
+          .eq('party_type', 'vendor')
+          .eq('transaction_source', 'disbursement')
+          .eq('reference_id', id.toString());
+
+      // 2. Delete associated account transactions
+      await _client
+          .from('account_transactions')
+          .delete()
+          .eq('reference_type', 'disbursement')
+          .eq('reference_id', id);
+
+      // 3. Delete the disbursement itself
+      await _client.from('disbursements').delete().eq('id', id);
     });
   }
 
@@ -121,22 +171,11 @@ class ReceiptRemoteDatasource {
 
       await _client.from('receipts').update(updateData).eq('id', id);
 
-      // Update corresponding ledger entries
-      final ledgerUpdate = <String, dynamic>{
-        'remarks': remarks,
-        'payment_method': paymentMethod,
-        'entry_date': receivedDate.toIso8601String(),
-      };
-      if (clientId != null) {
-        ledgerUpdate['party_id'] = clientId;
-      }
-      if (totalAmount != null) {
-        ledgerUpdate['amount'] = totalAmount;
-      }
-
-      await _client
+      // Fetch existing ledger entries for this receipt
+      final existingLedger = await _client
           .from('ledger')
-          .update(ledgerUpdate)
+          .select('id, amount, transaction_source')
+          .eq('party_type', 'client')
           .inFilter('transaction_source', [
             'receipt',
             'receipt_allocation',
@@ -144,9 +183,81 @@ class ReceiptRemoteDatasource {
           ])
           .eq('reference_id', id.toString());
 
+      final ledgerBaseUpdate = <String, dynamic>{
+        'remarks': remarks,
+        'payment_method': paymentMethod,
+        'entry_date': receivedDate.toIso8601String().split('T').first,
+      };
+      if (clientId != null) {
+        ledgerBaseUpdate['party_id'] = clientId;
+      }
+
+      final ledgerRows = existingLedger as List;
+      if (ledgerRows.isEmpty) {
+        if (totalAmount != null && clientId != null) {
+          await _client.from('ledger').insert({
+            'party_type': 'client',
+            'party_id': clientId,
+            'entry_type': 'credit',
+            'amount': totalAmount,
+            'payment_method': paymentMethod,
+            'entry_date': receivedDate.toIso8601String().split('T').first,
+            'transaction_source': 'receipt',
+            'reference_id': id.toString(),
+            'remarks': remarks,
+          });
+        }
+      } else if (ledgerRows.length == 1) {
+        final updateMap = Map<String, dynamic>.from(ledgerBaseUpdate);
+        if (totalAmount != null) {
+          updateMap['amount'] = totalAmount;
+        }
+        await _client
+            .from('ledger')
+            .update(updateMap)
+            .eq('id', ledgerRows.first['id']);
+      } else {
+        // Multiple entries (e.g. allocations + advance)
+        for (final row in ledgerRows) {
+          await _client.from('ledger').update(ledgerBaseUpdate).eq('id', row['id']);
+        }
+        if (totalAmount != null) {
+          final allocTotal = ledgerRows
+              .where((r) => r['transaction_source'] == 'receipt_allocation')
+              .fold<double>(0.0, (sum, r) => sum + ((r['amount'] as num?)?.toDouble() ?? 0.0));
+          final advanceAmount = totalAmount - allocTotal;
+          final advanceRow = ledgerRows
+              .where((r) => r['transaction_source'] == 'receipt_advance')
+              .firstOrNull;
+
+          if (advanceRow != null) {
+            if (advanceAmount > 0) {
+              await _client
+                  .from('ledger')
+                  .update({'amount': advanceAmount})
+                  .eq('id', advanceRow['id']);
+            } else {
+              await _client.from('ledger').delete().eq('id', advanceRow['id']);
+            }
+          } else if (advanceAmount > 0 && clientId != null) {
+            await _client.from('ledger').insert({
+              'party_type': 'client',
+              'party_id': clientId,
+              'entry_type': 'credit',
+              'amount': advanceAmount,
+              'payment_method': paymentMethod,
+              'entry_date': receivedDate.toIso8601String().split('T').first,
+              'transaction_source': 'receipt_advance',
+              'reference_id': id.toString(),
+              'remarks': remarks ?? 'Receipt advance',
+            });
+          }
+        }
+      }
+
       // Update corresponding account_transactions
       final txUpdate = <String, dynamic>{
-        'description': remarks,
+        'description': remarks ?? 'Receipt #$id',
         'transaction_date': receivedDate.toIso8601String(),
         'external_reference': accountNo,
       };
@@ -171,7 +282,7 @@ class ReceiptRemoteDatasource {
           'transaction_type': 'credit',
           'reference_type': 'receipt',
           'reference_id': id,
-          'description': remarks,
+          'description': remarks ?? 'Receipt #$id',
           'transaction_date': receivedDate.toIso8601String(),
           'external_reference': accountNo,
         });
@@ -211,7 +322,7 @@ class ReceiptRemoteDatasource {
       final ledgerUpdate = <String, dynamic>{
         'remarks': remarks,
         'payment_method': paymentMethod,
-        'entry_date': paidDate.toIso8601String(),
+        'entry_date': paidDate.toIso8601String().split('T').first,
       };
       if (supplierId != null) {
         ledgerUpdate['party_id'] = supplierId;
@@ -220,15 +331,31 @@ class ReceiptRemoteDatasource {
         ledgerUpdate['amount'] = totalAmount;
       }
 
-      await _client
+      final updatedLedger = await _client
           .from('ledger')
           .update(ledgerUpdate)
+          .eq('party_type', 'vendor')
           .eq('transaction_source', 'disbursement')
-          .eq('reference_id', id.toString());
+          .eq('reference_id', id.toString())
+          .select();
+
+      if ((updatedLedger as List).isEmpty && supplierId != null && totalAmount != null) {
+        await _client.from('ledger').insert({
+          'party_type': 'vendor',
+          'party_id': supplierId,
+          'entry_type': 'debit',
+          'amount': totalAmount,
+          'payment_method': paymentMethod,
+          'entry_date': paidDate.toIso8601String().split('T').first,
+          'transaction_source': 'disbursement',
+          'reference_id': id.toString(),
+          'remarks': remarks,
+        });
+      }
 
       // Update corresponding account_transactions
       final txUpdate = <String, dynamic>{
-        'description': remarks,
+        'description': remarks ?? 'Disbursement #$id',
         'transaction_date': paidDate.toIso8601String(),
         'external_reference': accountNo,
       };
@@ -253,7 +380,7 @@ class ReceiptRemoteDatasource {
           'transaction_type': 'debit',
           'reference_type': 'disbursement',
           'reference_id': id,
-          'description': remarks,
+          'description': remarks ?? 'Disbursement #$id',
           'transaction_date': paidDate.toIso8601String(),
           'external_reference': accountNo,
         });

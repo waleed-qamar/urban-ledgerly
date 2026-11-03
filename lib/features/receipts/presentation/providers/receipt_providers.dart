@@ -44,6 +44,10 @@ final getAllDisbursementsProvider = FutureProvider<List<DisbursementRecord>>(
   (ref) => ref.watch(receiptRepositoryProvider).getDisbursements(),
 );
 
+final deleteDisbursementProvider = FutureProvider.family<void, int>(
+  (ref, id) => ref.watch(receiptRepositoryProvider).deleteDisbursement(id),
+);
+
 // ── Update providers ──────────────────────────────────────────────────────────
 
 @riverpod

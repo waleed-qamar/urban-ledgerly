@@ -14,6 +14,7 @@ abstract class ReceiptRepository {
     DateTime? paidDate,
   });
   Future<void> deleteReceipt(int id);
+  Future<void> deleteDisbursement(int id);
   Future<ReceiptEntity> getReceiptById(int id);
   Future<List<DisbursementRecord>> getDisbursements();
   Future<List<ReceiptEntity>> getReceipts();

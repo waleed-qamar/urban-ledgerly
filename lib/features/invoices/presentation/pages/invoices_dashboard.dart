@@ -726,7 +726,7 @@ class _InvoiceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  invoice.invoiceNumber,
+                  clientName,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -734,7 +734,7 @@ class _InvoiceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  clientName,
+                  invoice.invoiceNumber,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                 ),

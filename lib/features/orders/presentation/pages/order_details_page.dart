@@ -1144,18 +1144,6 @@ class _TotalsCard extends StatelessWidget {
         child: Column(
           children: [
             _InfoRow(
-              label: 'Subtotal',
-              value: 'PKR ${totals.subtotal.toStringAsFixed(2)}',
-            ),
-            _InfoRow(
-              label: 'Tax (5%)',
-              value: 'PKR ${totals.tax.toStringAsFixed(2)}',
-            ),
-            Divider(
-              color: AppColors.dividerColor.withValues(alpha: 0.6),
-              height: 18,
-            ),
-            _InfoRow(
               label: 'Total Amount',
               value: 'PKR ${totals.total.toStringAsFixed(2)}',
               emphasized: true,
@@ -1313,12 +1301,10 @@ class _StatusChipButton extends ConsumerWidget {
 class _OrderTotals {
   const _OrderTotals({
     required this.subtotal,
-    required this.tax,
     required this.total,
   });
 
   final double subtotal;
-  final double tax;
   final double total;
 
   factory _OrderTotals.from(OrderEntity order) {
@@ -1326,7 +1312,6 @@ class _OrderTotals {
       0,
       (sum, item) => sum + item.price * item.quantity,
     );
-    final tax = subtotal * 0.05;
-    return _OrderTotals(subtotal: subtotal, tax: tax, total: subtotal + tax);
+    return _OrderTotals(subtotal: subtotal, total: subtotal);
   }
 }

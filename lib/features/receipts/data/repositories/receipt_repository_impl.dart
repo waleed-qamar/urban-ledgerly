@@ -42,6 +42,11 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
   }
 
   @override
+  Future<void> deleteDisbursement(int id) {
+    return _datasource.deleteDisbursement(id);
+  }
+
+  @override
   Future<ReceiptEntity> getReceiptById(int id) {
     return _datasource.getReceiptById(id);
   }

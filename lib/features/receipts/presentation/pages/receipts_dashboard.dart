@@ -1,3 +1,5 @@
+import '../../../auth/presentation/provider/current_employee_provider.dart';
+import '../../../account_ledger/presentation/provider/account_ledger_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -68,6 +70,25 @@ class _ReceiptsDashboardState extends ConsumerState<ReceiptsDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final canCreateReceipt = ref.watch(
+      hasPermissionProvider('receipts.create'),
+    );
+    final canCreateDisbursement = ref.watch(
+      hasPermissionProvider('disbursements.create'),
+    );
+    final canUpdateReceipt = ref.watch(
+      hasPermissionProvider('receipts.update'),
+    );
+    final canDeleteReceipt = ref.watch(
+      hasPermissionProvider('receipts.delete'),
+    );
+    final canUpdateDisbursement = ref.watch(
+      hasPermissionProvider('disbursements.update'),
+    );
+    final canDeleteDisbursement = ref.watch(
+      hasPermissionProvider('disbursements.delete'),
+    );
+
     final receiptsAsync = ref.watch(getAllReceiptsProvider);
     final disbursementsAsync = ref.watch(getAllDisbursementsProvider);
     final clientsAsync = ref.watch(getAllClientsProvider);
@@ -120,6 +141,8 @@ class _ReceiptsDashboardState extends ConsumerState<ReceiptsDashboard> {
                   totalReceived: totalReceived,
                   onCreate: _openCreateReceiptDialog,
                   onCreateDisbursement: _openCreateDisbursementDialog,
+                  canCreateReceipt: canCreateReceipt,
+                  canCreateDisbursement: canCreateDisbursement,
                 );
               },
             ),
@@ -144,6 +167,8 @@ class _ReceiptsDashboardState extends ConsumerState<ReceiptsDashboard> {
                       clientsAsync: clientsAsync,
                       searchController: _searchController,
                       onSearchChanged: () => setState(() {}),
+                      canUpdate: canUpdateReceipt,
+                      canDelete: canDeleteReceipt,
                     )
                   : _DisbursementSection(
                       ref: ref,
@@ -151,6 +176,8 @@ class _ReceiptsDashboardState extends ConsumerState<ReceiptsDashboard> {
                       vendorsAsync: vendorsAsync,
                       searchController: _searchController,
                       onSearchChanged: () => setState(() {}),
+                      canUpdate: canUpdateDisbursement,
+                      canDelete: canDeleteDisbursement,
                     ),
             ),
           ],
@@ -300,6 +327,8 @@ class _ReceiptsSection extends StatelessWidget {
   final AsyncValue<List<ClientEntity>> clientsAsync;
   final TextEditingController searchController;
   final VoidCallback onSearchChanged;
+  final bool canUpdate;
+  final bool canDelete;
 
   const _ReceiptsSection({
     required this.ref,
@@ -307,6 +336,8 @@ class _ReceiptsSection extends StatelessWidget {
     required this.clientsAsync,
     required this.searchController,
     required this.onSearchChanged,
+    required this.canUpdate,
+    required this.canDelete,
   });
 
   @override
@@ -358,71 +389,27 @@ class _ReceiptsSection extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final receipt = filtered[index];
                     final client = clientsById[receipt.clientId];
-                    final clientName =
-                          client?.clientName ?? 'Unknown Client';
+                    final clientName = client?.clientName ?? 'Unknown Client';
                     return _ReceiptCard(
                       receipt: receipt,
                       clientName: clientName,
+                      canUpdate: canUpdate,
+                      canDelete: canDelete,
                       onTap: () => showDialog(
                         context: context,
                         builder: (_) => _ReceiptDetailsDialog(
                           receipt: receipt,
                           clientName: clientName,
                           ref: ref,
+                          canUpdate: canUpdate,
+                          canDelete: canDelete,
+                          onDelete: () =>
+                              _handleDeleteReceipt(context, ref, receipt),
                         ),
                       ),
-                      onDelete: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (dialogContext) => AlertDialog(
-                            title: const Text('Delete receipt?'),
-                            content: const Text(
-                              'This will reverse the ledger entry and remove allocations.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(dialogContext, false),
-                                child: const Text('Cancel'),
-                              ),
-                              FilledButton(
-                                onPressed: () =>
-                                    Navigator.pop(dialogContext, true),
-                                child: const Text('Delete'),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        if (confirmed != true || receipt.id == null) {
-                          return;
-                        }
-
-                        try {
-                          await ref.read(
-                            deleteReceiptProvider(receipt.id!).future,
-                          );
-                          ref.invalidate(getAllReceiptsProvider);
-                          ref.invalidate(getAllEntriesProvider);
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Receipt deleted.')),
-                            );
-                          }
-                        } catch (error) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Failed to delete receipt: $error',
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      },
+                      onDelete: () =>
+                          _handleDeleteReceipt(context, ref, receipt),
                     );
-
                   },
                 ),
               ),
@@ -438,12 +425,16 @@ class _ReceiptSummaryHeader extends StatelessWidget {
   final double totalReceived;
   final VoidCallback onCreate;
   final VoidCallback onCreateDisbursement;
+  final bool canCreateReceipt;
+  final bool canCreateDisbursement;
 
   const _ReceiptSummaryHeader({
     required this.receiptCount,
     required this.totalReceived,
     required this.onCreate,
     required this.onCreateDisbursement,
+    required this.canCreateReceipt,
+    required this.canCreateDisbursement,
   });
 
   @override
@@ -467,37 +458,30 @@ class _ReceiptSummaryHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Cash Receipts',
+                  'Cash Receipts & Disbursements',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                // const SizedBox(height: 6),
-                // Text(
-                //   'Receipts are the only source of credit entries for clients.',
-                //   style: TextStyle(color: Colors.grey.shade700),
-                // ),
               ],
             ),
           ),
           _StatPill(label: 'Receipts', value: '$receiptCount'),
           const SizedBox(width: 12),
-          // _StatPill(
-          //   label: 'Received',
-          //   value: 'PKR ${totalReceived.toStringAsFixed(2)}',
-          // ),
-          // const SizedBox(width: 16),
-          FilledButton.icon(
-            onPressed: onCreate,
-            icon: const Icon(Icons.add),
-            label: const Text('New Receipt'),
-          ),
-          const SizedBox(width: 8),
-          OutlinedButton.icon(
-            onPressed: onCreateDisbursement,
-            icon: const Icon(Icons.payments_outlined),
-            label: const Text('Disbursement'),
-          ),
+          if (canCreateReceipt) ...[
+            FilledButton.icon(
+              onPressed: onCreate,
+              icon: const Icon(Icons.add),
+              label: const Text('New Receipt'),
+            ),
+            const SizedBox(width: 8),
+          ],
+          if (canCreateDisbursement)
+            OutlinedButton.icon(
+              onPressed: onCreateDisbursement,
+              icon: const Icon(Icons.payments_outlined),
+              label: const Text('Disbursement'),
+            ),
         ],
       ),
     );
@@ -529,17 +513,81 @@ class _StatPill extends StatelessWidget {
   }
 }
 
+Future<void> _handleDeleteReceipt(
+  BuildContext context,
+  WidgetRef ref,
+  ReceiptEntity receipt,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Delete Receipt?'),
+      content: Text(
+        'Are you sure you want to delete receipt ${receipt.receiptNumber ?? ''}? '
+        'This will permanently delete the receipt, its invoice allocations, and its relevant entries in the ledger and cash/bank accounts.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: AppColors.errorText),
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmed != true || receipt.id == null) return;
+
+  try {
+    await ref.read(receiptRepositoryProvider).deleteReceipt(receipt.id!);
+    ref.invalidate(getAllReceiptsProvider);
+    ref.invalidate(getAllEntriesProvider);
+    ref.invalidate(getEntriesByTypeProvider);
+    ref.invalidate(getBalanceProvider);
+    ref.invalidate(getEntriesByPartyProvider);
+    ref.invalidate(getAllAccountsProvider);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Receipt and associated ledger entries deleted successfully.',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  } catch (error) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete receipt: $error'),
+          backgroundColor: AppColors.errorText,
+        ),
+      );
+    }
+  }
+}
+
 class _ReceiptCard extends StatelessWidget {
   final String clientName;
   final VoidCallback onTap;
   final VoidCallback onDelete;
   final ReceiptEntity receipt;
+  final bool canUpdate;
+  final bool canDelete;
 
   const _ReceiptCard({
     required this.receipt,
     required this.clientName,
     required this.onTap,
     required this.onDelete,
+    required this.canUpdate,
+    required this.canDelete,
   });
 
   @override
@@ -592,14 +640,25 @@ class _ReceiptCard extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                tooltip: 'Edit Entry',
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (_) => AddReceiptDialog(receipt: receipt),
+              if (canUpdate)
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  tooltip: 'Edit Entry',
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (_) => AddReceiptDialog(receipt: receipt),
+                  ),
                 ),
-              ),
+              if (canDelete)
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: AppColors.errorText,
+                  ),
+                  tooltip: 'Delete Receipt',
+                  onPressed: onDelete,
+                ),
             ],
           ),
         ),
@@ -614,6 +673,8 @@ class _DisbursementSection extends StatelessWidget {
   final AsyncValue<List<VendorEntity>> vendorsAsync;
   final TextEditingController searchController;
   final VoidCallback onSearchChanged;
+  final bool canUpdate;
+  final bool canDelete;
 
   const _DisbursementSection({
     required this.ref,
@@ -621,6 +682,8 @@ class _DisbursementSection extends StatelessWidget {
     required this.vendorsAsync,
     required this.searchController,
     required this.onSearchChanged,
+    required this.canUpdate,
+    required this.canDelete,
   });
 
   @override
@@ -712,17 +775,32 @@ class _DisbursementSection extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final disbursement = filtered[index];
                         final vendor = vendorsById[disbursement.supplierId];
-                        final vendorName = vendor?.vendorName ?? 'Unknown Vendor';
+                        final vendorName =
+                            vendor?.vendorName ?? 'Unknown Vendor';
                         return _DisbursementCard(
                           disbursement: disbursement,
                           vendorName: vendorName,
+                          canUpdate: canUpdate,
+                          canDelete: canDelete,
                           onTap: () => showDialog(
                             context: context,
                             builder: (_) => _DisbursementDetailsDialog(
                               disbursement: disbursement,
                               vendorName: vendorName,
                               ref: ref,
+                              canUpdate: canUpdate,
+                              canDelete: canDelete,
+                              onDelete: () => _handleDeleteDisbursement(
+                                context,
+                                ref,
+                                disbursement,
+                              ),
                             ),
+                          ),
+                          onDelete: () => _handleDeleteDisbursement(
+                            context,
+                            ref,
+                            disbursement,
                           ),
                         );
                       },
@@ -738,15 +816,83 @@ class _DisbursementSection extends StatelessWidget {
   }
 }
 
+Future<void> _handleDeleteDisbursement(
+  BuildContext context,
+  WidgetRef ref,
+  DisbursementRecord disbursement,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Delete Disbursement?'),
+      content: Text(
+        'Are you sure you want to delete disbursement ${disbursement.disbursementNumber}? '
+        'This will permanently delete the disbursement, its vendor ledger entry, and its cash/bank account transaction.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: AppColors.errorText),
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmed != true) return;
+
+  try {
+    await ref
+        .read(receiptRepositoryProvider)
+        .deleteDisbursement(disbursement.id);
+    ref.invalidate(getAllDisbursementsProvider);
+    ref.invalidate(getAllEntriesProvider);
+    ref.invalidate(getEntriesByTypeProvider);
+    ref.invalidate(getBalanceProvider);
+    ref.invalidate(getEntriesByPartyProvider);
+    ref.invalidate(getAllAccountsProvider);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Disbursement and associated ledger entries deleted successfully.',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  } catch (error) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete disbursement: $error'),
+          backgroundColor: AppColors.errorText,
+        ),
+      );
+    }
+  }
+}
+
 class _DisbursementCard extends StatelessWidget {
   final DisbursementRecord disbursement;
   final String vendorName;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
+  final bool canUpdate;
+  final bool canDelete;
 
   const _DisbursementCard({
     required this.disbursement,
     required this.vendorName,
     required this.onTap,
+    required this.onDelete,
+    required this.canUpdate,
+    required this.canDelete,
   });
 
   @override
@@ -810,15 +956,26 @@ class _DisbursementCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                tooltip: 'Edit Entry',
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (_) =>
-                      AddDisbursementDialog(disbursement: disbursement),
+              if (canUpdate)
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  tooltip: 'Edit Entry',
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (_) =>
+                        AddDisbursementDialog(disbursement: disbursement),
+                  ),
                 ),
-              ),
+              if (canDelete)
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: AppColors.errorText,
+                  ),
+                  tooltip: 'Delete Disbursement',
+                  onPressed: onDelete,
+                ),
             ],
           ),
         ),
@@ -833,11 +990,17 @@ class _ReceiptDetailsDialog extends StatelessWidget {
   final ReceiptEntity receipt;
   final String clientName;
   final WidgetRef ref;
+  final bool canUpdate;
+  final bool canDelete;
+  final VoidCallback onDelete;
 
   const _ReceiptDetailsDialog({
     required this.receipt,
     required this.clientName,
     required this.ref,
+    required this.canUpdate,
+    required this.canDelete,
+    required this.onDelete,
   });
 
   @override
@@ -863,25 +1026,42 @@ class _ReceiptDetailsDialog extends StatelessWidget {
                         Text(
                           r.receiptNumber ?? 'Receipt',
                           style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w800),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                         const SizedBox(height: 2),
-                        Text(clientName,
-                            style: TextStyle(color: Colors.grey.shade600)),
+                        Text(
+                          clientName,
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined),
-                    tooltip: 'Edit Entry',
-                    onPressed: () {
-                      Navigator.pop(context);
-                      showDialog(
-                        context: context,
-                        builder: (_) => AddReceiptDialog(receipt: r),
-                      );
-                    },
-                  ),
+                  if (canUpdate)
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: 'Edit Entry',
+                      onPressed: () {
+                        Navigator.pop(context);
+                        showDialog(
+                          context: context,
+                          builder: (_) => AddReceiptDialog(receipt: r),
+                        );
+                      },
+                    ),
+                  if (canDelete)
+                    IconButton(
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: AppColors.errorText,
+                      ),
+                      tooltip: 'Delete Receipt',
+                      onPressed: () {
+                        Navigator.pop(context);
+                        onDelete();
+                      },
+                    ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
@@ -892,12 +1072,15 @@ class _ReceiptDetailsDialog extends StatelessWidget {
               _DetailRow('Amount', 'PKR ${r.totalAmount.toStringAsFixed(2)}'),
               const SizedBox(height: 10),
               _DetailRow(
-                  'Date',
-                  '${r.receivedDate.day}/${r.receivedDate.month}/${r.receivedDate.year}'),
+                'Date',
+                '${r.receivedDate.day}/${r.receivedDate.month}/${r.receivedDate.year}',
+              ),
               if (r.allocations.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                const Text('Allocations',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                const Text(
+                  'Allocations',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 6),
                 ...r.allocations.map(
                   (a) => Padding(
@@ -939,11 +1122,17 @@ class _DisbursementDetailsDialog extends StatelessWidget {
   final DisbursementRecord disbursement;
   final String vendorName;
   final WidgetRef ref;
+  final bool canUpdate;
+  final bool canDelete;
+  final VoidCallback onDelete;
 
   const _DisbursementDetailsDialog({
     required this.disbursement,
     required this.vendorName,
     required this.ref,
+    required this.canUpdate,
+    required this.canDelete,
+    required this.onDelete,
   });
 
   @override
@@ -969,26 +1158,43 @@ class _DisbursementDetailsDialog extends StatelessWidget {
                         Text(
                           d.disbursementNumber,
                           style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w800),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                         const SizedBox(height: 2),
-                        Text(vendorName,
-                            style: TextStyle(color: Colors.grey.shade600)),
+                        Text(
+                          vendorName,
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined),
-                    tooltip: 'Edit Entry',
-                    onPressed: () {
-                      Navigator.pop(context);
-                      showDialog(
-                        context: context,
-                        builder: (_) =>
-                            AddDisbursementDialog(disbursement: d),
-                      );
-                    },
-                  ),
+                  if (canUpdate)
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: 'Edit Entry',
+                      onPressed: () {
+                        Navigator.pop(context);
+                        showDialog(
+                          context: context,
+                          builder: (_) =>
+                              AddDisbursementDialog(disbursement: d),
+                        );
+                      },
+                    ),
+                  if (canDelete)
+                    IconButton(
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: AppColors.errorText,
+                      ),
+                      tooltip: 'Delete Disbursement',
+                      onPressed: () {
+                        Navigator.pop(context);
+                        onDelete();
+                      },
+                    ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
@@ -999,8 +1205,9 @@ class _DisbursementDetailsDialog extends StatelessWidget {
               _DetailRow('Amount', 'PKR ${d.totalAmount.toStringAsFixed(2)}'),
               const SizedBox(height: 10),
               _DetailRow(
-                  'Date',
-                  '${d.paidDate.day}/${d.paidDate.month}/${d.paidDate.year}'),
+                'Date',
+                '${d.paidDate.day}/${d.paidDate.month}/${d.paidDate.year}',
+              ),
               const SizedBox(height: 10),
               _DetailRow('Payment Method', d.paymentMethod.toUpperCase()),
               if (d.accountNo?.isNotEmpty == true) ...[
@@ -1040,8 +1247,9 @@ class _DetailRow extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w600),
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         Expanded(

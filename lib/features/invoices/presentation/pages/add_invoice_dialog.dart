@@ -169,7 +169,7 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                 final productById = {for (var p in products) p.id: p};
                 final sets =
                     ref.watch(getAllProductSetsProvider).asData?.value ??
-                        const <ProductSetEntity>[];
+                    const <ProductSetEntity>[];
                 final setById = {for (var s in sets) s.setId: s};
 
                 // Seed product descriptions if empty
@@ -177,12 +177,14 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                   if (line.descriptionController.text.isEmpty) {
                     final defaultDesc = line.isSet
                         ? (setById[line.setId]?.description?.isNotEmpty == true
-                            ? setById[line.setId]!.description!
-                            : (setById[line.setId]?.name ?? ''))
-                        : (productById[line.productId]?.description?.isNotEmpty ==
-                                true
-                            ? productById[line.productId]!.description!
-                            : (productById[line.productId]?.name ?? ''));
+                              ? setById[line.setId]!.description!
+                              : (setById[line.setId]?.name ?? ''))
+                        : (productById[line.productId]
+                                      ?.description
+                                      ?.isNotEmpty ==
+                                  true
+                              ? productById[line.productId]!.description!
+                              : (productById[line.productId]?.name ?? ''));
                     line.descriptionController.text = defaultDesc;
                   }
                 }
@@ -443,7 +445,9 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: AppColors.dividerColor.withValues(alpha: 0.7),
+                            color: AppColors.dividerColor.withValues(
+                              alpha: 0.7,
+                            ),
                           ),
                         ),
                         child: ListView.separated(
@@ -452,7 +456,9 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                           itemCount: _lines.length,
                           separatorBuilder: (_, _) => Divider(
                             height: 1,
-                            color: AppColors.dividerColor.withValues(alpha: 0.6),
+                            color: AppColors.dividerColor.withValues(
+                              alpha: 0.6,
+                            ),
                           ),
                           itemBuilder: (context, index) {
                             final line = _lines[index];
@@ -461,7 +467,7 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                                 : productById[line.productId];
                             final displayName = line.isSet
                                 ? (setById[line.setId]?.name ??
-                                    'Set #${line.setId}')
+                                      'Set #${line.setId}')
                                 : (product?.name ?? 'Unknown Product');
 
                             final lineTotal = line.quantity * line.unitPrice;
@@ -593,11 +599,9 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                                           ),
                                           maxLines: null,
                                           minLines: 2,
-                                          keyboardType:
-                                              TextInputType.multiline,
+                                          keyboardType: TextInputType.multiline,
                                           decoration: InputDecoration(
-                                            labelText:
-                                                'Product Description',
+                                            labelText: 'Product Description',
                                             hintText:
                                                 'Enter or edit item description...',
                                             hintStyle: const TextStyle(
@@ -605,13 +609,12 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                                               fontSize: 12,
                                             ),
                                             isDense: true,
-                                            border:
-                                                const OutlineInputBorder(),
+                                            border: const OutlineInputBorder(),
                                             contentPadding:
                                                 const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 10,
-                                            ),
+                                                  horizontal: 10,
+                                                  vertical: 10,
+                                                ),
                                             prefixIcon: const Icon(
                                               Icons.edit_note,
                                               size: 20,
@@ -626,8 +629,8 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                                       SizedBox(
                                         width: 125,
                                         child: TextFormField(
-                                          initialValue:
-                                              line.quantity.toString(),
+                                          initialValue: line.quantity
+                                              .toString(),
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.bold,
@@ -639,9 +642,9 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                                             border: OutlineInputBorder(),
                                             contentPadding:
                                                 EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 10,
-                                            ),
+                                                  horizontal: 10,
+                                                  vertical: 10,
+                                                ),
                                           ),
                                           keyboardType: TextInputType.number,
                                           inputFormatters: [
@@ -649,8 +652,9 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                                                 .digitsOnly,
                                           ],
                                           validator: (value) {
-                                            final parsed =
-                                                int.tryParse(value ?? '');
+                                            final parsed = int.tryParse(
+                                              value ?? '',
+                                            );
                                             if (parsed == null || parsed < 0) {
                                               return 'Invalid';
                                             }
@@ -710,8 +714,9 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     OutlinedButton(
-                      onPressed:
-                          _isSubmitting ? null : () => Navigator.pop(context),
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 18,
@@ -736,13 +741,13 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                       onPressed: _isSubmitting
                           ? null
                           : () => _submit(
-                                invoiceNo,
-                                _orderDate,
-                                productById,
-                                setById,
-                                client,
-                                supplier,
-                              ),
+                              invoiceNo,
+                              _orderDate,
+                              productById,
+                              setById,
+                              client,
+                              supplier,
+                            ),
                       icon: _isSubmitting
                           ? const SizedBox(
                               width: 16,
@@ -907,10 +912,7 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
         contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       ),
       items: const [
-        DropdownMenuItem(
-          value: 'sales_tax',
-          child: Text('Sales Tax Invoice'),
-        ),
+        DropdownMenuItem(value: 'sales_tax', child: Text('Sales Tax Invoice')),
         DropdownMenuItem(
           value: 'commercial',
           child: Text('Commercial Invoice'),
@@ -1031,15 +1033,18 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                   controller: _shippingController,
                   textAlign: TextAlign.right,
                   style: const TextStyle(fontSize: 13),
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                   ],
                   decoration: const InputDecoration(
                     isDense: true,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
                     border: OutlineInputBorder(),
                   ),
                   onChanged: (_) => setState(() {}),
@@ -1096,7 +1101,10 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(fontSize: 10, color: AppColors.textGrey),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: AppColors.textGrey,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
@@ -1378,8 +1386,7 @@ class _InvoiceLine {
     required this.remainingQty,
     required this.unitPrice,
     String initialDescription = '',
-  }) : descriptionController =
-            TextEditingController(text: initialDescription);
+  }) : descriptionController = TextEditingController(text: initialDescription);
 
   void dispose() {
     descriptionController.dispose();

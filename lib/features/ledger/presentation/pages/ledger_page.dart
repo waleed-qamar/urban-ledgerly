@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+import 'package:excel/excel.dart' hide Border;
+import 'package:file_saver/file_saver.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/core/widgets/build_search_box.dart';
@@ -60,27 +64,7 @@ class _LedgerPageState extends ConsumerState<LedgerPage> {
                     color: AppColors.textBlack,
                   ),
                 ),
-                // ElevatedButton.icon(
-                //   style: ElevatedButton.styleFrom(
-                //     backgroundColor: AppColors.primary,
-                //     foregroundColor: AppColors.textWhite,
-                //     padding: const EdgeInsets.symmetric(
-                //       horizontal: 24,
-                //       vertical: 18,
-                //     ),
-                //     shape: RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.circular(8),
-                //     ),
-                //   ),
-                //   onPressed: () {
-                //     showDialog(
-                //       context: context,
-                //       builder: (context) => const AddLedgerEntryDialog(),
-                //     );
-                //   },
-                //   icon: const Icon(Icons.add),
-                //   label: const Text('Add Entry'),
-                // ),
+                _buildDownloadDropdown(context),
               ],
             ),
             const SizedBox(height: 32),
@@ -236,6 +220,619 @@ class _LedgerPageState extends ConsumerState<LedgerPage> {
         return _PartyTile(item: item);
       },
     );
+  }
+
+
+  Widget _buildDownloadDropdown(BuildContext context) {
+    return PopupMenuButton<String>(
+      tooltip: 'Download Balance Sheet',
+      elevation: 4,
+      offset: const Offset(0, 48),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      onSelected: (option) => _downloadBalanceSheet(context, option),
+      itemBuilder: (context) => [
+        const PopupMenuItem<String>(
+          value: 'client',
+          child: Row(
+            children: [
+              Icon(Icons.person_outline, size: 20, color: AppColors.primary),
+              SizedBox(width: 12),
+              Text(
+                'Client',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'vendor',
+          child: Row(
+            children: [
+              Icon(Icons.storefront_outlined, size: 20, color: AppColors.primary),
+              SizedBox(width: 12),
+              Text(
+                'Vendor',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem<String>(
+          value: 'all',
+          child: Row(
+            children: [
+              Icon(Icons.people_alt_outlined, size: 20, color: AppColors.primary),
+              SizedBox(width: 12),
+              Text(
+                'All',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.download_rounded, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Text(
+              'Download Sheet',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+            SizedBox(width: 6),
+            Icon(Icons.arrow_drop_down, color: Colors.white, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _downloadBalanceSheet(BuildContext context, String option) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 20),
+                Text(
+                  'Generating balance sheet...',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final excel = Excel.createExcel();
+      final defaultSheet = excel.getDefaultSheet();
+      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+      String fileName = '';
+
+      if (option == 'client') {
+        final clients = await ref.read(getAllClientsProvider.future);
+        final clientEntries = await ref
+            .read(ledgerRepositoryProvider)
+            .getEntriesByType(PartyType.client);
+
+        final Map<int, double> balances = {};
+        for (final entry in clientEntries) {
+          final isDebit = entry.entryType == EntryType.debit;
+          final amount = entry.amount;
+          balances[entry.partyId] = (balances[entry.partyId] ?? 0.0) +
+              (isDebit ? amount : -amount);
+        }
+
+        _buildClientSheet(excel, clients, balances);
+        fileName = 'CLIENT_BALANCES_$timestamp';
+      } else if (option == 'vendor') {
+        final vendors = await ref.read(getAllvendorsProvider.future);
+        final vendorEntries = await ref
+            .read(ledgerRepositoryProvider)
+            .getEntriesByType(PartyType.vendor);
+
+        final Map<int, double> balances = {};
+        for (final entry in vendorEntries) {
+          final isCredit = entry.entryType == EntryType.credit;
+          final amount = entry.amount;
+          balances[entry.partyId] = (balances[entry.partyId] ?? 0.0) +
+              (isCredit ? amount : -amount);
+        }
+
+        _buildVendorSheet(excel, vendors, balances);
+        fileName = 'VENDOR_BALANCES_$timestamp';
+      } else {
+        // all
+        final clients = await ref.read(getAllClientsProvider.future);
+        final clientEntries = await ref
+            .read(ledgerRepositoryProvider)
+            .getEntriesByType(PartyType.client);
+
+        final Map<int, double> clientBalances = {};
+        for (final entry in clientEntries) {
+          final isDebit = entry.entryType == EntryType.debit;
+          final amount = entry.amount;
+          clientBalances[entry.partyId] = (clientBalances[entry.partyId] ?? 0.0) +
+              (isDebit ? amount : -amount);
+        }
+
+        final vendors = await ref.read(getAllvendorsProvider.future);
+        final vendorEntries = await ref
+            .read(ledgerRepositoryProvider)
+            .getEntriesByType(PartyType.vendor);
+
+        final Map<int, double> vendorBalances = {};
+        for (final entry in vendorEntries) {
+          final isCredit = entry.entryType == EntryType.credit;
+          final amount = entry.amount;
+          vendorBalances[entry.partyId] = (vendorBalances[entry.partyId] ?? 0.0) +
+              (isCredit ? amount : -amount);
+        }
+
+        _buildCombinedSheet(
+          excel,
+          clients,
+          clientBalances,
+          vendors,
+          vendorBalances,
+        );
+        _buildClientSheet(excel, clients, clientBalances);
+        _buildVendorSheet(excel, vendors, vendorBalances);
+        fileName = 'ALL_BALANCES_$timestamp';
+      }
+
+      if (defaultSheet != null &&
+          defaultSheet != 'Client Balances' &&
+          defaultSheet != 'Vendor Balances' &&
+          defaultSheet != 'All Balances') {
+        excel.delete(defaultSheet);
+      }
+
+      final bytes = excel.encode();
+      if (bytes == null) {
+        throw Exception('Failed to generate Excel file');
+      }
+
+      await FileSaver.instance.saveFile(
+        name: fileName,
+        bytes: Uint8List.fromList(bytes),
+        fileExtension: 'xlsx',
+        mimeType: MimeType.microsoftExcel,
+      );
+
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Balance sheet saved successfully: $fileName.xlsx'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download balance sheet: $e'),
+            backgroundColor: AppColors.errorText,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _buildClientSheet(
+    Excel excel,
+    List<ClientEntity> clients,
+    Map<int, double> balances,
+  ) {
+    final sheet = excel['Client Balances'];
+    int row = 0;
+
+    sheet.appendRow([TextCellValue('URBAN COMPOSITES / URBAN CONSTRUCTIONS')]);
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row)).cellStyle =
+        CellStyle(bold: true);
+    row++;
+
+    sheet.appendRow([TextCellValue('CLIENT BALANCES REPORT (RECEIVABLES)')]);
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row)).cellStyle =
+        CellStyle(bold: true);
+    row++;
+
+    sheet.appendRow([
+      TextCellValue(
+        'Generated on: ${DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now())}',
+      ),
+    ]);
+    row++;
+
+    sheet.appendRow([TextCellValue('')]);
+    row++;
+
+    final headers = [
+      'Sr. #',
+      'Client Name',
+      'Address',
+      'Contact Number',
+      'Amount Owed to Us (PKR)',
+      'Status',
+    ];
+    sheet.appendRow(headers.map((h) => TextCellValue(h)).toList());
+    for (int col = 0; col < headers.length; col++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row)).cellStyle =
+          CellStyle(
+        bold: true,
+        backgroundColorHex: ExcelColor.fromHexString('#E0E0E0'),
+      );
+    }
+    row++;
+
+    final sortedClients = List<ClientEntity>.from(clients)
+      ..sort((a, b) => a.clientName.toLowerCase().compareTo(b.clientName.toLowerCase()));
+
+    double totalReceivable = 0;
+    for (int i = 0; i < sortedClients.length; i++) {
+      final client = sortedClients[i];
+      final balance = balances[client.id] ?? 0.0;
+      totalReceivable += balance;
+
+      final status = balance > 0
+          ? 'Owed to Us (Receivable)'
+          : balance < 0
+              ? 'Advance / Overpaid'
+              : 'Cleared';
+
+      sheet.appendRow([
+        IntCellValue(i + 1),
+        TextCellValue(client.clientName),
+        TextCellValue(client.clientAddress.isNotEmpty ? client.clientAddress : '-'),
+        TextCellValue(client.contactNumber.isNotEmpty ? client.contactNumber : '-'),
+        DoubleCellValue(balance),
+        TextCellValue(status),
+      ]);
+      row++;
+    }
+
+    sheet.appendRow([
+      TextCellValue(''),
+      TextCellValue('TOTAL AMOUNT OWED TO US'),
+      TextCellValue(''),
+      TextCellValue(''),
+      DoubleCellValue(totalReceivable),
+      TextCellValue(''),
+    ]);
+    for (int col = 0; col < headers.length; col++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row)).cellStyle =
+          CellStyle(
+        bold: true,
+        backgroundColorHex: ExcelColor.fromHexString('#D9E1F2'),
+      );
+    }
+
+    sheet.setColumnWidth(0, 8.0);
+    sheet.setColumnWidth(1, 28.0);
+    sheet.setColumnWidth(2, 35.0);
+    sheet.setColumnWidth(3, 18.0);
+    sheet.setColumnWidth(4, 25.0);
+    sheet.setColumnWidth(5, 24.0);
+  }
+
+  void _buildVendorSheet(
+    Excel excel,
+    List<VendorEntity> vendors,
+    Map<int, double> balances,
+  ) {
+    final sheet = excel['Vendor Balances'];
+    int row = 0;
+
+    sheet.appendRow([TextCellValue('URBAN COMPOSITES / URBAN CONSTRUCTIONS')]);
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row)).cellStyle =
+        CellStyle(bold: true);
+    row++;
+
+    sheet.appendRow([TextCellValue('VENDOR BALANCES REPORT (PAYABLES)')]);
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row)).cellStyle =
+        CellStyle(bold: true);
+    row++;
+
+    sheet.appendRow([
+      TextCellValue(
+        'Generated on: ${DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now())}',
+      ),
+    ]);
+    row++;
+
+    sheet.appendRow([TextCellValue('')]);
+    row++;
+
+    final headers = [
+      'Sr. #',
+      'Vendor Name',
+      'Company Name',
+      'Address',
+      'Contact Number',
+      'Amount We Owe (PKR)',
+      'Status',
+    ];
+    sheet.appendRow(headers.map((h) => TextCellValue(h)).toList());
+    for (int col = 0; col < headers.length; col++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row)).cellStyle =
+          CellStyle(
+        bold: true,
+        backgroundColorHex: ExcelColor.fromHexString('#E0E0E0'),
+      );
+    }
+    row++;
+
+    final sortedVendors = List<VendorEntity>.from(vendors)
+      ..sort((a, b) => a.vendorName.toLowerCase().compareTo(b.vendorName.toLowerCase()));
+
+    double totalPayable = 0;
+    for (int i = 0; i < sortedVendors.length; i++) {
+      final vendor = sortedVendors[i];
+      final balance = balances[vendor.id] ?? 0.0;
+      totalPayable += balance;
+
+      final status = balance > 0
+          ? 'We Owe Vendor (Payable)'
+          : balance < 0
+              ? 'Advance Paid'
+              : 'Cleared';
+
+      sheet.appendRow([
+        IntCellValue(i + 1),
+        TextCellValue(vendor.vendorName),
+        TextCellValue(vendor.companyName.isNotEmpty ? vendor.companyName : '-'),
+        TextCellValue(vendor.vendorAddress.isNotEmpty ? vendor.vendorAddress : '-'),
+        TextCellValue(vendor.contactNumber.isNotEmpty ? vendor.contactNumber : '-'),
+        DoubleCellValue(balance),
+        TextCellValue(status),
+      ]);
+      row++;
+    }
+
+    sheet.appendRow([
+      TextCellValue(''),
+      TextCellValue('TOTAL AMOUNT WE OWE'),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      DoubleCellValue(totalPayable),
+      TextCellValue(''),
+    ]);
+    for (int col = 0; col < headers.length; col++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row)).cellStyle =
+          CellStyle(
+        bold: true,
+        backgroundColorHex: ExcelColor.fromHexString('#D9E1F2'),
+      );
+    }
+
+    sheet.setColumnWidth(0, 8.0);
+    sheet.setColumnWidth(1, 28.0);
+    sheet.setColumnWidth(2, 25.0);
+    sheet.setColumnWidth(3, 35.0);
+    sheet.setColumnWidth(4, 18.0);
+    sheet.setColumnWidth(5, 25.0);
+    sheet.setColumnWidth(6, 24.0);
+  }
+
+  void _buildCombinedSheet(
+    Excel excel,
+    List<ClientEntity> clients,
+    Map<int, double> clientBalances,
+    List<VendorEntity> vendors,
+    Map<int, double> vendorBalances,
+  ) {
+    final sheet = excel['All Balances'];
+    int row = 0;
+
+    sheet.appendRow([TextCellValue('URBAN COMPOSITES / URBAN CONSTRUCTIONS')]);
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row)).cellStyle =
+        CellStyle(bold: true);
+    row++;
+
+    sheet.appendRow([
+      TextCellValue('ALL PARTIES BALANCE STATEMENT (CLIENTS & VENDORS)'),
+    ]);
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row)).cellStyle =
+        CellStyle(bold: true);
+    row++;
+
+    sheet.appendRow([
+      TextCellValue(
+        'Generated on: ${DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now())}',
+      ),
+    ]);
+    row++;
+
+    sheet.appendRow([TextCellValue('')]);
+    row++;
+
+    final headers = [
+      'Sr. #',
+      'Party Name',
+      'Party Type',
+      'Address',
+      'Contact Number',
+      'Balance Amount (PKR)',
+      'Balance Nature',
+      'Status',
+    ];
+    sheet.appendRow(headers.map((h) => TextCellValue(h)).toList());
+    for (int col = 0; col < headers.length; col++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row)).cellStyle =
+          CellStyle(
+        bold: true,
+        backgroundColorHex: ExcelColor.fromHexString('#E0E0E0'),
+      );
+    }
+    row++;
+
+    int serialNumber = 1;
+    double totalReceivables = 0;
+    double totalPayables = 0;
+
+    final sortedClients = List<ClientEntity>.from(clients)
+      ..sort((a, b) => a.clientName.toLowerCase().compareTo(b.clientName.toLowerCase()));
+
+    for (final client in sortedClients) {
+      final balance = clientBalances[client.id] ?? 0.0;
+      totalReceivables += balance;
+
+      final nature = balance >= 0
+          ? 'Receivable (Client owes us)'
+          : 'Advance from Client';
+      final status = balance > 0
+          ? 'Outstanding'
+          : balance < 0
+              ? 'Advance'
+              : 'Cleared';
+
+      sheet.appendRow([
+        IntCellValue(serialNumber++),
+        TextCellValue(client.clientName),
+        TextCellValue('Client'),
+        TextCellValue(client.clientAddress.isNotEmpty ? client.clientAddress : '-'),
+        TextCellValue(client.contactNumber.isNotEmpty ? client.contactNumber : '-'),
+        DoubleCellValue(balance),
+        TextCellValue(nature),
+        TextCellValue(status),
+      ]);
+      row++;
+    }
+
+    final sortedVendors = List<VendorEntity>.from(vendors)
+      ..sort((a, b) => a.vendorName.toLowerCase().compareTo(b.vendorName.toLowerCase()));
+
+    for (final vendor in sortedVendors) {
+      final balance = vendorBalances[vendor.id] ?? 0.0;
+      totalPayables += balance;
+
+      final nature = balance >= 0
+          ? 'Payable (We owe vendor)'
+          : 'Advance to Vendor';
+      final status = balance > 0
+          ? 'Outstanding'
+          : balance < 0
+              ? 'Advance'
+              : 'Cleared';
+
+      sheet.appendRow([
+        IntCellValue(serialNumber++),
+        TextCellValue(vendor.vendorName),
+        TextCellValue('Vendor'),
+        TextCellValue(vendor.vendorAddress.isNotEmpty ? vendor.vendorAddress : '-'),
+        TextCellValue(vendor.contactNumber.isNotEmpty ? vendor.contactNumber : '-'),
+        DoubleCellValue(balance),
+        TextCellValue(nature),
+        TextCellValue(status),
+      ]);
+      row++;
+    }
+
+    sheet.appendRow([TextCellValue('')]);
+    row++;
+
+    sheet.appendRow([
+      TextCellValue(''),
+      TextCellValue('TOTAL RECEIVABLES (Clients owe us)'),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      DoubleCellValue(totalReceivables),
+      TextCellValue('Receivable'),
+      TextCellValue(''),
+    ]);
+    for (int col = 0; col < headers.length; col++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row)).cellStyle =
+          CellStyle(
+        bold: true,
+        backgroundColorHex: ExcelColor.fromHexString('#D9E1F2'),
+      );
+    }
+    row++;
+
+    sheet.appendRow([
+      TextCellValue(''),
+      TextCellValue('TOTAL PAYABLES (We owe vendors)'),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      DoubleCellValue(totalPayables),
+      TextCellValue('Payable'),
+      TextCellValue(''),
+    ]);
+    for (int col = 0; col < headers.length; col++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row)).cellStyle =
+          CellStyle(
+        bold: true,
+        backgroundColorHex: ExcelColor.fromHexString('#FCE4D6'),
+      );
+    }
+    row++;
+
+    final netDiff = totalReceivables - totalPayables;
+    sheet.appendRow([
+      TextCellValue(''),
+      TextCellValue('NET BALANCE POSITION'),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      DoubleCellValue(netDiff.abs()),
+      TextCellValue(netDiff >= 0 ? 'Net Receivable' : 'Net Payable'),
+      TextCellValue(''),
+    ]);
+    for (int col = 0; col < headers.length; col++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row)).cellStyle =
+          CellStyle(
+        bold: true,
+        backgroundColorHex: ExcelColor.fromHexString('#E2EFDA'),
+      );
+    }
+
+    sheet.setColumnWidth(0, 8.0);
+    sheet.setColumnWidth(1, 28.0);
+    sheet.setColumnWidth(2, 14.0);
+    sheet.setColumnWidth(3, 35.0);
+    sheet.setColumnWidth(4, 18.0);
+    sheet.setColumnWidth(5, 24.0);
+    sheet.setColumnWidth(6, 26.0);
+    sheet.setColumnWidth(7, 16.0);
   }
 }
 

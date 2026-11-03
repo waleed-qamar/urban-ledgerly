@@ -1,3 +1,4 @@
+import '../../../auth/presentation/provider/current_employee_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -177,6 +178,11 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.receipt != null;
+    final hasUpdatePermission = ref.watch(hasPermissionProvider('receipts.update'));
+    final hasCreatePermission = ref.watch(hasPermissionProvider('receipts.create'));
+    final hasPermission = isEdit ? hasUpdatePermission : hasCreatePermission;
+
     final clientsAsync = ref.watch(getAllClientsProvider);
     final accountsAsync = ref.watch(getAllAccountsProvider);
 
@@ -233,7 +239,36 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
+                      if (!hasPermission)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.lock_outline, size: 16, color: AppColors.errorText),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  isEdit
+                                      ? 'You do not have permission to update receipts.'
+                                      : 'You do not have permission to create receipts.',
+                                  style: const TextStyle(
+                                    color: AppColors.errorText,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 8),
 
                       // Client dropdown (searchable)
                       FormField<int>(
@@ -493,7 +528,7 @@ class _AddReceiptDialogState extends ConsumerState<AddReceiptDialog> {
                           ),
                           const SizedBox(width: 12),
                           FilledButton.icon(
-                            onPressed: _isSubmitting ? null : _submit,
+                            onPressed: (_isSubmitting || !hasPermission) ? null : _submit,
                             icon: _isSubmitting
                                 ? const SizedBox(
                                     width: 16,
