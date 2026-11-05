@@ -268,102 +268,105 @@ class LedgerDetailsPage extends ConsumerWidget {
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(6),
                         child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minWidth: constraints.maxWidth > 1080
-                                  ? constraints.maxWidth -
-                                        (horizontalPadding * 2)
-                                  : 1080,
-                            ),
-                            child: Table(
-                              columnWidths: const {
-                                0: FlexColumnWidth(1.2),
-                                1: FlexColumnWidth(1.2),
-                                2: FlexColumnWidth(1.2),
-                                3: FlexColumnWidth(1.5),
-                                4: FlexColumnWidth(3.0),
-                              },
-                              defaultVerticalAlignment:
-                                  TableCellVerticalAlignment.middle,
-                              border: TableBorder(
-                                horizontalInside: BorderSide(
-                                  color: AppColors.dividerColor.withValues(
-                                    alpha: 0.8,
-                                  ),
-                                ),
+                          scrollDirection: Axis.vertical,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minWidth: constraints.maxWidth > 1080
+                                    ? constraints.maxWidth -
+                                          (horizontalPadding * 2)
+                                    : 1080,
                               ),
-                              children: [
-                                const TableRow(
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFF1F1F1),
+                              child: Table(
+                                columnWidths: const {
+                                  0: FlexColumnWidth(1.2),
+                                  1: FlexColumnWidth(1.2),
+                                  2: FlexColumnWidth(1.2),
+                                  3: FlexColumnWidth(1.5),
+                                  4: FlexColumnWidth(3.0),
+                                },
+                                defaultVerticalAlignment:
+                                    TableCellVerticalAlignment.middle,
+                                border: TableBorder(
+                                  horizontalInside: BorderSide(
+                                    color: AppColors.dividerColor.withValues(
+                                      alpha: 0.8,
+                                    ),
                                   ),
-                                  children: [
-                                    _LedgerHeaderCell('Date'),
-                                    _LedgerHeaderCell('Credit'),
-                                    _LedgerHeaderCell('Debit'),
-                                    _LedgerHeaderCell('Balance'),
-                                    _LedgerHeaderCell('Remarks'),
-                                  ],
                                 ),
-                                ...displayEntries.map((entry) {
-                                  final runningBalance =
-                                      runningBalances[entry.id] ?? 0;
-
-                                  return TableRow(
+                                children: [
+                                  const TableRow(
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFFF1F1F1),
+                                    ),
                                     children: [
-                                      _LedgerValueCell(
-                                        DateFormat(
-                                          'dd/MM/yyyy',
-                                        ).format(entry.entryDate),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      _LedgerValueCell(
-                                        entry.entryType == EntryType.credit
-                                            ? LedgerDetailsPage._money(
-                                                entry.amount,
-                                              )
-                                            : '-',
-                                        textAlign: TextAlign.center,
-                                        fontWeight: FontWeight.w600,
-                                        textColor:
-                                            entry.entryType == EntryType.credit
-                                            ? AppColors.successText
-                                            : AppColors.textGrey,
-                                      ),
-                                      _LedgerValueCell(
-                                        entry.entryType == EntryType.debit
-                                            ? LedgerDetailsPage._money(
-                                                entry.amount,
-                                              )
-                                            : '-',
-                                        textAlign: TextAlign.center,
-                                        fontWeight: FontWeight.w600,
-                                        textColor:
-                                            entry.entryType == EntryType.debit
-                                            ? AppColors.errorText
-                                            : AppColors.textGrey,
-                                      ),
-                                      _LedgerValueCell(
-                                        LedgerDetailsPage._money(
-                                          runningBalance,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                        fontWeight: FontWeight.bold,
-                                        textColor:
-                                            LedgerDetailsPage._balanceColorForAmount(
-                                              runningBalance,
-                                            ),
-                                      ),
-                                      _RemarksCell(
-                                        entry: entry,
-                                        partyName: partyName,
-                                        ref: ref,
-                                      ),
+                                      _LedgerHeaderCell('Date'),
+                                      _LedgerHeaderCell('Credit'),
+                                      _LedgerHeaderCell('Debit'),
+                                      _LedgerHeaderCell('Balance'),
+                                      _LedgerHeaderCell('Remarks'),
                                     ],
-                                  );
-                                }),
-                              ],
+                                  ),
+                                  ...displayEntries.map((entry) {
+                                    final runningBalance =
+                                        runningBalances[entry.id] ?? 0;
+                          
+                                    return TableRow(
+                                      children: [
+                                        _LedgerValueCell(
+                                          DateFormat(
+                                            'dd/MM/yyyy',
+                                          ).format(entry.entryDate),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        _LedgerValueCell(
+                                          entry.entryType == EntryType.credit
+                                              ? LedgerDetailsPage._money(
+                                                  entry.amount,
+                                                )
+                                              : '-',
+                                          textAlign: TextAlign.center,
+                                          fontWeight: FontWeight.w600,
+                                          textColor:
+                                              entry.entryType == EntryType.credit
+                                              ? AppColors.successText
+                                              : AppColors.textGrey,
+                                        ),
+                                        _LedgerValueCell(
+                                          entry.entryType == EntryType.debit
+                                              ? LedgerDetailsPage._money(
+                                                  entry.amount,
+                                                )
+                                              : '-',
+                                          textAlign: TextAlign.center,
+                                          fontWeight: FontWeight.w600,
+                                          textColor:
+                                              entry.entryType == EntryType.debit
+                                              ? AppColors.errorText
+                                              : AppColors.textGrey,
+                                        ),
+                                        _LedgerValueCell(
+                                          LedgerDetailsPage._money(
+                                            runningBalance,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          fontWeight: FontWeight.bold,
+                                          textColor:
+                                              LedgerDetailsPage._balanceColorForAmount(
+                                                runningBalance,
+                                              ),
+                                        ),
+                                        _RemarksCell(
+                                          entry: entry,
+                                          partyName: partyName,
+                                          ref: ref,
+                                        ),
+                                      ],
+                                    );
+                                  }),
+                                ],
+                              ),
                             ),
                           ),
                         ),
