@@ -11,6 +11,7 @@ import 'package:ledgerly/features/orders/presentation/providers/order_providers.
 import 'package:ledgerly/features/products/domain/entities/product_entity.dart';
 import 'package:ledgerly/features/products/domain/entities/product_set_entity.dart';
 import 'package:ledgerly/features/products/presentation/providers/product_providers.dart';
+import 'package:ledgerly/features/auth/presentation/provider/current_employee_provider.dart';
 import 'add_order_dialog.dart';
 
 // Available order statuses
@@ -77,6 +78,65 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
     }
   }
 
+  Future<void> _handleDeleteOrder() async {
+    final canDelete = ref.read(hasPermissionProvider('orders.delete')) ||
+        ref.read(isMasterProvider);
+    if (!canDelete) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You do not have permission to delete orders.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Order'),
+        content: Text(
+          'Delete Order #ORD-${_order.id}?\n\n'
+          'This will also permanently delete all linked invoices and invoice items. '
+          'This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await ref.read(deleteOrderProvider(_order.id!).future);
+      ref.invalidate(getAllOrdersProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Order and linked invoices deleted.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting order: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final fallbackClientAsync = ref.watch(getAllClientsProvider);
@@ -107,7 +167,7 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
         title: Text('Order #ORD-${_order.id ?? '---'}'),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: 4),
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
@@ -116,6 +176,18 @@ class _OrderDetailsPageState extends ConsumerState<OrderDetailsPage> {
               onPressed: _openEditOrderDialog,
               icon: const Icon(Icons.edit_outlined, size: 18),
               label: const Text('Edit Order'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade600,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: _handleDeleteOrder,
+              icon: const Icon(Icons.delete_outline, size: 18),
+              label: const Text('Delete'),
             ),
           ),
         ],
@@ -1299,10 +1371,7 @@ class _StatusChipButton extends ConsumerWidget {
 }
 
 class _OrderTotals {
-  const _OrderTotals({
-    required this.subtotal,
-    required this.total,
-  });
+  const _OrderTotals({required this.subtotal, required this.total});
 
   final double subtotal;
   final double total;

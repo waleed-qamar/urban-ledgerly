@@ -60,3 +60,8 @@ Future<String> nextInvoiceNumber(Ref ref, int? clientId, String? clientInitials)
         clientInitials: clientInitials,
       );
 }
+
+@riverpod
+Future<void> deleteInvoice(Ref ref, int id) {
+  return ref.watch(invoiceRepositoryProvider).deleteInvoice(id);
+}

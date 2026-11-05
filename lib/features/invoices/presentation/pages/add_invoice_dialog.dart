@@ -584,93 +584,162 @@ class _AddInvoiceDialogState extends ConsumerState<AddInvoiceDialog> {
                                   const SizedBox(height: 10),
 
                                   // Line Inputs: Multiline Product Description & Quantity
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Product Description (Multiline & Fully Visible!)
-                                      Expanded(
-                                        child: TextFormField(
-                                          controller:
-                                              line.descriptionController,
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            height: 1.35,
-                                          ),
-                                          maxLines: null,
-                                          minLines: 2,
-                                          keyboardType: TextInputType.multiline,
-                                          decoration: InputDecoration(
-                                            labelText: 'Product Description',
-                                            hintText:
-                                                'Enter or edit item description...',
-                                            hintStyle: const TextStyle(
-                                              color: Colors.black38,
-                                              fontSize: 12,
+                                  // Responsive: stacks vertically on narrow/zoomed screens
+                                  if (isNarrow) ...[
+                                    // Description full-width
+                                    TextFormField(
+                                      controller: line.descriptionController,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        height: 1.5,
+                                      ),
+                                      maxLines: null,
+                                      minLines: 3,
+                                      keyboardType: TextInputType.multiline,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Product Description',
+                                        hintText: 'Enter or edit item description...',
+                                        hintStyle: TextStyle(
+                                          color: Colors.black38,
+                                          fontSize: 12,
+                                        ),
+                                        isDense: true,
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 10,
+                                        ),
+                                        prefixIcon: Icon(
+                                          Icons.edit_note,
+                                          size: 20,
+                                          color: AppColors.textGrey,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    // Qty below description
+                                    TextFormField(
+                                      initialValue: line.quantity.toString(),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.right,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Invoice Qty',
+                                        isDense: true,
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 10,
+                                        ),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                      ],
+                                      validator: (value) {
+                                        final parsed = int.tryParse(value ?? '');
+                                        if (parsed == null || parsed < 0) {
+                                          return 'Invalid';
+                                        }
+                                        if (parsed > line.remainingQty) {
+                                          return 'Exceeds Rem.';
+                                        }
+                                        return null;
+                                      },
+                                      onChanged: (val) => setState(() {
+                                        line.quantity = int.tryParse(val) ?? 0;
+                                      }),
+                                    ),
+                                  ] else
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // Product Description (Multiline & Fully Visible!)
+                                        Expanded(
+                                          child: TextFormField(
+                                            controller: line.descriptionController,
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              height: 1.5,
                                             ),
-                                            isDense: true,
-                                            border: const OutlineInputBorder(),
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                                  horizontal: 10,
-                                                  vertical: 10,
-                                                ),
-                                            prefixIcon: const Icon(
-                                              Icons.edit_note,
-                                              size: 20,
-                                              color: AppColors.textGrey,
+                                            maxLines: null,
+                                            minLines: 3,
+                                            keyboardType: TextInputType.multiline,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Product Description',
+                                              hintText:
+                                                  'Enter or edit item description...',
+                                              hintStyle: TextStyle(
+                                                color: Colors.black38,
+                                                fontSize: 12,
+                                              ),
+                                              isDense: true,
+                                              border: OutlineInputBorder(),
+                                              contentPadding:
+                                                  EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 10,
+                                                  ),
+                                              prefixIcon: Icon(
+                                                Icons.edit_note,
+                                                size: 20,
+                                                color: AppColors.textGrey,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 12),
+                                        const SizedBox(width: 12),
 
-                                      // Invoice Quantity
-                                      SizedBox(
-                                        width: 125,
-                                        child: TextFormField(
-                                          initialValue: line.quantity
-                                              .toString(),
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
+                                        // Invoice Quantity
+                                        SizedBox(
+                                          width: 125,
+                                          child: TextFormField(
+                                            initialValue:
+                                                line.quantity.toString(),
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            textAlign: TextAlign.right,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Invoice Qty',
+                                              isDense: true,
+                                              border: OutlineInputBorder(),
+                                              contentPadding:
+                                                  EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 10,
+                                                  ),
+                                            ),
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter
+                                                  .digitsOnly,
+                                            ],
+                                            validator: (value) {
+                                              final parsed =
+                                                  int.tryParse(value ?? '');
+                                              if (parsed == null ||
+                                                  parsed < 0) {
+                                                return 'Invalid';
+                                              }
+                                              if (parsed >
+                                                  line.remainingQty) {
+                                                return 'Exceeds Rem.';
+                                              }
+                                              return null;
+                                            },
+                                            onChanged: (val) =>
+                                                setState(() {
+                                              line.quantity =
+                                                  int.tryParse(val) ?? 0;
+                                            }),
                                           ),
-                                          textAlign: TextAlign.right,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Invoice Qty',
-                                            isDense: true,
-                                            border: OutlineInputBorder(),
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                  horizontal: 10,
-                                                  vertical: 10,
-                                                ),
-                                          ),
-                                          keyboardType: TextInputType.number,
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter
-                                                .digitsOnly,
-                                          ],
-                                          validator: (value) {
-                                            final parsed = int.tryParse(
-                                              value ?? '',
-                                            );
-                                            if (parsed == null || parsed < 0) {
-                                              return 'Invalid';
-                                            }
-                                            if (parsed > line.remainingQty) {
-                                              return 'Exceeds Rem.';
-                                            }
-                                            return null;
-                                          },
-                                          onChanged: (val) => setState(() {
-                                            line.quantity =
-                                                int.tryParse(val) ?? 0;
-                                          }),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                 ],
                               ),
                             );

@@ -103,28 +103,6 @@ class InvoiceRemoteDatasource {
       }
     }
 
-    // Insert Advance Payment Receipt if present
-    if (invoice.advanceAmount > 0 && invoice.clientId != null) {
-      final allocationPayload = [
-        {
-          'invoice_id': invoiceId,
-          'amount': invoice.advanceAmount,
-        }
-      ];
-      await _client.rpc(
-        'create_receipt',
-        params: {
-          'p_client_id': invoice.clientId,
-          'p_total_amount': invoice.advanceAmount,
-          'p_payment_method': 'cash',
-          'p_account_no': null,
-          'p_remarks': 'Advance payment for Invoice ${invoice.invoiceNumber}',
-          'p_received_date': DateTime.now().toIso8601String(),
-          'p_allocations': allocationPayload,
-          'p_account_id': null,
-        },
-      );
-    }
   }
 
   Future<void> updateInvoiceStatus(int id, String status, {DateTime? dispatchDate}) async {
@@ -135,6 +113,36 @@ class InvoiceRemoteDatasource {
       payload['dispatched_at'] = null;
     }
     await _client.from('invoices').update(payload).eq('id', id);
+  }
+
+  Future<void> deleteInvoice(int id) async {
+    // Restore invoiced_quantity on order_items before deleting invoice items
+    final invoiceItems = await _client
+        .from('invoice_items')
+        .select('order_item_id, quantity')
+        .eq('invoice_id', id);
+
+    for (final item in (invoiceItems as List)) {
+      final orderItemId = item['order_item_id'];
+      final qty = (item['quantity'] as num?)?.toInt() ?? 0;
+      if (orderItemId != null && qty > 0) {
+        final current = await _client
+            .from('order_items')
+            .select('invoiced_quantity')
+            .eq('id', orderItemId)
+            .maybeSingle();
+        final currentQty = (current?['invoiced_quantity'] as num?)?.toInt() ?? 0;
+        final newQty = (currentQty - qty).clamp(0, 999999);
+        await _client
+            .from('order_items')
+            .update({'invoiced_quantity': newQty})
+            .eq('id', orderItemId);
+      }
+    }
+
+    // Delete invoice items then invoice
+    await _client.from('invoice_items').delete().eq('invoice_id', id);
+    await _client.from('invoices').delete().eq('id', id);
   }
 
   /// Always does a fresh DB query — never relies on cached provider data.

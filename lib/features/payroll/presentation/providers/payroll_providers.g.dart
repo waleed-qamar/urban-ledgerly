@@ -195,7 +195,7 @@ final class PayrollSheetDetailProvider
 }
 
 String _$payrollSheetDetailHash() =>
-    r'fadabe651d9e9923543bde7266d7da3345e39554';
+    r'50d351f18fcf20b20153bf27f8c1bbae81f6e1b0';
 
 final class PayrollSheetDetailFamily extends $Family
     with

@@ -514,3 +514,72 @@ final class NextInvoiceNumberFamily extends $Family
   @override
   String toString() => r'nextInvoiceNumberProvider';
 }
+
+@ProviderFor(deleteInvoice)
+const deleteInvoiceProvider = DeleteInvoiceFamily._();
+
+final class DeleteInvoiceProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  const DeleteInvoiceProvider._({
+    required DeleteInvoiceFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'deleteInvoiceProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$deleteInvoiceHash();
+
+  @override
+  String toString() {
+    return r'deleteInvoiceProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as int;
+    return deleteInvoice(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DeleteInvoiceProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$deleteInvoiceHash() => r'5f5f09355408b6cd6b08f555c5e863bc1e5e2bf2';
+
+final class DeleteInvoiceFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, int> {
+  const DeleteInvoiceFamily._()
+    : super(
+        retry: null,
+        name: r'deleteInvoiceProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  DeleteInvoiceProvider call(int id) =>
+      DeleteInvoiceProvider._(argument: id, from: this);
+
+  @override
+  String toString() => r'deleteInvoiceProvider';
+}

@@ -15,6 +15,7 @@ import '../../../orders/presentation/providers/supplier_providers.dart';
 import '../../domain/entities/invoice_entity.dart';
 import '../providers/invoice_providers.dart';
 import '../widgets/invoice_view_dialog.dart';
+import '../../../auth/presentation/provider/current_employee_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Sorting / filtering enums
@@ -207,9 +208,24 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
                         return _InvoiceCard(
                           invoice: invoice,
                           clientName: client?.clientName ?? 'Unknown Client',
-                          onPrint: () {
-                            if (client != null && supplier != null) {
-                              PdfGenerator.generateAndPrintInvoice(
+                          onPrint: () async {
+                            // Fetch pending balance for client
+                            double pendingBalance = 0.0;
+                            if (invoice.clientId != null) {
+                              try {
+                                pendingBalance = await ref.read(
+                                  getBalanceProvider(
+                                    partyType: PartyType.client,
+                                    partyId: invoice.clientId!,
+                                  ).future,
+                                );
+                              } catch (_) {
+                                pendingBalance = 0.0;
+                              }
+                            }
+                            if (context.mounted) {
+                              await PdfGenerator.previewInvoice(
+                                context,
                                 invoice: invoice,
                                 products: productById,
                                 sets: {
@@ -220,14 +236,7 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
                                 },
                                 client: client,
                                 supplier: supplier,
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Client or Supplier data missing.',
-                                  ),
-                                ),
+                                pendingBalance: pendingBalance,
                               );
                             }
                           },
@@ -250,6 +259,8 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
                               ),
                             );
                           },
+                          onDelete: () =>
+                              _handleDeleteInvoice(context, invoice),
                         );
                       },
                     ),
@@ -260,6 +271,67 @@ class _InvoicesDashboardState extends ConsumerState<InvoicesDashboard> {
         },
       ),
     );
+  }
+
+  Future<void> _handleDeleteInvoice(
+    BuildContext context,
+    InvoiceEntity invoice,
+  ) async {
+    final canDelete = ref.read(hasPermissionProvider('invoices.delete')) ||
+        ref.read(isMasterProvider);
+    if (!canDelete) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You do not have permission to delete invoices.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Invoice'),
+        content: Text(
+          'Delete invoice ${invoice.invoiceNumber}?\n\n'
+          'This will restore the invoiced quantities on the linked order. '
+          'This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await ref.read(deleteInvoiceProvider(invoice.id!).future);
+      ref.invalidate(getAllInvoicesProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Invoice ${invoice.invoiceNumber} deleted.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting invoice: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _showUpdateStatusDialog(
@@ -688,6 +760,7 @@ class _InvoiceCard extends StatelessWidget {
   final VoidCallback onPrint;
   final VoidCallback onUpdateStatus;
   final VoidCallback onView;
+  final VoidCallback onDelete;
 
   const _InvoiceCard({
     required this.invoice,
@@ -695,6 +768,7 @@ class _InvoiceCard extends StatelessWidget {
     required this.onPrint,
     required this.onUpdateStatus,
     required this.onView,
+    required this.onDelete,
   });
 
   @override
@@ -789,11 +863,17 @@ class _InvoiceCard extends StatelessWidget {
                 ? 'Mark as Undispatched'
                 : 'Mark as Dispatched',
           ),
-          // Print / download
+          // Print / preview
           IconButton(
             icon: const Icon(Icons.print, color: Colors.blue),
             onPressed: onPrint,
-            tooltip: 'Print / Download',
+            tooltip: 'Print / Preview',
+          ),
+          // Delete
+          IconButton(
+            icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+            onPressed: onDelete,
+            tooltip: 'Delete Invoice',
           ),
         ],
       ),

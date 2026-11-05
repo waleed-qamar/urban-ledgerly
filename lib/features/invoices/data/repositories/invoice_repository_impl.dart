@@ -31,4 +31,9 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   Future<String> getNextInvoiceNumber({int? clientId, String? clientInitials}) {
     return _datasource.getNextInvoiceNumber(clientId: clientId, clientInitials: clientInitials);
   }
+
+  @override
+  Future<void> deleteInvoice(int id) {
+    return _datasource.deleteInvoice(id);
+  }
 }

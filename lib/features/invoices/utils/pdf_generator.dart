@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 import 'package:file_saver/file_saver.dart';
 import 'dart:typed_data';
 import 'package:flutter/services.dart' show rootBundle;
@@ -50,12 +52,16 @@ class PdfGenerator {
     sides: 36,
   );
 
-  static Future<void> generateAndPrintInvoice({
+  /// Builds the PDF document bytes for an invoice.
+  /// [pendingBalance] is the outstanding ledger balance for the client
+  /// (positive = client owes us, negative = we owe client).
+  static Future<Uint8List> buildInvoicePdf({
     required InvoiceEntity invoice,
     required Map<int, ProductEntity> products,
     required Map<int, ProductSetEntity> sets,
     ClientEntity? client,
     SupplierEntity? supplier,
+    double pendingBalance = 0.0,
   }) async {
     final doc = pw.Document();
 
@@ -69,7 +75,7 @@ class PdfGenerator {
       final ByteData imageData = await rootBundle.load('assets/$assetName.png');
       backgroundLetterhead = pw.MemoryImage(imageData.buffer.asUint8List());
     } catch (e) {
-      print(
+      debugPrint(
         "Warning: Background template image assets/$assetName.png not found: $e",
       );
     }
@@ -84,14 +90,14 @@ class PdfGenerator {
     final supplierName =
         invoice.supplierName ?? supplier?.name ?? 'Unknown Supplier';
     final supplierAddr = invoice.supplierAddress ?? supplier?.address ?? '';
-    final supplierStrnVal = invoice.supplierStrn ?? supplier?.strnNo ?? '';
-    final supplierNtnVal = invoice.supplierNtn ?? supplier?.ntn ?? '';
+    final supplierStrnVal = invoice.supplierStrn ?? supplier?.strnNo;
+    final supplierNtnVal = invoice.supplierNtn ?? supplier?.ntn;
 
     final clientNameVal =
         invoice.clientName ?? client?.clientName ?? 'Unknown Client';
     final clientAddrVal = invoice.clientAddress ?? client?.clientAddress ?? '';
-    final clientStrnVal = invoice.clientStrn ?? '';
-    final clientNtnVal = invoice.clientNtn ?? '';
+    final clientStrnVal = invoice.clientStrn;
+    final clientNtnVal = invoice.clientNtn;
 
     final dateStr =
         '${invoice.issueDate.day.toString().padLeft(2, '0')}-${invoice.issueDate.month.toString().padLeft(2, '0')}-${invoice.issueDate.year}';
@@ -134,17 +140,14 @@ class PdfGenerator {
         build: (context) {
           return [
             // Document Title — one title only, matching invoice.invoiceType
+            pw.SizedBox(height: 20),
             pw.Center(
               child: pw.Text(
                 isSalesTax ? 'SALES TAX INVOICE' : 'COMMERCIAL INVOICE',
-                style: pw.TextStyle(
-                  fontSize: 22,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PdfColors.black,
-                ),
+                style: pw.TextStyle(fontSize: 18, color: PdfColors.black),
               ),
             ),
-            pw.SizedBox(height: 20),
+            pw.SizedBox(height: 30),
 
             // Invoice No & Date
             pw.Row(
@@ -298,12 +301,12 @@ class PdfGenerator {
             ),
             pw.SizedBox(height: 20),
 
-            // Totals and Advance/Balance
+            // Totals: Sub Total → GST → Advance → Shipping → Pending Balance → Total
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.end,
               children: [
                 pw.Container(
-                  width: 280,
+                  width: 300,
                   child: pw.Column(
                     children: [
                       _buildTotalRow('Sub Total', invoice.subTotal),
@@ -312,15 +315,25 @@ class PdfGenerator {
                           'GST (${invoice.taxPercent.toStringAsFixed(0)}%)',
                           invoice.taxAmount,
                         ),
+                      if (invoice.shippingCost > 0)
+                        _buildTotalRow('Shipping', invoice.shippingCost),
                       if (invoice.advanceAmount > 0)
                         _buildTotalRow(
                           isSalesTax ? 'Advance (without GST)' : 'Advance',
                           invoice.advanceAmount,
                         ),
+                      if (pendingBalance > 0)
+                        _buildTotalRow(
+                          'Pending Balance',
+                          pendingBalance,
+                          labelColor: PdfColors.red700,
+                        ),
                       pw.Divider(color: PdfColors.black, thickness: 1),
                       _buildTotalRow(
-                        'Balance',
-                        invoice.grandTotal - invoice.advanceAmount,
+                        'Total',
+                        invoice.grandTotal -
+                            invoice.advanceAmount +
+                            (pendingBalance > 0 ? pendingBalance : 0),
                         isBold: true,
                       ),
                     ],
@@ -339,10 +352,96 @@ class PdfGenerator {
       ),
     );
 
-    final bytes = await doc.save();
+    return Uint8List.fromList(await doc.save());
+  }
+
+  /// Shows a PDF preview dialog. The user can save from the preview toolbar,
+  /// or use the share button. Call this from a BuildContext that has a
+  /// Material overlay (e.g., inside a widget build method or callback).
+  static Future<void> previewInvoice(
+    BuildContext context, {
+    required InvoiceEntity invoice,
+    required Map<int, ProductEntity> products,
+    required Map<int, ProductSetEntity> sets,
+    ClientEntity? client,
+    SupplierEntity? supplier,
+    double pendingBalance = 0.0,
+  }) async {
+    await showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Dialog header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
+              child: Row(
+                children: [
+                  const Icon(Icons.picture_as_pdf, color: Colors.red),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Invoice Preview — ${invoice.invoiceNumber}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(ctx),
+                    tooltip: 'Close',
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // PDF preview
+            Expanded(
+              child: PdfPreview(
+                maxPageWidth: 900,
+                pdfFileName: '${invoice.invoiceNumber}.pdf',
+                canDebug: false,
+                actions: const [],
+                build: (_) => buildInvoicePdf(
+                  invoice: invoice,
+                  products: products,
+                  sets: sets,
+                  client: client,
+                  supplier: supplier,
+                  pendingBalance: pendingBalance,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Legacy entry-point kept for backward compatibility.
+  /// Prefer [previewInvoice] for new call-sites so the user can review before saving.
+  static Future<void> generateAndPrintInvoice({
+    required InvoiceEntity invoice,
+    required Map<int, ProductEntity> products,
+    required Map<int, ProductSetEntity> sets,
+    ClientEntity? client,
+    SupplierEntity? supplier,
+    double pendingBalance = 0.0,
+  }) async {
+    final bytes = await buildInvoicePdf(
+      invoice: invoice,
+      products: products,
+      sets: sets,
+      client: client,
+      supplier: supplier,
+      pendingBalance: pendingBalance,
+    );
     await FileSaver.instance.saveFile(
       name: invoice.invoiceNumber,
-      bytes: Uint8List.fromList(bytes),
+      bytes: bytes,
       fileExtension: 'pdf',
       mimeType: MimeType.pdf,
     );
@@ -401,6 +500,7 @@ class PdfGenerator {
     String label,
     double value, {
     bool isBold = false,
+    PdfColor? labelColor,
   }) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 2),
@@ -412,6 +512,7 @@ class PdfGenerator {
             style: pw.TextStyle(
               fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
               fontSize: 10,
+              color: labelColor,
             ),
           ),
           pw.Text(

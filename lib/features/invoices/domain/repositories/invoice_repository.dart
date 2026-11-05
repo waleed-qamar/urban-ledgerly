@@ -6,4 +6,5 @@ abstract class InvoiceRepository {
   Future<InvoiceEntity> getInvoiceById(int id);
   Future<List<InvoiceEntity>> getInvoices();
   Future<String> getNextInvoiceNumber({int? clientId, String? clientInitials});
+  Future<void> deleteInvoice(int id);
 }

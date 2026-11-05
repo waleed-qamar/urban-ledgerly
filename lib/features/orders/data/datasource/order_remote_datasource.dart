@@ -79,6 +79,47 @@ class OrderRemoteDatasource {
 
   Future<void> deleteOrder(int id) async {
     await supabaseSafeCall(() async {
+      // First: find linked invoices to restore invoiced_quantity on order_items
+      final invoices = await _client
+          .from('invoices')
+          .select('id')
+          .eq('order_id', id);
+
+      for (final inv in (invoices as List)) {
+        final invoiceId = inv['id'] as int;
+        final invoiceItems = await _client
+            .from('invoice_items')
+            .select('order_item_id, quantity')
+            .eq('invoice_id', invoiceId);
+
+        for (final item in (invoiceItems as List)) {
+          final orderItemId = item['order_item_id'];
+          final qty = (item['quantity'] as num?)?.toInt() ?? 0;
+          if (orderItemId != null && qty > 0) {
+            final current = await _client
+                .from('order_items')
+                .select('invoiced_quantity')
+                .eq('id', orderItemId)
+                .maybeSingle();
+            final currentQty =
+                (current?['invoiced_quantity'] as num?)?.toInt() ?? 0;
+            final newQty = (currentQty - qty).clamp(0, 999999);
+            await _client
+                .from('order_items')
+                .update({'invoiced_quantity': newQty})
+                .eq('id', orderItemId);
+          }
+        }
+
+        // Delete invoice items
+        await _client.from('invoice_items').delete().eq('invoice_id', invoiceId);
+      }
+
+      // Delete all linked invoices
+      await _client.from('invoices').delete().eq('order_id', id);
+
+      // Delete order items then order
+      await _client.from('order_items').delete().eq('order_id', id);
       await _client.from('orders').delete().eq('id', id);
     });
   }
