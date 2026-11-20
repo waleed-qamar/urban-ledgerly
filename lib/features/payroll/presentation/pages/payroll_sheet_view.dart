@@ -25,7 +25,9 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(payrollSheetDetailProvider(widget.sheetId));
-    final notifier = ref.read(payrollSheetDetailProvider(widget.sheetId).notifier);
+    final notifier = ref.read(
+      payrollSheetDetailProvider(widget.sheetId).notifier,
+    );
 
     if (state.isLoading) {
       return const Scaffold(
@@ -55,9 +57,7 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
 
     final sheet = state.sheet;
     if (sheet == null) {
-      return const Scaffold(
-        body: Center(child: Text('Sheet not found')),
-      );
+      return const Scaffold(body: Center(child: Text('Sheet not found')));
     }
 
     final isReadOnly = sheet.isFinalized;
@@ -86,11 +86,16 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE65100).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFFE65100).withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: const Color(0xFFE65100).withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
                     sheet.category,
@@ -103,7 +108,10 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: sheet.isFinalized
                         ? Colors.green.withValues(alpha: 0.12)
@@ -115,7 +123,9 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: sheet.isFinalized ? Colors.green[800] : Colors.blue[800],
+                      color: sheet.isFinalized
+                          ? Colors.green[800]
+                          : Colors.blue[800],
                     ),
                   ),
                 ),
@@ -135,7 +145,10 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green[700],
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
                 onPressed: () async {
                   final confirm = await showDialog<bool>(
@@ -196,10 +209,16 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                   '₨ ${_fmt(sheet.amountGiven)}',
                   Icons.account_balance_wallet,
                   Colors.blue[700]!,
-                  subtitle: sheet.operatorName != null ? 'To: ${sheet.operatorName}' : null,
+                  subtitle: sheet.operatorName != null
+                      ? 'To: ${sheet.operatorName}'
+                      : null,
                   onTap: isReadOnly
                       ? null
-                      : () => _editCashGivenDialog(context, sheet.amountGiven, sheet.operatorName),
+                      : () => _editCashGivenDialog(
+                          context,
+                          sheet.amountGiven,
+                          sheet.operatorName,
+                        ),
                 ),
                 const SizedBox(width: 14),
                 _buildKpiCard(
@@ -248,31 +267,103 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                       ],
                     ),
                     child: DataTable(
-                      headingRowColor: WidgetStateProperty.all(const Color(0xFFE8F5E9)),
+                      headingRowColor: WidgetStateProperty.all(
+                        const Color(0xFFE8F5E9),
+                      ),
                       headingRowHeight: 46,
                       dataRowMinHeight: 46,
                       dataRowMaxHeight: 52,
                       columnSpacing: 16,
                       horizontalMargin: 16,
                       columns: const [
-                        DataColumn(label: Text('Sr.#', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(numeric: true, label: Text('Days', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(numeric: true, label: Text('Per Day', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(numeric: true, label: Text('Salary', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(numeric: true, label: Text('Advance', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(numeric: true, label: Text('Current', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(numeric: true, label: Text('Demand', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(numeric: true, label: Text('Payable', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(numeric: true, label: Text('Overtime', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(numeric: true, label: Text('Total', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('Sync', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(
+                          label: Text(
+                            'Sr.#',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Text(
+                            'Name',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          numeric: true,
+                          label: Text(
+                            'Days',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          numeric: true,
+                          label: Text(
+                            'Per Day',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          numeric: true,
+                          label: Text(
+                            'Salary',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          numeric: true,
+                          label: Text(
+                            'Advance',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          numeric: true,
+                          label: Text(
+                            'Current',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          numeric: true,
+                          label: Text(
+                            'Demand',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          numeric: true,
+                          label: Text(
+                            'Payable',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          numeric: true,
+                          label: Text(
+                            'Overtime',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          numeric: true,
+                          label: Text(
+                            'Total',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Text(
+                            'Sync',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ],
                       rows: [
                         ...state.rows.asMap().entries.map((entry) {
                           final index = entry.key;
                           final row = entry.value;
-                          final status = state.rowStatuses[row.id] ?? RowSaveStatus.idle;
+                          final status =
+                              state.rowStatuses[row.id] ?? RowSaveStatus.idle;
 
                           return DataRow(
                             color: WidgetStateProperty.resolveWith((states) {
@@ -281,7 +372,15 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                             }),
                             cells: [
                               // Sr.#
-                              DataCell(Text('${index + 1}', style: const TextStyle(color: AppColors.textGrey, fontWeight: FontWeight.w600))),
+                              DataCell(
+                                Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(
+                                    color: AppColors.textGrey,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
 
                               // Name
                               DataCell(
@@ -289,7 +388,10 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                                   width: 140,
                                   child: Text(
                                     row.nameSnapshot,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -299,7 +401,9 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                               DataCell(
                                 _SpreadsheetCellInput(
                                   key: ValueKey('days_${row.id}'),
-                                  initialValue: row.days > 0 ? row.days.toString() : '',
+                                  initialValue: row.days > 0
+                                      ? row.days.toString()
+                                      : '',
                                   width: 55,
                                   isReadOnly: isReadOnly,
                                   onCommitted: (val) {
@@ -312,13 +416,20 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                               // Per Day (Editable input)
                               DataCell(
                                 _SpreadsheetCellInput(
-                                  key: ValueKey('per_day_${row.id}_${row.perDay}'),
-                                  initialValue: row.perDay > 0 ? row.perDay.toStringAsFixed(0) : '',
+                                  key: ValueKey(
+                                    'per_day_${row.id}_${row.perDay}',
+                                  ),
+                                  initialValue: row.perDay > 0
+                                      ? row.perDay.toStringAsFixed(0)
+                                      : '',
                                   width: 70,
                                   isReadOnly: isReadOnly,
                                   onCommitted: (val) {
                                     final rate = double.tryParse(val) ?? 0.0;
-                                    notifier.updateRowInputs(row.id, perDay: rate);
+                                    notifier.updateRowInputs(
+                                      row.id,
+                                      perDay: rate,
+                                    );
                                   },
                                 ),
                               ),
@@ -327,7 +438,10 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                               DataCell(
                                 Text(
                                   _fmt(row.salary),
-                                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
 
@@ -335,12 +449,17 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                               DataCell(
                                 _SpreadsheetCellInput(
                                   key: ValueKey('advance_${row.id}'),
-                                  initialValue: row.advance > 0 ? row.advance.toStringAsFixed(0) : '',
+                                  initialValue: row.advance > 0
+                                      ? row.advance.toStringAsFixed(0)
+                                      : '',
                                   width: 70,
                                   isReadOnly: isReadOnly,
                                   onCommitted: (val) {
                                     final adv = double.tryParse(val) ?? 0.0;
-                                    notifier.updateRowInputs(row.id, advance: adv);
+                                    notifier.updateRowInputs(
+                                      row.id,
+                                      advance: adv,
+                                    );
                                   },
                                 ),
                               ),
@@ -349,7 +468,10 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                               DataCell(
                                 Text(
                                   _fmt(row.currentAmt),
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
 
@@ -357,13 +479,18 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                               DataCell(
                                 _SpreadsheetCellInput(
                                   key: ValueKey('demand_${row.id}'),
-                                  initialValue: row.demand > 0 ? row.demand.toStringAsFixed(0) : '',
+                                  initialValue: row.demand > 0
+                                      ? row.demand.toStringAsFixed(0)
+                                      : '',
                                   width: 75,
                                   backgroundColor: const Color(0xFFE3F2FD),
                                   isReadOnly: isReadOnly,
                                   onCommitted: (val) {
                                     final dem = double.tryParse(val) ?? 0.0;
-                                    notifier.updateRowInputs(row.id, demand: dem);
+                                    notifier.updateRowInputs(
+                                      row.id,
+                                      demand: dem,
+                                    );
                                   },
                                 ),
                               ),
@@ -371,22 +498,34 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                               // Payable (Direct entry like days field)
                               DataCell(
                                 _SpreadsheetCellInput(
-                                  key: ValueKey('payable_${row.id}_${row.payable}_${row.isPayableOverridden}'),
-                                  initialValue: row.payable > 0 ? row.payable.toStringAsFixed(0) : '',
+                                  key: ValueKey(
+                                    'payable_${row.id}_${row.payable}_${row.isPayableOverridden}',
+                                  ),
+                                  initialValue: _fmt(row.currentAmt),
                                   width: 75,
                                   isReadOnly: isReadOnly,
                                   isBold: true,
-                                  borderColor: row.isPayableOverridden ? Colors.amber[700] : null,
+                                  borderColor: row.isPayableOverridden
+                                      ? Colors.amber[700]
+                                      : null,
                                   backgroundColor: row.isPayableOverridden
                                       ? Colors.amber.withValues(alpha: 0.12)
                                       : null,
                                   onCommitted: (val) {
                                     if (val.isEmpty) {
-                                      notifier.setRowOverride(row.id, 'payable', null);
+                                      notifier.setRowOverride(
+                                        row.id,
+                                        'payable',
+                                        null,
+                                      );
                                     } else {
                                       final d = double.tryParse(val);
                                       if (d != null) {
-                                        notifier.setRowOverride(row.id, 'payable', d);
+                                        notifier.setRowOverride(
+                                          row.id,
+                                          'payable',
+                                          d,
+                                        );
                                       }
                                     }
                                   },
@@ -397,12 +536,17 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                               DataCell(
                                 _SpreadsheetCellInput(
                                   key: ValueKey('overtime_${row.id}'),
-                                  initialValue: row.overtime > 0 ? row.overtime.toStringAsFixed(0) : '',
+                                  initialValue: row.overtime > 0
+                                      ? row.overtime.toStringAsFixed(0)
+                                      : '',
                                   width: 65,
                                   isReadOnly: isReadOnly,
                                   onCommitted: (val) {
                                     final ot = double.tryParse(val) ?? 0.0;
-                                    notifier.updateRowInputs(row.id, overtime: ot);
+                                    notifier.updateRowInputs(
+                                      row.id,
+                                      overtime: ot,
+                                    );
                                   },
                                 ),
                               ),
@@ -410,7 +554,10 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
                               // Total (Highlighted in green like reference sheet)
                               DataCell(
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF2E7D32),
                                     borderRadius: BorderRadius.circular(6),
@@ -434,28 +581,98 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
 
                         // ── Grand Totals Sticky Bottom Row ──────────────
                         DataRow(
-                          color: WidgetStateProperty.all(const Color(0xFFECEFF1)),
+                          color: WidgetStateProperty.all(
+                            const Color(0xFFECEFF1),
+                          ),
                           cells: [
-                            const DataCell(Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataCell(Text('${state.rows.length} Workers', style: const TextStyle(fontWeight: FontWeight.bold))),
-                            DataCell(Text(state.totalDays.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.bold))),
+                            const DataCell(
+                              Text(
+                                'TOTAL',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                '${state.rows.length} Workers',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                state.totalDays.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                             const DataCell(Text('—')),
-                            DataCell(Text(_fmt(state.totalSalary), style: const TextStyle(fontWeight: FontWeight.bold))),
-                            DataCell(Text(_fmt(state.totalAdvance), style: const TextStyle(fontWeight: FontWeight.bold))),
-                            DataCell(Text(_fmt(state.totalCurrent), style: const TextStyle(fontWeight: FontWeight.bold))),
-                            DataCell(Text(_fmt(state.totalDemand), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue))),
-                            DataCell(Text(_fmt(state.totalPayable), style: const TextStyle(fontWeight: FontWeight.bold))),
-                            DataCell(Text(_fmt(state.totalOvertime), style: const TextStyle(fontWeight: FontWeight.bold))),
+                            DataCell(
+                              Text(
+                                _fmt(state.totalSalary),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                _fmt(state.totalAdvance),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                _fmt(state.totalCurrent),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                _fmt(state.totalDemand),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                _fmt(state.totalPayable),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                _fmt(state.totalOvertime),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                             DataCell(
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF1B5E20),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
                                   _fmt(state.grandTotal),
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
@@ -473,8 +690,6 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
       ),
     );
   }
-
-
 
   Widget _buildStatusDot(RowSaveStatus status) {
     switch (status) {
@@ -508,7 +723,9 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
         color: highlight ? color.withValues(alpha: 0.08) : Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: highlight ? color.withValues(alpha: 0.3) : const Color(0xFFE0E0E0),
+          color: highlight
+              ? color.withValues(alpha: 0.3)
+              : const Color(0xFFE0E0E0),
         ),
       ),
       child: Row(
@@ -522,7 +739,11 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
             children: [
               Text(
                 label,
-                style: const TextStyle(color: AppColors.textGrey, fontSize: 11, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  color: AppColors.textGrey,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Text(
                 value,
@@ -535,7 +756,10 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
               if (subtitle != null)
                 Text(
                   subtitle,
-                  style: const TextStyle(color: AppColors.textGrey, fontSize: 11),
+                  style: const TextStyle(
+                    color: AppColors.textGrey,
+                    fontSize: 11,
+                  ),
                 ),
             ],
           ),
@@ -553,8 +777,14 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
     return card;
   }
 
-  void _editCashGivenDialog(BuildContext context, double currentAmount, String? currentOperator) {
-    final amountCtrl = TextEditingController(text: currentAmount > 0 ? currentAmount.toStringAsFixed(0) : '');
+  void _editCashGivenDialog(
+    BuildContext context,
+    double currentAmount,
+    String? currentOperator,
+  ) {
+    final amountCtrl = TextEditingController(
+      text: currentAmount > 0 ? currentAmount.toStringAsFixed(0) : '',
+    );
     final opCtrl = TextEditingController(text: currentOperator ?? '');
 
     showDialog(
@@ -576,7 +806,9 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
               const SizedBox(height: 14),
               TextFormField(
                 controller: amountCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: const InputDecoration(
                   labelText: 'Amount Handed Over (PKR)',
                   prefixText: '₨ ',
@@ -598,8 +830,12 @@ class _PayrollSheetViewState extends ConsumerState<PayrollSheetView> {
             ),
             onPressed: () {
               final amt = double.tryParse(amountCtrl.text.trim()) ?? 0.0;
-              ref.read(payrollSheetDetailProvider(widget.sheetId).notifier).updateSheetMetadata(
-                    operatorName: opCtrl.text.trim().isEmpty ? null : opCtrl.text.trim(),
+              ref
+                  .read(payrollSheetDetailProvider(widget.sheetId).notifier)
+                  .updateSheetMetadata(
+                    operatorName: opCtrl.text.trim().isEmpty
+                        ? null
+                        : opCtrl.text.trim(),
                     amountGiven: amt,
                   );
               Navigator.pop(ctx);
@@ -706,11 +942,12 @@ class _SpreadsheetCellInputState extends State<_SpreadsheetCellInput> {
           fontSize: 13,
           fontWeight: widget.isBold ? FontWeight.bold : FontWeight.w500,
         ),
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-        ],
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 6,
+            vertical: 8,
+          ),
           isDense: true,
           hintText: '0',
           hintStyle: const TextStyle(color: Colors.black26),

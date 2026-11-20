@@ -48,6 +48,46 @@ final class CurrentEmployeeProvider
 
 String _$currentEmployeeHash() => r'c9923e20ba656f7dcecb0517644dbf0604d484c3';
 
+@ProviderFor(isAli)
+const isAliProvider = IsAliProvider._();
+
+final class IsAliProvider extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  const IsAliProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'isAliProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$isAliHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return isAli(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$isAliHash() => r'fdbab815a7199699a750481ebd179926df08f7b3';
+
 @ProviderFor(isMaster)
 const isMasterProvider = IsMasterProvider._();
 
@@ -86,7 +126,7 @@ final class IsMasterProvider extends $FunctionalProvider<bool, bool, bool>
   }
 }
 
-String _$isMasterHash() => r'411b0ee931eb1d0f0000d2a92b83f5122e9bb768';
+String _$isMasterHash() => r'f8292da0c5133c04b634de8b6f5a6884f47b6c8b';
 
 @ProviderFor(userPermissions)
 const userPermissionsProvider = UserPermissionsProvider._();
@@ -183,7 +223,7 @@ final class HasPermissionProvider extends $FunctionalProvider<bool, bool, bool>
   }
 }
 
-String _$hasPermissionHash() => r'e55d3c16352382c067e119b0c4f41e3105176a72';
+String _$hasPermissionHash() => r'a0e0ac1125cab1bb85525e7e010c5b1129e89234';
 
 final class HasPermissionFamily extends $Family
     with $FunctionalFamilyOverride<bool, String> {

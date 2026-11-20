@@ -76,9 +76,21 @@ Future<String?> _fetchRoleName(int? roleId) async {
 }
 
 @riverpod
+bool isAli(Ref ref) {
+  final employee = ref.watch(currentEmployeeProvider).value;
+  final role = employee?.role?.trim().toLowerCase();
+  final name = employee?.name.trim().toLowerCase();
+  final check = role == 'ali' || name == 'ali';
+  print('DEBUG: isAli check: $check (role is ${employee?.role}, name is ${employee?.name})');
+  return check;
+}
+
+@riverpod
 bool isMaster(Ref ref) {
   final employee = ref.watch(currentEmployeeProvider).value;
-  final check = employee?.role?.trim().toLowerCase() == 'master';
+  final role = employee?.role?.trim().toLowerCase();
+  final name = employee?.name.trim().toLowerCase();
+  final check = role == 'master' || role == 'ali' || name == 'ali';
   print('DEBUG: isMaster check: $check (role is ${employee?.role})');
   return check;
 }
@@ -118,8 +130,10 @@ Future<Set<String>> userPermissions(Ref ref) async {
 bool hasPermission(Ref ref, String permissionKey) {
   final employee = ref.watch(currentEmployeeProvider).value;
   print('DEBUG: hasPermission("$permissionKey") check for role: "${employee?.role}"');
-  if (employee?.role?.trim().toLowerCase() == 'master') {
-    print('DEBUG: hasPermission("$permissionKey") is true (master bypass)');
+  final role = employee?.role?.trim().toLowerCase();
+  final name = employee?.name.trim().toLowerCase();
+  if (role == 'master' || role == 'ali' || name == 'ali') {
+    print('DEBUG: hasPermission("$permissionKey") is true (master/ali bypass)');
     return true;
   }
 

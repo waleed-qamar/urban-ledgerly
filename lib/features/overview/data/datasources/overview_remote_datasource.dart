@@ -8,7 +8,7 @@ class OverviewRemoteDatasource {
   Future<List<Map<String, dynamic>>> fetchExpenses() async {
     final response = await _client
         .from('expenses')
-        .select('*, expense_heads(name, headType)');
+        .select('*, expense_heads(name, head_type)');
     return List<Map<String, dynamic>>.from(response as List);
   }
 

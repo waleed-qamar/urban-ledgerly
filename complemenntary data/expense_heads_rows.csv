@@ -1,0 +1,32 @@
+id,name,description,head_type,created_at
+1,Abu Bakar,self expenditure + family,domestic,2026-07-06 09:52:14.292265+00
+2,Ali Husnain,self + family expenditure,domestic,2026-07-06 09:52:14.292265+00
+3,Hadayatullah Mughal,self expenditure,domestic,2026-07-06 09:52:14.292265+00
+4,Feesbilillaah,fee sabillilah,domestic,2026-07-06 09:52:14.292265+00
+5,Home Misc.,"any other family expenditure other than Ali, Abubakar, Hadayatullah and kitchen",domestic,2026-07-06 09:52:14.292265+00
+6,Kitchen,"grocery, edible, any thing related to kitchen",domestic,2026-07-06 09:52:14.292265+00
+7,Vehicle,any expenditure on vehicle,developmental,2026-07-06 09:52:14.292265+00
+8,Factory Bills & Rent,Factory Bills & Rent,developmental,2026-07-06 09:52:14.292265+00
+9,Salary,payment in term of salary only,developmental,2026-07-06 09:52:14.292265+00
+10,Labour Overtime,payment in term of over time only,developmental,2026-07-06 09:52:14.292265+00
+11,Labour Dinning,payment in term of daily labour food,developmental,2026-07-06 09:52:14.292265+00
+12,Fuel & Gas,gas and wood,developmental,2026-07-06 09:52:14.292265+00
+13,Generator Diesel,diesel only for generator,developmental,2026-07-06 09:52:14.292265+00
+14,Production Material,"any small material or item which is used in the production of the manhole covers, i.e black color, petrol for color, sand etc",developmental,2026-07-06 09:52:14.292265+00
+15,Misc. Expenditure,Misc Expenditures,nondevelopmental,2026-07-06 09:52:14.292265+00
+16,Marketing & Research,Marketing & Research,nondevelopmental,2026-07-06 09:52:14.292265+00
+17,Machinary & Maintenance,any expense incurred to repair machinery due to use or any expense done on the labour for health,developmental,2026-07-06 09:52:14.292265+00
+18,New Machinary,any expense incurred for the making of new machinery even office furniture,developmental,2026-07-06 09:52:14.292265+00
+19,Building & Facility,"any durable expense incurred on the building like new office, paint, new wall etc",developmental,2026-07-06 09:52:14.292265+00
+20,Delivery Rent,built rents for finish product we supply to our clients,developmental,2026-07-06 09:52:14.292265+00
+21,Factory Entertainment,guest entertainment chaiye coffee,developmental,2026-07-06 09:52:14.292265+00
+22,Investor Profit Distribution,,nondevelopmental,2026-07-06 09:52:14.292265+00
+23,Loan Given,"like loan given to Ali for office, loan given to any other",developmental,2026-07-06 09:52:14.292265+00
+24,Loan Return,loan we return to any person,nondevelopmental,2026-07-06 09:52:14.292265+00
+25,PVC,obsolete,nondevelopmental,2026-07-06 09:52:14.292265+00
+26,Testing & PR,any commission or share in profit or any testing of manhole cover at our part,developmental,2026-07-06 09:52:14.292265+00
+27,Tools & Machinery,Tools & Machinery,developmental,2026-07-06 09:52:14.292265+00
+28,Jaali Patti,Jaali Patti,developmental,2026-07-06 09:52:14.292265+00
+29,New Plant,New Plant,developmental,2026-07-06 09:52:14.292265+00
+30,Labour Medicine,medical/health-related expenses for labour,developmental,2026-07-06 12:04:56.630908+00
+31,Procurement,Any kind of expense which relates to Raw Material,developmental,2026-08-02 12:30:17.335+00

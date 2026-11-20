@@ -27,12 +27,12 @@ class _AddDpsReportPageState extends ConsumerState<AddDpsReportPage> {
 
     setState(() => _isSubmitting = true);
 
-    final success = await ref.read(dpsFormProvider.notifier).submit();
+    final errorMessage = await ref.read(dpsFormProvider.notifier).submit();
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);
 
-    if (success) {
+    if (errorMessage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(
@@ -53,15 +53,16 @@ class _AddDpsReportPageState extends ConsumerState<AddDpsReportPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Icons.error_outline, color: Colors.white),
-              SizedBox(width: 12),
-              Expanded(child: Text('Failed to save — report may be empty')),
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(child: Text(errorMessage)),
             ],
           ),
           backgroundColor: AppColors.errorBackground,
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),

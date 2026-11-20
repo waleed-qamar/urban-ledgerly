@@ -6,7 +6,6 @@ import 'package:ledgerly/core/theme/app_colors.dart';
 import '../providers/dps_providers.dart';
 import 'add_dps_report_page.dart';
 import 'dps_report_details_page.dart';
-import 'dps_summary_page.dart';
 
 class DpsDashboard extends ConsumerStatefulWidget {
   const DpsDashboard({super.key});
@@ -57,25 +56,6 @@ class _DpsDashboardState extends ConsumerState<DpsDashboard> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: IconButton(
-              style: IconButton.styleFrom(
-                backgroundColor: AppColors.iconBackground,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              icon: Icon(Icons.grid_view_rounded, color: AppColors.iconColor),
-              tooltip: 'Report summary',
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const DpsSummaryPage()),
-              ),
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [

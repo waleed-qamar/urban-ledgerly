@@ -19,6 +19,7 @@ import 'features/ledger/presentation/pages/ledger_page.dart';
 import 'package:ledgerly/features/vender/presentation/pages/vendor_dashboard_view.dart';
 import 'package:ledgerly/features/dps/presentation/pages/dps_dashboard.dart';
 import 'package:ledgerly/features/overview/overview_dashboard.dart';
+import 'package:ledgerly/features/reports/presentation/pages/reports_dashboard_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ledgerly/features/auth/presentation/provider/current_employee_provider.dart';
 
@@ -80,6 +81,8 @@ class _MainLayoutState extends ConsumerState<MainLayout>
     final showUsers = ref.watch(hasPermissionProvider('employees.update'));
     // Audit Logs are master-only — no DB permission row needed
     final showAudit = ref.watch(isMasterProvider);
+    // Reports are Ali-only — exclusive role above master level
+    final showReports = ref.watch(isAliProvider);
 
     final List<(NavigationRailDestination destination, Widget page)> items = [
       (
@@ -98,6 +101,15 @@ class _MainLayoutState extends ConsumerState<MainLayout>
             label: Text('Overview'),
           ),
           const OverviewDashboard(),
+        ),
+      if (showReports)
+        (
+          const NavigationRailDestination(
+            icon: Icon(Icons.assessment_outlined),
+            selectedIcon: Icon(Icons.assessment),
+            label: Text('Reports'),
+          ),
+          const ReportsDashboardPage(),
         ),
       if (showAccounts)
         (
